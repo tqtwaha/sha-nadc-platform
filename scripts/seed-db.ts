@@ -14,7 +14,7 @@
 import { config as loadDotenv } from 'dotenv';
 import { resolve } from 'node:path';
 import { createClient } from '@supabase/supabase-js';
-import { buildFleetRoster, buildSimIncident, NAIROBI_ZONES } from '@sha-nadc/domain';
+import { buildFleetRoster, buildSimIncident, NAIROBI_ZONES, computeTariff } from '@sha-nadc/domain';
 
 loadDotenv({ path: resolve(process.cwd(), 'apps/web/.env.local') });
 
@@ -79,21 +79,20 @@ async function seedAgents() {
     email: `${a.name.toLowerCase().replace(/\W+/g, '.')}@nadc.health.go.ke`,
     shift_started_at: new Date(Date.now() - Math.random() * 6 * 3600 * 1000).toISOString(),
   }));
-  // Drop existing seeded agents first (only those with shift_started_at set
-  // by the seeder — keeps real Clerk-linked rows safe once auth is wired).
-  await sb.from('agents').delete().eq('clerk_user_id', null as any).is('clerk_user_id', null);
-  const { error } = await sb.from('agents').insert(rows);
+  // Upsert by email — re-runs are safe, Clerk-linked rows (no email collision)
+  // stay intact.
+  const { error } = await sb.from('agents').upsert(rows, { onConflict: 'email' });
   if (error) throw error;
   console.log('  ✓ agents seeded');
 }
 
 async function seedIncidents(count = 12) {
   console.log(`Seeding ${count} initial incidents…`);
-  // Pick a seq starting from current MAX(display_id seq) + 1.
+  // Order by display_id DESC — zero-padded so alphabetical works as numeric.
   const { data: lastInc } = await sb
     .from('incidents')
     .select('display_id')
-    .order('created_at', { ascending: false })
+    .order('display_id', { ascending: false })
     .limit(1);
   let seq = 1;
   if (lastInc?.length) {
@@ -140,23 +139,122 @@ async function seedIncidents(count = 12) {
   console.log(`  ✓ ${count} incidents created (seq ${seq}–${seq + count - 1})`);
 }
 
+async function seedClaims(count = 30) {
+  console.log(`Seeding ${count} sample claims…`);
+  // Get a sample of hospitals + providers for varied claims
+  const { data: hospitals } = await sb.from('hospitals').select('id, name').limit(20);
+  const { data: units } = await sb.from('fleet_units').select('id, unit_type, provider_id').limit(50);
+
+  if (!hospitals?.length || !units?.length) {
+    console.log('  ⚠ skipping — hospitals or fleet not seeded yet');
+    return;
+  }
+
+  // Spread claims across statuses so the dashboard has variety
+  const statuses = [
+    'draft','draft','draft',
+    'submitted','submitted','submitted','submitted',
+    'approved','approved','approved','approved','approved',
+    'disputed','disputed',
+    'rejected',
+    'pending_payment','pending_payment','pending_payment',
+    'paid','paid','paid','paid',
+    'invoiced','invoiced',
+  ];
+
+  const complaints = [
+    { text: 'Cardiac arrest',         icd: 'I46.9' },
+    { text: 'Road traffic accident',  icd: 'V89'   },
+    { text: 'Stroke / CVA suspected', icd: 'I64'   },
+    { text: 'Obstetric emergency',    icd: 'O67'   },
+    { text: 'Respiratory distress',   icd: 'R06.0' },
+    { text: 'Chest pain',             icd: 'R07.4' },
+    { text: 'Severe burns',           icd: 'T31'   },
+    { text: 'Seizure',                icd: 'R56.9' },
+  ];
+
+  // Find next claim sequence — claim_number sorts lexicographically.
+  const { data: lastClaim } = await sb
+    .from('claims')
+    .select('claim_number')
+    .order('claim_number', { ascending: false })
+    .limit(1);
+  let seq = 1000;
+  if (lastClaim?.length) {
+    const m = (lastClaim[0]!.claim_number as string).match(/-(\d+)$/);
+    if (m) seq = parseInt(m[1]!, 10) + 1;
+  }
+
+  const now = Date.now();
+  const rows = Array.from({ length: count }, (_, i) => {
+    const status = statuses[i % statuses.length]!;
+    const unit = units[Math.floor(Math.random() * units.length)]!;
+    const hospital = hospitals[Math.floor(Math.random() * hospitals.length)]!;
+    const complaint = complaints[Math.floor(Math.random() * complaints.length)]!;
+    const tariffType = (unit.unit_type as 'ALS' | 'BLS');
+    const distanceKm = +(Math.random() * 35 + 3).toFixed(1);
+    const consumables = Math.random() < 0.4 ? Math.floor(Math.random() * 800) + 100 : 0;
+    const tariff = computeTariff({ tariffType, distanceKm, consumablesKes: consumables });
+
+    const createdDaysAgo = Math.floor(Math.random() * 14);
+    const createdAt = new Date(now - createdDaysAgo * 86400_000).toISOString();
+    const submitted = ['submitted','approved','disputed','rejected','pending_payment','paid','invoiced'].includes(status);
+    const approved  = ['approved','pending_payment','paid','invoiced'].includes(status);
+    const paid      = ['paid','invoiced'].includes(status);
+    const invoiced  = status === 'invoiced';
+
+    const yr  = new Date(createdAt).getFullYear();
+    const mo  = String(new Date(createdAt).getMonth() + 1).padStart(2, '0');
+    return {
+      claim_number:   `CLM-${yr}-${mo}-${seq + i}`,
+      provider_id:    unit.provider_id,
+      unit_id:        unit.id,
+      hospital_id:    hospital.id,
+      icd11:          complaint.icd,
+      chief_complaint: complaint.text,
+      tariff_type:    tariffType,
+      base_kes:       tariff.baseKes,
+      distance_km:    distanceKm,
+      per_km_kes:     tariff.perKmKes,
+      free_km:        tariff.rate.freeKm,
+      consumables_kes: consumables,
+      total_kes:      tariff.totalKes,
+      status,
+      notes:          '',
+      submitted_at:   submitted ? new Date(now - createdDaysAgo * 86400_000 + 3600_000).toISOString() : null,
+      approved_at:    approved  ? new Date(now - createdDaysAgo * 86400_000 + 7200_000).toISOString() : null,
+      paid_at:        paid      ? new Date(now - createdDaysAgo * 86400_000 + 86400_000).toISOString() : null,
+      invoice_number: invoiced  ? `KRA-INV-${yr}${mo}-${seq + i}` : null,
+      mpesa_ref:      paid      ? `QXL${Math.random().toString(36).slice(2, 11).toUpperCase()}` : null,
+      created_at:     createdAt,
+    };
+  });
+
+  const { error } = await sb.from('claims').insert(rows);
+  if (error) throw error;
+  console.log(`  ✓ ${count} claims seeded (CLM-…-${seq}…${seq + count - 1})`);
+}
+
 async function main() {
   console.log('\n→ Seeding SHA NADC v2 Supabase\n');
   await seedFleet();
   await seedAgents();
   await seedIncidents(12);
+  await seedClaims(30);
 
   const counts = await Promise.all([
     sb.from('hospitals').select('id', { count: 'exact', head: true }),
     sb.from('fleet_units').select('id', { count: 'exact', head: true }),
     sb.from('agents').select('id', { count: 'exact', head: true }),
     sb.from('incidents').select('id', { count: 'exact', head: true }),
+    sb.from('claims').select('id', { count: 'exact', head: true }),
   ]);
   console.log('\n  Row counts after seed:');
   console.log(`    hospitals:   ${counts[0].count}`);
   console.log(`    fleet_units: ${counts[1].count}`);
   console.log(`    agents:      ${counts[2].count}`);
   console.log(`    incidents:   ${counts[3].count}`);
+  console.log(`    claims:      ${counts[4].count}`);
   console.log(`    zones (in-mem): ${NAIROBI_ZONES.length}\n`);
 }
 
