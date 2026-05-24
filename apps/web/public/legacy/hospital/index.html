@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SHA · NADC — Hospital Console</title>
+<meta name="description" content="SHA National Ambulance Dispatch Centre — real-time emergency coordination platform for the Republic of Kenya.">
+<meta name="theme-color" content="#00519B">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SHA NADC">
+<meta property="og:title" content="SHA · National Ambulance Dispatch Centre">
+<meta property="og:description" content="Real-time emergency coordination · Republic of Kenya">
+<meta property="og:url" content="https://sha-nadc.silicongw.com/hospital">
+<meta property="og:image" content="https://sha-nadc.silicongw.com/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="1200">
+<meta property="og:image:alt" content="SHA National Ambulance Dispatch Centre">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SHA · National Ambulance Dispatch Centre">
+<meta name="twitter:description" content="Real-time emergency coordination · Republic of Kenya">
+<meta name="twitter:image" content="https://sha-nadc.silicongw.com/assets/og-image.png">
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="/lib/nadc-state.js"></script>
+<script src="/lib/nadc-auth.js"></script>
+<style>
+:root{
+  --b:#00519B;--b2:#27AAE1;--g:#50C020;--g2:#3DA818;
+  --p1:#FF3B30;--p2:#FF8C00;--p3:#F5B100;--ok:#34C759;
+  --bg:#0B0F14;--surface:#11161D;--surface-2:#161C25;
+  --line:rgba(255,255,255,.06);--line-2:rgba(255,255,255,.10);
+  --t1:rgba(255,255,255,.95);--t2:rgba(255,255,255,.62);
+  --t3:rgba(255,255,255,.40);--t4:rgba(255,255,255,.25);
+  --fh:"Exo 2",system-ui,sans-serif;
+  --fm:"JetBrains Mono",ui-monospace,monospace;
+  --fc:"Barlow Condensed",sans-serif;
+  --r-sm:8px;--r-md:12px;--r-lg:16px;--r-pill:999px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;background:var(--bg);color:var(--t1);font-family:var(--fh);overflow:hidden;-webkit-font-smoothing:antialiased;}
+button{font-family:inherit;cursor:pointer;}
+.mat{font-family:"Material Symbols Outlined";font-weight:400;font-size:18px;line-height:1;}
+.tab{font-variant-numeric:tabular-nums;}
+
+/* Topbar */
+.topbar{display:flex;align-items:center;gap:14px;padding:0 18px;height:60px;background:rgba(11,15,20,.92);backdrop-filter:saturate(160%) blur(14px);border-bottom:1px solid var(--line);position:relative;z-index:50;}
+.brand{display:flex;align-items:center;gap:10px;padding-right:14px;border-right:1px solid var(--line);height:32px;}
+.brand-mark{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#00519B,#27AAE1);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:#fff;}
+.brand-text b{font-size:13px;line-height:1.15;display:block;font-weight:600;}
+.brand-text span{font-family:var(--fm);font-size:9px;color:var(--t3);letter-spacing:1.2px;text-transform:uppercase;}
+.pg-nav{display:flex;align-items:center;gap:1px;margin-left:6px;}
+.pn{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:var(--r-pill);text-decoration:none;font-size:11.5px;font-weight:500;color:var(--t2);transition:background .15s;}
+.pn:hover{background:rgba(255,255,255,.04);color:var(--t1);}
+.pn.on{background:rgba(80,192,32,.13);color:var(--g);}
+.pn .mat{font-size:14px;}
+.pn .pm{font-family:var(--fc);font-size:9px;color:var(--t4);letter-spacing:.8px;text-transform:uppercase;}
+.pn.on .pm{color:rgba(80,192,32,.5);}
+.spacer{flex:1;}
+.hosp-picker{display:flex;align-items:center;gap:8px;padding:6px 14px;background:rgba(80,192,32,.10);border:1px solid rgba(80,192,32,.28);border-radius:var(--r-pill);cursor:pointer;transition:background .12s;}
+.hosp-picker:hover{background:rgba(80,192,32,.18);}
+.hosp-picker .mat{color:var(--g);font-size:16px;}
+.hosp-picker .lbl{font-size:13px;font-weight:600;}
+.hosp-picker .meta{font-family:var(--fm);font-size:10px;color:var(--t3);}
+#clk{font-family:var(--fm);font-size:13px;color:var(--t1);letter-spacing:.8px;}
+
+/* Layout */
+.shell{display:grid;grid-template-columns:380px 1fr;height:calc(100vh - 60px);}
+.col-l{background:var(--surface);border-right:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden;}
+.col-r{display:flex;flex-direction:column;overflow:hidden;background:var(--bg);}
+
+/* Left column — queues */
+.queue-h{padding:14px 16px 8px;border-bottom:1px solid var(--line);}
+.queue-h-t{font-family:var(--fc);font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--t3);display:flex;align-items:center;gap:8px;}
+.queue-h-t .cnt{background:var(--g);color:#0B0F14;padding:1px 8px;border-radius:var(--r-pill);font-family:var(--fm);font-size:10px;font-weight:700;letter-spacing:0;}
+.queue-h-t.alert .cnt{background:var(--p1);color:#fff;}
+.queue-scroll{flex:1;overflow-y:auto;padding:8px 10px 14px;}
+.q-empty{padding:24px 16px;text-align:center;font-family:var(--fm);font-size:11px;color:var(--t3);}
+
+.pa{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-md);padding:11px 12px;margin-bottom:8px;cursor:pointer;transition:border-color .12s,background .12s;}
+.pa:hover{border-color:var(--line-2);}
+.pa.sel{border-color:rgba(80,192,32,.45);background:rgba(80,192,32,.06);}
+.pa.pa-stage-transport{border-left:3px solid var(--g);}
+.pa.pa-stage-inbound{border-left:3px solid rgba(255,140,0,.6);}
+.pa.pa-stage-at_hospital{border-left:3px solid var(--b2);}
+.pa-r1{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+.pa-pri{font-family:var(--fh);font-weight:700;font-size:11px;padding:2px 7px;border-radius:4px;}
+.pa-pri.p1{background:rgba(255,59,48,.16);color:#FF6E66;}
+.pa-pri.p2{background:rgba(255,140,0,.16);color:#FFAA55;}
+.pa-pri.p3{background:rgba(245,177,0,.16);color:#F5C944;}
+.pa-pri.p4{background:rgba(80,192,32,.16);color:#7ADB48;}
+.pa-num{font-family:var(--fm);font-size:11px;color:var(--t2);flex:1;}
+.pa-eta{font-family:var(--fm);font-size:12px;font-weight:600;color:var(--g);display:flex;align-items:center;gap:3px;}
+.pa-eta.warn{color:var(--p2);}
+.pa-eta.now{color:var(--p1);animation:blink 1.4s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.5;}}
+.pa-r2{font-family:var(--fh);font-size:13px;font-weight:600;color:var(--t1);margin-bottom:3px;line-height:1.25;}
+.pa-r3{font-family:var(--fm);font-size:10.5px;color:var(--t3);display:flex;align-items:center;gap:5px;}
+.pa-r3 .mat{font-size:11px;}
+.pa-r3 .unit{color:var(--b2);font-weight:600;}
+.pa-r3 .det-chip{padding:0 5px;border-radius:3px;font-family:var(--fh);font-weight:700;font-size:9.5px;}
+.pa-r3 .det-chip.E{background:rgba(255,59,48,.16);color:#FF6E66;}
+.pa-r3 .det-chip.D{background:rgba(255,140,0,.16);color:#FFAA55;}
+.pa-r3 .det-chip.C{background:rgba(245,177,0,.16);color:#F5C944;}
+.pa-r3 .det-chip.B{background:rgba(80,192,32,.16);color:#7ADB48;}
+.pa-r3 .det-chip.A{background:rgba(39,170,225,.16);color:#5CC4E8;}
+
+/* Right column — detail */
+.detail-h{padding:18px 22px 14px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;gap:14px;}
+.detail-empty{flex:1;display:flex;align-items:center;justify-content:center;color:var(--t3);font-family:var(--fm);font-size:13px;text-align:center;padding:40px;line-height:1.6;}
+.detail-empty .mat{font-size:48px;display:block;margin-bottom:14px;opacity:.4;}
+
+.dpri{padding:8px 14px;border-radius:var(--r-md);font-family:var(--fh);font-weight:700;font-size:18px;letter-spacing:.5px;}
+.dpri.p1{background:rgba(255,59,48,.16);color:#FF6E66;border:1px solid rgba(255,59,48,.3);}
+.dpri.p2{background:rgba(255,140,0,.16);color:#FFAA55;border:1px solid rgba(255,140,0,.3);}
+.dpri.p3{background:rgba(245,177,0,.16);color:#F5C944;border:1px solid rgba(245,177,0,.3);}
+.dpri.p4{background:rgba(80,192,32,.16);color:#7ADB48;border:1px solid rgba(80,192,32,.3);}
+.dhead-text{flex:1;}
+.dhead-l1{display:flex;align-items:center;gap:10px;margin-bottom:5px;}
+.dhead-num{font-family:var(--fm);font-size:14px;color:var(--t2);}
+.dhead-stat{font-family:var(--fc);font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;padding:3px 9px;border-radius:var(--r-pill);}
+.dhead-stat.transport{background:rgba(80,192,32,.16);color:#7ADB48;}
+.dhead-stat.at_hospital{background:rgba(39,170,225,.16);color:#5CC4E8;}
+.dhead-stat.dispatched,.dhead-stat.en_route,.dhead-stat.on_scene{background:rgba(255,140,0,.16);color:#FFAA55;}
+.dhead-cplt{font-family:var(--fh);font-size:22px;font-weight:600;line-height:1.25;margin-bottom:4px;}
+.dhead-meta{font-family:var(--fm);font-size:11px;color:var(--t3);letter-spacing:.5px;}
+.dhead-meta b{color:var(--t1);font-family:var(--fh);font-weight:600;}
+
+.actions-bar{display:flex;align-items:center;gap:8px;}
+.act-btn{display:flex;align-items:center;gap:6px;padding:9px 16px;border-radius:var(--r-md);font-family:var(--fh);font-size:13px;font-weight:600;border:1px solid var(--line-2);background:rgba(255,255,255,.04);color:var(--t1);transition:background .12s;}
+.act-btn:hover{background:rgba(255,255,255,.08);}
+.act-btn.accept{background:rgba(80,192,32,.16);color:var(--g);border-color:rgba(80,192,32,.4);}
+.act-btn.accept:hover{background:rgba(80,192,32,.26);}
+.act-btn.divert{background:rgba(255,140,0,.14);color:var(--p2);border-color:rgba(255,140,0,.35);}
+.act-btn.divert:hover{background:rgba(255,140,0,.24);}
+
+.detail-body{flex:1;overflow-y:auto;padding:20px 22px;display:grid;grid-template-columns:1fr 1fr;gap:18px;align-content:start;}
+.dcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:16px;}
+.dcard.full{grid-column:1 / -1;}
+.dcard-h{font-family:var(--fc);font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--t3);margin-bottom:12px;display:flex;align-items:center;gap:7px;}
+.dcard-h .mat{color:var(--g);font-size:14px;}
+.dgrid{display:flex;flex-direction:column;gap:9px;}
+.drow{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding-bottom:9px;border-bottom:1px solid var(--line);}
+.drow:last-child{border-bottom:none;padding-bottom:0;}
+.dl{font-family:var(--fm);font-size:10.5px;color:var(--t3);letter-spacing:.6px;text-transform:uppercase;flex-shrink:0;min-width:100px;}
+.dv{font-family:var(--fh);font-size:13px;color:var(--t1);text-align:right;font-weight:500;word-break:break-word;}
+.dv.empty{color:var(--t3);font-style:italic;}
+.dv a{color:var(--b2);text-decoration:none;}
+.dv a:hover{text-decoration:underline;}
+
+.vitals{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.vit{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 12px;}
+.vit-l{font-family:var(--fm);font-size:9.5px;color:var(--t3);letter-spacing:.6px;text-transform:uppercase;}
+.vit-v{font-family:var(--fh);font-weight:700;font-size:22px;color:var(--t1);line-height:1.1;margin-top:4px;}
+.vit-v .u{font-size:11px;color:var(--t3);font-weight:500;margin-left:3px;}
+.vit-t{font-family:var(--fm);font-size:9px;color:var(--t3);margin-top:3px;}
+.vit.alert{border-color:rgba(255,59,48,.35);background:rgba(255,59,48,.06);}
+.vit.alert .vit-v{color:#FF6E66;}
+.vit.warn{border-color:rgba(255,140,0,.3);background:rgba(255,140,0,.05);}
+.vit.warn .vit-v{color:#FFAA55;}
+.no-vitals{padding:16px;font-family:var(--fm);font-size:11px;color:var(--t3);text-align:center;}
+
+/* Hospital picker modal (same pattern as EMT) */
+.up-ov{position:fixed;inset:0;z-index:9500;background:rgba(3,8,15,.78);display:none;align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(6px);}
+.up-ov.open{display:flex;}
+.up-modal{background:#0E1620;border:1px solid var(--line-2);border-radius:16px;width:min(460px,100%);max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.65);}
+.up-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line);}
+.up-title{font-weight:700;font-size:15px;}
+.up-close{background:none;border:none;color:var(--t3);cursor:pointer;padding:4px 6px;}
+.up-close .mat{font-size:20px;}
+#up-search{margin:10px 12px;padding:10px 12px;background:#161E2A;border:1px solid var(--line);border-radius:10px;color:#fff;font-family:var(--fm);font-size:13px;outline:none;}
+#up-search:focus{border-color:rgba(80,192,32,.45);}
+.up-current{padding:0 16px 8px;font-family:var(--fm);font-size:10.5px;color:var(--t3);letter-spacing:.6px;text-transform:uppercase;}
+.up-current b{color:var(--g);font-family:var(--fh);font-weight:700;font-size:12px;text-transform:none;letter-spacing:0;}
+.up-list{flex:1;overflow-y:auto;padding:4px 8px 12px;}
+.up-row{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;cursor:pointer;border:1px solid transparent;}
+.up-row:hover{background:rgba(255,255,255,.04);}
+.up-row.sel{background:rgba(80,192,32,.14);border-color:rgba(80,192,32,.32);}
+.up-row .hosp-lvl{font-family:var(--fh);font-weight:700;font-size:11px;padding:2px 7px;border-radius:999px;background:rgba(39,170,225,.16);color:#5CC4E8;}
+.up-row .hosp-lvl.nat{background:rgba(80,192,32,.16);color:#7ADB48;}
+.up-row .hosp-n{font-weight:600;font-size:13px;flex:1;}
+.up-row .hosp-c{font-family:var(--fm);font-size:11px;color:var(--t3);}
+.up-row .hosp-cnt{font-family:var(--fm);font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;background:rgba(255,255,255,.06);color:var(--t3);min-width:30px;text-align:center;}
+.up-row .hosp-cnt.has{background:rgba(255,140,0,.18);color:#FFAA55;}
+.up-row .hosp-cnt.hot{background:rgba(255,59,48,.22);color:#FF6E66;}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--surface-2);border:1px solid var(--line-2);border-radius:var(--r-md);padding:11px 22px;font-size:13px;color:var(--t1);opacity:0;transition:opacity .22s,transform .22s;z-index:9999;pointer-events:none;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(-6px);}
+
+@media (max-width:1280px){
+  .shell{grid-template-columns:330px 1fr;}
+  .detail-body{grid-template-columns:1fr;}
+}
+@media (max-width:980px){
+  .shell{grid-template-columns:280px 1fr;}
+  .vitals{grid-template-columns:repeat(2,1fr);}
+}
+
+/* ── App switcher (icon-forward) ─────────────────────────────────────── */
+.app-sw{position:relative;display:inline-flex;}
+.app-sw-btn{display:flex;align-items:center;gap:7px;padding:6px 12px 6px 10px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  border-radius:999px;color:rgba(255,255,255,.95);
+  font-family:'Exo 2',sans-serif;font-size:12.5px;font-weight:600;
+  cursor:pointer;transition:background .12s,border-color .12s;}
+.app-sw-btn:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.14);}
+.app-sw-btn.open{background:rgba(80,192,32,.12);border-color:rgba(80,192,32,.30);}
+.app-sw-btn .mat{font-size:18px;color:#50C020;}
+.app-sw-btn .asb-cur{letter-spacing:.2px;}
+.app-sw-btn .asb-arrow{font-size:14px !important;color:rgba(255,255,255,.4) !important;margin-left:1px;transition:transform .15s;}
+.app-sw-btn.open .asb-arrow{transform:rotate(180deg);}
+.app-sw-panel{display:none;position:absolute;top:calc(100% + 8px);left:0;
+  width:296px;background:rgba(14,22,32,.96);backdrop-filter:saturate(160%) blur(16px);
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:14px;box-shadow:0 18px 42px rgba(0,0,0,.7);
+  z-index:9000;overflow:hidden;padding:8px;}
+.app-sw-panel.open{display:block;animation:asPop .14s ease-out;}
+@keyframes asPop{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
+.asp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.asp-item{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:6px;padding:14px 6px 10px;background:transparent;color:rgba(255,255,255,.7);
+  text-decoration:none;text-align:center;border-radius:10px;
+  border:1px solid transparent;
+  transition:background .12s,color .12s,border-color .12s,transform .08s;}
+.asp-item:hover{background:rgba(255,255,255,.05);color:#fff;border-color:rgba(255,255,255,.08);}
+.asp-item:active{transform:scale(.96);}
+.asp-item.on{background:rgba(80,192,32,.10);color:#50C020;border-color:rgba(80,192,32,.25);}
+.asp-item .mat{font-size:30px;line-height:1;}
+.asp-item b{font-family:'Exo 2',sans-serif;font-weight:500;font-size:11px;display:block;letter-spacing:.1px;}
+
+</style>
+<link rel="stylesheet" href="/assets/tokens-v2.css">
+</head>
+<body>
+
+<!-- ── Topbar ─────────────────────────────────────────────────────────── -->
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark">SHA</div>
+    <div class="brand-text"><b>NADC · Hospital</b><span>Pre-alert &amp; Receiving</span></div>
+  </div>
+  <div class="app-sw">
+  <button class="app-sw-btn" onclick="toggleAppSw()" aria-label="Switch app">
+    <span class="mat">apps</span>
+    <span class="asb-cur">Hospital</span>
+    <span class="mat asb-arrow">expand_more</span>
+  </button>
+  <div class="app-sw-panel" id="app-sw-panel">
+    <div class="asp-grid">
+      <a class="asp-item" href="/dashboard" title="Wall"><span class="mat">tv</span><b>Wall</b></a>
+      <a class="asp-item" href="/psap" title="PSAP"><span class="mat">call</span><b>PSAP</b></a>
+      <a class="asp-item" href="/dispatch" title="Dispatch"><span class="mat">radar</span><b>Dispatch</b></a>
+      <a class="asp-item" href="/supervisor" title="Supervisor"><span class="mat">supervisor_account</span><b>Supervisor</b></a>
+      <a class="asp-item" href="/emt" title="EMT"><span class="mat">directions_car</span><b>EMT</b></a>
+      <a class="asp-item on" href="/hospital" title="Hospital"><span class="mat">local_hospital</span><b>Hospital</b></a>
+      <a class="asp-item" href="/claims" title="Claims"><span class="mat">receipt_long</span><b>Claims</b></a>
+      <a class="asp-item" href="/providers" title="Providers"><span class="mat">business</span><b>Providers</b></a>
+      <a class="asp-item" href="/admin" title="Admin"><span class="mat">admin_panel_settings</span><b>Admin</b></a>
+    </div>
+  </div>
+</div>
+  <div class="spacer"></div>
+  <div class="hosp-picker" onclick="openHospPicker()">
+    <span class="mat">local_hospital</span>
+    <div>
+      <div class="lbl" id="hp-name">Select hospital</div>
+      <div class="meta" id="hp-meta">Tap to choose</div>
+    </div>
+    <span class="mat" style="font-size:14px;color:var(--t3);">expand_more</span>
+  </div>
+  <div id="clk">--:--:--</div>
+</header>
+
+<!-- ── Main layout ─────────────────────────────────────────────────────── -->
+<div class="shell">
+
+  <!-- Left: queues -->
+  <aside class="col-l">
+    <div class="queue-h" id="qh-pre">
+      <div class="queue-h-t alert">
+        <span class="mat" style="font-size:13px;">notifications_active</span>
+        Inbound (active)
+        <span class="cnt" id="cnt-pre">0</span>
+      </div>
+      <div style="font-family:var(--fm);font-size:9px;color:var(--t3);letter-spacing:.5px;margin-top:4px;text-transform:uppercase;">
+        Green = en route to you &middot; Amber = inbound &middot; Blue = arrived
+      </div>
+    </div>
+    <div class="queue-scroll" id="list-pre"></div>
+
+    <div class="queue-h" id="qh-here" style="border-top:1px solid var(--line);">
+      <div class="queue-h-t">
+        <span class="mat" style="font-size:13px;color:var(--b2);">local_hospital</span>
+        At hospital (handover)
+        <span class="cnt" id="cnt-here" style="background:var(--b2);color:#0B0F14;">0</span>
+      </div>
+    </div>
+    <div class="queue-scroll" id="list-here" style="flex:0 1 200px;"></div>
+  </aside>
+
+  <!-- Right: patient detail -->
+  <section class="col-r">
+    <div id="detail-empty" class="detail-empty">
+      <div>
+        <span class="mat">notifications</span>
+        Select a pre-alert from the left to see patient detail, vitals, and ETA.<br>
+        Vitals update in real time as the EMT records them.
+      </div>
+    </div>
+
+    <div id="detail" style="display:none;flex:1;display:flex;flex-direction:column;overflow:hidden;">
+      <div class="detail-h">
+        <div class="dpri" id="d-pri">P1</div>
+        <div class="dhead-text">
+          <div class="dhead-l1">
+            <span class="dhead-num" id="d-num">INC-—</span>
+            <span class="dhead-stat" id="d-stat">transport</span>
+          </div>
+          <div class="dhead-cplt" id="d-cplt">—</div>
+          <div class="dhead-meta">
+            <b id="d-eta">— ETA</b> · unit <b id="d-unit">—</b> · from <span id="d-from">—</span>
+          </div>
+        </div>
+        <div class="actions-bar">
+          <button class="act-btn accept" onclick="actAccept()"><span class="mat">check_circle</span>Accept</button>
+          <button class="act-btn divert" onclick="actDivert()"><span class="mat">redo</span>Divert</button>
+        </div>
+      </div>
+
+      <div class="detail-body">
+        <div class="dcard">
+          <div class="dcard-h"><span class="mat">badge</span>Patient</div>
+          <div class="dgrid">
+            <div class="drow"><div class="dl">Age / sex</div><div class="dv" id="dv-patient">—</div></div>
+            <div class="drow"><div class="dl">Caller</div><div class="dv" id="dv-caller">—</div></div>
+            <div class="drow"><div class="dl">Phone</div><div class="dv" id="dv-phone">—</div></div>
+            <div class="drow"><div class="dl">From</div><div class="dv" id="dv-from">—</div></div>
+          </div>
+        </div>
+        <div class="dcard">
+          <div class="dcard-h"><span class="mat">medical_information</span>Clinical</div>
+          <div class="dgrid">
+            <div class="drow"><div class="dl">Chief complaint</div><div class="dv" id="dv-cplt">—</div></div>
+            <div class="drow"><div class="dl">ICD-11</div><div class="dv" id="dv-icd">—</div></div>
+            <div class="drow"><div class="dl">Determinant</div><div class="dv" id="dv-det">—</div></div>
+            <div class="drow"><div class="dl">Triage notes</div><div class="dv" id="dv-notes">—</div></div>
+          </div>
+        </div>
+        <div class="dcard full">
+          <div class="dcard-h"><span class="mat">monitoring</span>Latest vitals <span id="dv-vit-ts" style="font-family:var(--fm);font-size:9.5px;color:var(--t3);margin-left:auto;text-transform:none;letter-spacing:.4px;"></span></div>
+          <div class="vitals" id="dv-vitals">
+            <div class="no-vitals" style="grid-column:1/-1;">No vitals received yet — EMT will report on scene.</div>
+          </div>
+        </div>
+        <div class="dcard full">
+          <div class="dcard-h"><span class="mat">timeline</span>Status timeline</div>
+          <div class="dgrid">
+            <div class="drow"><div class="dl">Call received</div><div class="dv" id="dv-t-call">—</div></div>
+            <div class="drow"><div class="dl">Dispatched</div><div class="dv" id="dv-t-disp">—</div></div>
+            <div class="drow"><div class="dl">En route</div><div class="dv" id="dv-t-enr">—</div></div>
+            <div class="drow"><div class="dl">On scene</div><div class="dv" id="dv-t-scn">—</div></div>
+            <div class="drow"><div class="dl">Transport started</div><div class="dv" id="dv-t-trn">—</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ── Hospital picker modal ───────────────────────────────────────────── -->
+<div id="up-ov" class="up-ov" onclick="closeHospPicker(event)">
+  <div class="up-modal" onclick="event.stopPropagation()">
+    <div class="up-head">
+      <div class="up-title">Select hospital</div>
+      <button class="up-close" onclick="closeHospPicker()"><span class="mat">close</span></button>
+    </div>
+    <input id="up-search" placeholder="Search by name or county…" oninput="renderHospList()">
+    <div class="up-current" id="up-current">Current: <b>—</b></div>
+    <div id="up-list" class="up-list"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+'use strict';
+
+// ── State ─────────────────────────────────────────────────────────────
+function _hpRead(){ try{return localStorage.getItem('hosp_id')||null;}catch(e){return null;} }
+function _hpWrite(id){ try{localStorage.setItem('hosp_id',id||'');}catch(e){} HOSP_ID=id; _renderHospLabel(); _renderQueues(); _renderDetail(); }
+var HOSP_ID = _hpRead();
+var _selectedIncId = null;
+var _vitalsByInc = {};   // incidentId → latest observation
+var _vitalsTs    = {};   // incidentId → ms timestamp
+
+// ── Clock ─────────────────────────────────────────────────────────────
+function tickClock(){
+  var d=new Date(),p=function(v){return String(v).padStart(2,'0');};
+  document.getElementById('clk').textContent=p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
+}
+tickClock();setInterval(tickClock,1000);
+
+// ── Toast ─────────────────────────────────────────────────────────────
+var _toastTimer=null;
+function showToast(msg, ms){
+  var el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  if(_toastTimer)clearTimeout(_toastTimer);
+  _toastTimer=setTimeout(function(){el.classList.remove('show');}, ms||2200);
+}
+
+// ── Hospital picker ───────────────────────────────────────────────────
+function openHospPicker(){
+  var ov=document.getElementById('up-ov');
+  ov.classList.add('open');
+  var cur=document.getElementById('up-current');
+  var h=_currentHospital();
+  cur.innerHTML='Current: <b>'+(h?(h.full||h.n||h.name):'(none)')+'</b>';
+  renderHospList();
+  setTimeout(function(){var s=document.getElementById('up-search'); if(s) s.focus();}, 80);
+}
+function closeHospPicker(e){
+  if(e && e.target && e.target.id !== 'up-ov') return;
+  document.getElementById('up-ov').classList.remove('open');
+}
+function renderHospList(){
+  if(!window.NACDState||!NACDState.getHospitals) return;
+  var list=document.getElementById('up-list');
+  var q=((document.getElementById('up-search')||{}).value||'').toLowerCase().trim();
+  var hosps=NACDState.getHospitals();
+  var m=hosps.filter(function(h){
+    if(!q) return true;
+    var hay=((h.full||'')+' '+(h.n||h.name||'')+' '+(h.county||'')).toLowerCase();
+    return hay.indexOf(q)!==-1;
+  });
+  m.sort(function(a,b){
+    if(a.nat&&!b.nat) return -1;
+    if(b.nat&&!a.nat) return 1;
+    return (a.full||a.n||'').localeCompare(b.full||b.n||'');
+  });
+  if(!m.length){ list.innerHTML='<div class="up-empty">No hospitals match "'+q+'"</div>'; return; }
+  // Pre-compute live active-incident count per hospital
+  var counts={};
+  try{
+    var allInc=NACDState.getIncidents()||[];
+    for(var ci=0;ci<allInc.length;ci++){
+      var ic=allInc[ci];
+      if(ic.status==='cleared'||ic.status==='cancelled') continue;
+      if(!ic.hospitalId) continue;
+      counts[ic.hospitalId]=(counts[ic.hospitalId]||0)+1;
+    }
+  }catch(e){}
+  list.innerHTML=m.slice(0,80).map(function(h){
+    var sel=h.id===HOSP_ID?' sel':'';
+    var lvl=h.nat?'L6':'L'+(h.level||5);
+    var cls=h.nat?' nat':'';
+    var cn =counts[h.id]||0;
+    var cntCls = cn>=5 ? 'hot' : cn>=1 ? 'has' : '';
+    return '<div class="up-row'+sel+'" onclick="pickHosp(\''+h.id+'\')">'
+      +'<span class="hosp-lvl'+cls+'">'+lvl+'</span>'
+      +'<div class="hosp-n">'+(h.full||h.n||h.name)+'</div>'
+      +'<div class="hosp-c">'+(h.county||'')+'</div>'
+      +'<div class="hosp-cnt '+cntCls+'">'+cn+'</div>'
+      +'</div>';
+  }).join('');
+}
+function pickHosp(id){
+  if(id===HOSP_ID){ closeHospPicker({target:{id:'up-ov'}}); return; }
+  _hpWrite(id);
+  showToast('Hospital changed');
+  closeHospPicker({target:{id:'up-ov'}});
+}
+function _currentHospital(){
+  if(!HOSP_ID||!window.NACDState) return null;
+  return NACDState.findHospital ? NACDState.findHospital(HOSP_ID) : null;
+}
+function _renderHospLabel(){
+  var h=_currentHospital();
+  var nm=document.getElementById('hp-name');
+  var mt=document.getElementById('hp-meta');
+  if(h){
+    nm.textContent=h.full||h.n||h.name;
+    mt.textContent=(h.nat?'Level 6 · National':'Level '+(h.level||5))+' · '+(h.county||'');
+  } else {
+    nm.textContent='Select hospital';
+    mt.textContent='Tap to choose';
+  }
+}
+
+// ── Queue rendering ───────────────────────────────────────────────────
+function _kmDist(la1,lo1,la2,lo2){
+  var R=6371,d=Math.PI/180;
+  var dy=(la2-la1)*d, dx=(lo2-lo1)*d;
+  var a=Math.sin(dy/2)*Math.sin(dy/2)+Math.cos(la1*d)*Math.cos(la2*d)*Math.sin(dx/2)*Math.sin(dx/2);
+  return 2*R*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+function _etaSec(inc){
+  if(inc.status!=='transport') return 0;
+  if(!window.NACDState||!NACDState.findUnit||!inc.unitId) return 0;
+  var u=NACDState.findUnit(inc.unitId);
+  var h=_currentHospital();
+  if(!u||!h) return 0;
+  return Math.round(_kmDist(u.lat,u.lng,h.lat,h.lng)/40*3600);
+}
+function _formatEta(sec){
+  if(sec<=0) return '< 1m';
+  if(sec<60) return Math.round(sec)+'s';
+  var m=Math.floor(sec/60);
+  return m+'m'+(sec%60>0?' '+(sec%60)+'s':'');
+}
+
+function _renderQueues(){
+  if(!window.NACDState||!NACDState.getIncidents) return;
+  var hosp=_currentHospital();
+  var elPre=document.getElementById('list-pre');
+  var elHer=document.getElementById('list-here');
+  if(!hosp){
+    elPre.innerHTML='<div class="q-empty">Pick a hospital above to see incoming patients.</div>';
+    elHer.innerHTML='';
+    document.getElementById('cnt-pre').textContent='0';
+    document.getElementById('cnt-here').textContent='0';
+    return;
+  }
+  var all=NACDState.getIncidents();
+  // Pre-alerts: ANY non-cleared incident routed to this hospital but not yet
+  // arrived. Includes dispatched / en_route / on_scene (inbound, no patient
+  // yet) AND transport (en route to us with patient). 'transport' bubbles to
+  // the top because that's when the hospital needs to actually prepare.
+  var pre=all.filter(function(i){
+    return i.hospitalId===HOSP_ID &&
+           i.status!=='cleared' && i.status!=='cancelled' && i.status!=='at_hospital';
+  });
+  var here=all.filter(function(i){return i.hospitalId===HOSP_ID && i.status==='at_hospital';});
+  // Sort: transport first (en route now), then by stage progression, then ETA
+  var stageRank={transport:0,on_scene:1,en_route:2,dispatched:3,pending:4};
+  pre.sort(function(a,b){
+    var sa=stageRank[a.status]==null?9:stageRank[a.status];
+    var sb=stageRank[b.status]==null?9:stageRank[b.status];
+    if(sa!==sb) return sa-sb;
+    return _etaSec(a)-_etaSec(b);
+  });
+  document.getElementById('cnt-pre').textContent=pre.length;
+  document.getElementById('cnt-here').textContent=here.length;
+  elPre.innerHTML = pre.length ? pre.map(function(i){return _cardHtml(i);}).join('') :
+    '<div class="q-empty">No active incidents routed to this hospital.</div>';
+  elHer.innerHTML = here.length ? here.map(function(i){return _cardHtml(i);}).join('') :
+    '<div class="q-empty" style="padding:14px;">No handovers in progress.</div>';
+}
+function _cardHtml(inc){
+  var sel = inc.id===_selectedIncId ? ' sel' : '';
+  var etaSec=_etaSec(inc);
+  var stageLabel = {dispatched:'Dispatched',en_route:'En route to scene',on_scene:'On scene',
+                    transport:'EN ROUTE TO HOSPITAL',at_hospital:'Handover'}[inc.status]||inc.status;
+  var stageCls = {transport:'transport',at_hospital:'at_hospital',
+                  en_route:'inbound',dispatched:'inbound',on_scene:'inbound'}[inc.status]||'';
+  // ETA only shown for transport stage (en route to us)
+  var etaTxt = '';
+  if(inc.status==='transport'){
+    var etaCls = etaSec<120 ? 'now' : etaSec<300 ? 'warn' : '';
+    etaTxt = '<span class="pa-eta '+etaCls+'"><span class="mat">timer</span>'+_formatEta(etaSec)+'</span>';
+  } else if(inc.status==='at_hospital'){
+    etaTxt = '<span class="pa-eta" style="color:var(--b2);">handover</span>';
+  } else {
+    etaTxt = '<span class="pa-eta" style="color:var(--t3);">'+stageLabel.toLowerCase()+'</span>';
+  }
+  var det = inc.determinantLevel ? '<span class="det-chip '+inc.determinantLevel+'">'+(inc.determinantCode||inc.determinantLevel)+'</span>' : '';
+  return '<div class="pa pa-stage-'+stageCls+sel+'" onclick="selectIncident(\''+inc.id+'\')">'
+    + '<div class="pa-r1">'
+    +   '<span class="pa-pri p'+inc.priority+'">P'+inc.priority+'</span>'
+    +   '<span class="pa-num">'+(inc.number||'—')+'</span>'
+    +   etaTxt
+    + '</div>'
+    + '<div class="pa-r2">'+(inc.complaint||'—')+'</div>'
+    + '<div class="pa-r3"><span class="mat">directions_car</span><span class="unit">'+(inc.unitId||'—')+'</span>'+det+'</div>'
+    + '</div>';
+}
+
+function selectIncident(id){
+  _selectedIncId=id;
+  _renderQueues();
+  _renderDetail();
+}
+
+// ── Detail panel ──────────────────────────────────────────────────────
+function _renderDetail(){
+  if(!window.NACDState||!NACDState.findIncident) return;
+  var inc = _selectedIncId ? NACDState.findIncident(_selectedIncId) : null;
+  if(!inc || inc.hospitalId !== HOSP_ID){
+    document.getElementById('detail-empty').style.display='flex';
+    document.getElementById('detail').style.display='none';
+    return;
+  }
+  document.getElementById('detail-empty').style.display='none';
+  document.getElementById('detail').style.display='flex';
+
+  var pri=document.getElementById('d-pri');
+  pri.className='dpri p'+inc.priority; pri.textContent='P'+inc.priority;
+  document.getElementById('d-num').textContent=inc.number||'—';
+  var st=document.getElementById('d-stat');
+  st.className='dhead-stat '+inc.status; st.textContent=inc.status.replace(/_/g,' ');
+  document.getElementById('d-cplt').textContent=inc.complaint||'—';
+
+  var etaSec=_etaSec(inc);
+  document.getElementById('d-eta').textContent = inc.status==='at_hospital' ? 'at hospital' : _formatEta(etaSec)+' ETA';
+  document.getElementById('d-unit').textContent=inc.unitId||'—';
+  document.getElementById('d-from').textContent=inc.address||inc.county||'—';
+
+  // Patient card
+  var ps=[]; if(inc.patientAge) ps.push(inc.patientAge+' yrs');
+  if(inc.patientSex) ps.push(({M:'Male',F:'Female',U:'Unknown'})[inc.patientSex]||inc.patientSex);
+  _setDV('dv-patient', ps.join(' · '));
+  _setDV('dv-caller', inc.callerName ? inc.callerName + (inc.callerRelation?' ('+inc.callerRelation+')':'') : '');
+  var phoneEl=document.getElementById('dv-phone');
+  if(inc.callerPhone){
+    phoneEl.innerHTML='<a href="tel:'+inc.callerPhone.replace(/[^\d+]/g,'')+'">'+inc.callerPhone+'</a>';
+    phoneEl.classList.remove('empty');
+  } else { phoneEl.textContent='—'; phoneEl.classList.add('empty'); }
+  _setDV('dv-from', inc.address);
+
+  // Clinical card
+  _setDV('dv-cplt', inc.complaint);
+  _setDV('dv-icd',  inc.icd11);
+  var detStr=inc.determinantCode||'';
+  if(inc.determinantLevel){
+    var ln={E:'Echo · life-threatening',D:'Delta · serious',C:'Charlie · potentially serious',B:'Bravo · potentially serious',A:'Alpha · non-emergent'}[inc.determinantLevel]||'';
+    detStr=(detStr?detStr+' · ':'')+ln;
+  }
+  _setDV('dv-det', detStr);
+  _setDV('dv-notes', inc.notes);
+
+  // Vitals
+  _renderVitals(inc.id);
+
+  // Timeline
+  _setDV('dv-t-call', inc.createdAt    ? _fmtTs(inc.createdAt)    : '');
+  _setDV('dv-t-disp', inc.dispatchedAt ? _fmtTs(inc.dispatchedAt) : '');
+  _setDV('dv-t-enr',  inc.enRouteAt    ? _fmtTs(inc.enRouteAt)    : '');
+  _setDV('dv-t-scn',  inc.onSceneAt    ? _fmtTs(inc.onSceneAt)    : '');
+  _setDV('dv-t-trn',  inc.transportAt  ? _fmtTs(inc.transportAt)  : '');
+}
+function _setDV(id, val){
+  var el=document.getElementById(id);
+  if(!el) return;
+  if(val && String(val).trim()){
+    el.textContent=val; el.classList.remove('empty');
+  } else {
+    el.textContent='—'; el.classList.add('empty');
+  }
+}
+function _fmtTs(ms){
+  var d=new Date(ms),p=function(v){return String(v).padStart(2,'0');};
+  return p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
+}
+function _renderVitals(incId){
+  var v=_vitalsByInc[incId];
+  var el=document.getElementById('dv-vitals');
+  var ts=document.getElementById('dv-vit-ts');
+  if(!v){
+    el.innerHTML='<div class="no-vitals" style="grid-column:1/-1;">No vitals received yet — EMT will report on scene.</div>';
+    ts.textContent=''; return;
+  }
+  var ageS = _vitalsTs[incId] ? Math.round((Date.now()-_vitalsTs[incId])/1000) : 0;
+  ts.textContent = ageS ? 'updated '+(ageS<60?ageS+'s':Math.floor(ageS/60)+'m')+' ago' : '';
+  var hrAlert = (v.hr>120||v.hr<50)?' alert':(v.hr>110||v.hr<60)?' warn':'';
+  var bpAlert = (v.sys<90||v.sys>180)?' alert':(v.sys<100||v.sys>160)?' warn':'';
+  var spoAlert= (v.spo2<90)?' alert':(v.spo2<94)?' warn':'';
+  var rrAlert = (v.rr>28||v.rr<10)?' alert':(v.rr>22||v.rr<12)?' warn':'';
+  el.innerHTML =
+    '<div class="vit'+hrAlert+'"><div class="vit-l">HR</div><div class="vit-v tab">'+(v.hr||'—')+'<span class="u">bpm</span></div></div>'
+   +'<div class="vit'+bpAlert+'"><div class="vit-l">BP</div><div class="vit-v tab">'+(v.sys||'—')+'<span class="u">/'+(v.dia||'—')+'</span></div></div>'
+   +'<div class="vit'+spoAlert+'"><div class="vit-l">SpO₂</div><div class="vit-v tab">'+(v.spo2||'—')+'<span class="u">%</span></div></div>'
+   +'<div class="vit'+rrAlert+'"><div class="vit-l">RR</div><div class="vit-v tab">'+(v.rr||'—')+'<span class="u">/min</span></div></div>';
+}
+
+// ── Actions ───────────────────────────────────────────────────────────
+function actAccept(){
+  if(!_selectedIncId) return;
+  showToast('Acknowledged — EMT notified');
+  // TODO: broadcast hospital:accepted via BroadcastChannel + Supabase write
+}
+function actDivert(){
+  if(!_selectedIncId) return;
+  showToast('Divert request sent to dispatch','warn');
+  // TODO: broadcast hospital:divert
+}
+
+// ── Init ──────────────────────────────────────────────────────────────
+fetch('/api/config').then(function(r){return r.json();}).catch(function(){return{};})
+.then(function(cfg){
+  NACDState.init({supabaseUrl:cfg.supabaseUrl||'',supabaseKey:cfg.supabaseAnonKey||'',seedIncidents:12,autoStart:true});
+
+  // If user hasn't picked a hospital yet, default to first national referral (KNH)
+  NACDState.on('state:initialized',function(state){
+    if(!HOSP_ID && state.hospitals && state.hospitals.length){
+      var def = state.hospitals.find(function(h){return h.nat;}) || state.hospitals[0];
+      if(def) HOSP_ID=def.id;
+    }
+    _renderHospLabel();
+    _renderQueues();
+  });
+
+  NACDState.on('state:tick',function(){
+    _renderHospLabel();
+    _renderQueues();
+    _renderDetail();
+  });
+
+  NACDState.on('incident:updated',function(inc){
+    if(inc.hospitalId===HOSP_ID && inc.id===_selectedIncId) _renderDetail();
+  });
+
+  // BroadcastChannel: catch live EMT clinical updates so vitals appear here
+  if(typeof BroadcastChannel!=='undefined'){
+    var bc=new BroadcastChannel('nadc-sync');
+    bc.onmessage=function(ev){
+      var d=ev.data;
+      if(!d||d.source==='hospital') return;
+      if(d.type==='clinical:update' && d.incidentId){
+        var v=d.vitals||d.observation||{};
+        _vitalsByInc[d.incidentId] = v;
+        _vitalsTs[d.incidentId]    = Date.now();
+        if(d.incidentId===_selectedIncId) _renderVitals(d.incidentId);
+        var inc=NACDState.findIncident(d.incidentId);
+        if(inc && inc.hospitalId===HOSP_ID){
+          showToast('Vitals · '+(d.unitId||'EMT')+' · '+(inc.number||''));
+        }
+      }
+    };
+  }
+});
+</script>
+
+<script>
+(function(){
+  function toggleAppSw(){
+    var p=document.getElementById('app-sw-panel');
+    var b=document.querySelector('.app-sw-btn');
+    if(!p) return;
+    var willOpen = !p.classList.contains('open');
+    p.classList.toggle('open');
+    if(b) b.classList.toggle('open', willOpen);
+  }
+  document.addEventListener('click',function(e){
+    var p=document.getElementById('app-sw-panel');
+    if(!p||!p.classList.contains('open')) return;
+    if(p.contains(e.target)) return;
+    if(e.target.closest && e.target.closest('.app-sw-btn')) return;
+    p.classList.remove('open');
+    var b=document.querySelector('.app-sw-btn');
+    if(b) b.classList.remove('open');
+  });
+  // Expose as global so inline onclick can call it
+  window.toggleAppSw = toggleAppSw;
+})();
+</script>
+
+</body>
+</html>

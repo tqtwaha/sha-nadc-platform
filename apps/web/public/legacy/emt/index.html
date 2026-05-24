@@ -1,0 +1,2009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SHA · NADC — EMT Field App</title>
+<meta name="description" content="SHA National Ambulance Dispatch Centre — real-time emergency coordination platform for the Republic of Kenya.">
+<meta name="theme-color" content="#00519B">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SHA NADC">
+<meta property="og:title" content="SHA · National Ambulance Dispatch Centre">
+<meta property="og:description" content="Real-time emergency coordination · Republic of Kenya">
+<meta property="og:url" content="https://sha-nadc.silicongw.com/emt">
+<meta property="og:image" content="https://sha-nadc.silicongw.com/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="1200">
+<meta property="og:image:alt" content="SHA National Ambulance Dispatch Centre">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SHA · National Ambulance Dispatch Centre">
+<meta name="twitter:description" content="Real-time emergency coordination · Republic of Kenya">
+<meta name="twitter:image" content="https://sha-nadc.silicongw.com/assets/og-image.png">
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Barlow+Condensed:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined" rel="stylesheet">
+<style>
+:root{
+  --b:#00519B;  --b2:#27AAE1;
+  --g:#50C020;  --g2:#3DA818;
+  --p1:#FF3B30; --p2:#FF8C00; --p3:#F5B100;
+  --ok:#34C759;
+  --bg:#0B0F14;
+  --surface:#11161D;
+  --surface-2:#161C25;
+  --line:rgba(255,255,255,0.06);
+  --line-2:rgba(255,255,255,0.10);
+  --t1:rgba(255,255,255,0.95);
+  --t2:rgba(255,255,255,0.62);
+  --t3:rgba(255,255,255,0.40);
+  --t4:rgba(255,255,255,0.25);
+  --fh:"Exo 2",system-ui,sans-serif;
+  --fm:"JetBrains Mono",ui-monospace,monospace;
+  --fc:"Barlow Condensed",sans-serif;
+  --r-sm:8px; --r-md:12px; --r-lg:16px; --r-xl:20px; --r-pill:999px;
+  --shadow-2:0 8px 24px rgba(0,0,0,.3);
+  --shadow-3:0 16px 48px rgba(0,0,0,.5);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{
+  width:100%;height:100%;
+  background:radial-gradient(ellipse at top, #15192054 0%, var(--bg) 60%);
+  color:var(--t1);font-family:var(--fh);
+  font-feature-settings:"ss01","tnum";
+  overflow:hidden;-webkit-font-smoothing:antialiased;
+}
+body{display:flex;align-items:flex-start;justify-content:center;padding:64px 24px 24px;overflow-y:auto;}
+button{font-family:inherit;cursor:pointer;}
+.mat{font-family:"Material Symbols Outlined";font-weight:400;font-size:20px;line-height:1;}
+.tab{font-variant-numeric:tabular-nums;}
+
+/* ── Canvas meta (annotation) ────────────────────── */
+/* EMT top nav bar */
+#emt-topbar{
+  position:fixed;top:0;left:0;right:0;height:44px;
+  display:flex;align-items:center;gap:10px;padding:0 16px;
+  background:rgba(11,15,20,0.97);backdrop-filter:saturate(160%) blur(14px);
+  border-bottom:1px solid var(--line);z-index:9999;
+}
+#emt-topbar .etb-brand{display:flex;align-items:center;gap:8px;padding-right:12px;border-right:1px solid var(--line);height:26px;}
+#emt-topbar .etb-bm{width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,#00519B,#27AAE1);display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-weight:700;font-size:9px;color:#fff;}
+#emt-topbar .etb-bt b{font-family:var(--fh);font-weight:600;font-size:12px;color:var(--t1);display:block;line-height:1.1;}
+#emt-topbar .etb-bt span{font-family:var(--fm);font-size:8.5px;letter-spacing:1px;color:var(--t3);text-transform:uppercase;}
+.pg-nav{display:flex;align-items:center;gap:2px;}
+.pn{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:var(--r-pill);text-decoration:none;font-family:var(--fh);font-size:11.5px;font-weight:500;color:var(--t2);transition:background .15s,color .15s;white-space:nowrap;}
+.pn:hover{background:rgba(255,255,255,.05);color:var(--t1);}
+.pn.on{background:rgba(80,192,32,.13);color:var(--g);}
+.pn .mat{font-size:14px;}
+.pn .pm{font-family:var(--fm);font-size:8px;color:var(--t4);letter-spacing:.6px;text-transform:uppercase;margin-left:1px;}
+.pn.on .pm{color:rgba(80,192,32,.5);}
+
+/* Design-mockup chrome hidden — was relevant when this file was a Figma-style
+   spec preview; the live EMT view focuses on the phone frame only. */
+.canvas-meta{display:none;}
+.callouts{display:none !important;}
+
+/* ── Phone frame ───────────────────────────────── */
+.phone{
+  width:390px;height:844px;border-radius:54px;
+  background:#000;padding:13px;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.06),
+    0 0 0 8px #15171a,
+    0 40px 100px rgba(0,0,0,.8),
+    0 0 80px rgba(80,192,32,.04);
+  position:relative;flex-shrink:0;
+}
+.phone::before{
+  content:"";position:absolute;top:20px;left:50%;transform:translateX(-50%);
+  width:120px;height:30px;background:#000;border-radius:20px;z-index:50;
+}
+.screen{
+  width:100%;height:100%;border-radius:42px;overflow:hidden;
+  background:var(--bg);position:relative;display:flex;flex-direction:column;
+}
+
+/* ── iOS status bar ────────────────────────────── */
+.statusbar{
+  flex-shrink:0;height:54px;
+  display:flex;align-items:flex-end;justify-content:space-between;
+  padding:12px 30px 6px;
+  font-family:var(--fm);font-size:14px;color:#fff;font-weight:600;
+  position:relative;z-index:5;
+}
+.sb-r{display:flex;align-items:center;gap:5px;}
+.sb-bars{display:flex;align-items:flex-end;gap:2px;height:10px;}
+.sb-bars i{width:3px;background:#fff;border-radius:1px;}
+.sb-bat{
+  width:24px;height:11px;border:1.2px solid #fff;border-radius:3px;
+  position:relative;margin-left:2px;
+}
+.sb-bat::before{content:"";position:absolute;right:-3px;top:3px;bottom:3px;width:2px;background:#fff;border-radius:0 1px 1px 0;}
+.sb-bat::after{content:"";position:absolute;left:1.5px;top:1.5px;bottom:1.5px;width:80%;background:var(--ok);border-radius:1px;}
+
+/* ── App bar ───────────────────────────────────── */
+.appbar{
+  flex-shrink:0;padding:8px 18px 4px;
+  display:flex;align-items:center;gap:11px;
+}
+.aa-burger{
+  width:36px;height:36px;border-radius:var(--r-md);
+  background:rgba(255,255,255,0.04);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;color:var(--t2);
+}
+.aa-id{flex:1;line-height:1.1;}
+.aa-call{font-family:var(--fh);font-weight:600;font-size:16px;color:var(--t1);}
+.aa-meta{font-family:var(--fm);font-size:10.5px;color:var(--t3);margin-top:2px;letter-spacing:.3px;}
+.aa-conn{
+  display:flex;align-items:center;gap:6px;
+  padding:5px 10px;border-radius:var(--r-pill);
+  background:rgba(80,192,32,0.12);border:1px solid rgba(80,192,32,0.25);
+  font-family:var(--fm);font-size:11px;color:var(--g);
+}
+.aa-conn .gd{width:6px;height:6px;border-radius:50%;background:var(--g);}
+
+/* ── Hero / priority strip ────────────────────── */
+.hero{
+  margin:10px 14px 0;flex-shrink:0;
+  background:rgba(255,59,48,0.06);
+  border:1px solid rgba(255,59,48,0.3);
+  border-radius:var(--r-lg);
+  padding:14px 16px;
+  position:relative;overflow:hidden;
+}
+.hero::before{
+  content:"";position:absolute;top:0;left:0;bottom:0;width:4px;
+  background:var(--p1);
+}
+.hero-r1{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.pri-chip{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 10px;border-radius:var(--r-pill);
+  font-family:var(--fm);font-weight:600;font-size:11px;letter-spacing:.5px;
+  background:rgba(255,59,48,0.18);color:var(--p1);
+}
+.pri-chip .d{width:5px;height:5px;border-radius:50%;background:currentColor;animation:dotPulse 1.6s ease infinite;}
+@keyframes dotPulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.hero-id{font-family:var(--fm);font-size:11.5px;color:var(--t2);}
+.hero-sla{margin-left:auto;display:flex;align-items:center;gap:5px;font-family:var(--fm);font-size:13px;color:var(--p1);font-weight:600;}
+.hero-sla .mat{font-size:13px;}
+.hero-type{
+  font-family:var(--fh);font-weight:600;font-size:22px;color:var(--t1);
+  line-height:1.15;letter-spacing:-.2px;
+}
+.hero-code{font-family:var(--fm);font-size:11.5px;color:var(--t3);margin-top:5px;}
+.hero-code b{color:var(--p1);}
+
+/* ── Status stepper ────────────────────────────── */
+.stepper{padding:14px 18px 0;flex-shrink:0;}
+.step-row{display:flex;align-items:center;gap:6px;}
+.step{flex:1;height:6px;border-radius:3px;background:rgba(255,255,255,0.07);position:relative;overflow:hidden;}
+.step.done{background:var(--g);}
+.step.now{
+  background:linear-gradient(90deg, var(--g) 0%, var(--g) 50%, rgba(80,192,32,0.25) 50%, rgba(80,192,32,0.25) 100%);
+  background-size:200% 100%;animation:nowPulse 2s ease infinite;
+}
+@keyframes nowPulse{0%{background-position:0% 50%;}100%{background-position:100% 50%;}}
+.step-labels{display:flex;justify-content:space-between;font-family:var(--fc);font-size:10px;letter-spacing:1.2px;text-transform:uppercase;padding:10px 2px 0;}
+.step-labels span{color:var(--t3);flex:1;text-align:center;}
+.step-labels span.done{color:var(--t2);}
+.step-labels span.now{color:var(--g);font-weight:600;}
+
+/* ── Action card (current state + big CTA) ────── */
+.action-card{
+  margin:14px 14px 0;flex-shrink:0;
+  background:rgba(255,255,255,0.025);border:1px solid var(--line);
+  border-radius:var(--r-lg);
+  padding:14px;
+  display:flex;flex-direction:column;gap:12px;
+}
+.ac-row{display:flex;align-items:center;gap:9px;}
+.ac-state-dot{width:9px;height:9px;border-radius:50%;background:var(--g);position:relative;}
+.ac-state-dot::after{content:"";position:absolute;inset:-5px;border-radius:50%;background:var(--g);opacity:.25;animation:pulse 1.8s ease infinite;}
+@keyframes pulse{0%{transform:scale(.7);opacity:.5;}100%{transform:scale(1.7);opacity:0;}}
+.ac-state-l{font-family:var(--fc);font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:var(--t3);}
+.ac-state-v{font-family:var(--fh);font-weight:600;font-size:16px;color:var(--t1);}
+.ac-state-time{margin-left:auto;font-family:var(--fm);font-size:14px;font-weight:600;color:var(--g);}
+
+.ac-info{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.ac-mini{
+  padding:9px 11px;background:rgba(255,255,255,0.02);
+  border:1px solid var(--line);border-radius:var(--r-md);
+}
+.ac-mini-l{font-family:var(--fc);font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--t3);}
+.ac-mini-v{font-family:var(--fh);font-weight:600;font-size:18px;color:var(--t1);line-height:1.1;margin-top:2px;}
+.ac-mini-v b{color:var(--g);}
+.ac-cta{
+  height:64px;border-radius:var(--r-md);
+  background:var(--g);color:#000;
+  border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  font-family:var(--fh);font-weight:700;font-size:17px;letter-spacing:.3px;
+  box-shadow:0 8px 20px rgba(80,192,32,.30);
+  transition:transform .1s,box-shadow .12s,background .12s;
+}
+.ac-cta:active{transform:translateY(1px);box-shadow:0 4px 12px rgba(80,192,32,.30);}
+.ac-cta:hover{background:#62D932;box-shadow:0 10px 28px rgba(80,192,32,.45);}
+.ac-cta .mat{font-size:22px;}
+
+/* ── Scroll body ───────────────────────────────── */
+.scroll{
+  flex:1;overflow:auto;padding:12px 14px;
+  display:flex;flex-direction:column;gap:10px;min-height:0;
+}
+.scroll::-webkit-scrollbar{width:0;}
+
+.card{
+  background:rgba(255,255,255,0.025);border:1px solid var(--line);
+  border-radius:var(--r-lg);padding:14px;
+}
+.card-h{display:flex;align-items:center;gap:8px;margin-bottom:11px;}
+.card-h-t{font-family:var(--fc);font-size:11.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--t3);font-weight:600;}
+.card-h-r{margin-left:auto;font-family:var(--fm);font-size:11px;color:var(--t2);display:flex;align-items:center;gap:4px;}
+.card-h-r.warn{color:var(--p2);}
+.card-h-r .mat{font-size:12px;}
+
+/* Patient row */
+.pt-row{display:flex;gap:11px;align-items:center;margin-bottom:14px;}
+.pt-av{
+  width:48px;height:48px;border-radius:var(--r-md);
+  background:rgba(80,192,32,0.10);border:1px solid rgba(80,192,32,0.2);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--g);flex-shrink:0;
+}
+.pt-av .mat{font-size:26px;}
+.pt-info{flex:1;}
+.pt-n{font-family:var(--fh);font-weight:600;font-size:17px;color:var(--t1);line-height:1.1;}
+.pt-m{font-family:var(--fm);font-size:11px;color:var(--t3);margin-top:3px;}
+
+/* Vitals */
+.vitals{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.vi{
+  padding:11px 12px;border-radius:var(--r-md);
+  background:rgba(255,255,255,0.02);border:1px solid var(--line);
+  transition:border-color .12s;cursor:pointer;
+}
+.vi:active{border-color:rgba(80,192,32,0.4);}
+.vi.alert{background:rgba(255,59,48,0.04);border-color:rgba(255,59,48,0.25);}
+.vi.warn{background:rgba(255,140,0,0.03);border-color:rgba(255,140,0,0.22);}
+.vi-l{font-family:var(--fc);font-size:10px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:var(--t3);}
+.vi-v{font-family:var(--fh);font-weight:700;font-size:28px;line-height:1.05;color:var(--t1);margin-top:2px;}
+.vi-v .u{font-family:var(--fm);font-size:11px;color:var(--t3);font-weight:400;margin-left:3px;}
+.vi.alert .vi-v{color:var(--p1);}
+.vi.warn .vi-v{color:var(--p2);}
+.vi-trend{font-family:var(--fm);font-size:10.5px;color:var(--t3);margin-top:4px;display:flex;align-items:center;gap:4px;}
+.vi-trend .mat{font-size:12px;}
+.vi.alert .vi-trend{color:var(--p1);}
+
+.add-vital{
+  height:42px;margin-top:9px;
+  background:transparent;border:1px dashed rgba(80,192,32,0.3);
+  border-radius:var(--r-md);
+  color:var(--g);font-family:var(--fh);font-weight:600;font-size:13px;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  width:100%;letter-spacing:.3px;
+  transition:background .12s;
+}
+.add-vital:hover{background:rgba(80,192,32,0.05);}
+.add-vital .mat{font-size:16px;}
+
+/* Nav card */
+.nav-card{
+  background:linear-gradient(135deg,rgba(39,170,225,0.06) 0%,rgba(255,255,255,0.02) 100%);
+  border:1px solid rgba(39,170,225,0.18);
+  border-radius:var(--r-lg);padding:14px;
+}
+.nav-h{display:flex;align-items:center;gap:11px;}
+.nav-ic{
+  width:38px;height:38px;border-radius:var(--r-md);
+  background:rgba(39,170,225,0.12);color:var(--b2);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.nav-text{flex:1;min-width:0;}
+.nav-l{font-family:var(--fc);font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--t3);}
+.nav-v{font-family:var(--fh);font-weight:600;font-size:15px;color:var(--t1);line-height:1.15;margin-top:2px;}
+.nav-eta{font-family:var(--fh);font-weight:700;font-size:20px;color:var(--b2);}
+.nav-eta-sub{font-family:var(--fm);font-size:10px;color:var(--t3);margin-top:1px;text-align:right;}
+.nav-row2{
+  margin-top:11px;padding-top:11px;
+  border-top:1px solid var(--line);
+  display:flex;align-items:center;gap:7px;
+  font-family:var(--fm);font-size:11px;color:var(--t2);
+}
+.nav-row2 .mat{font-size:13px;color:var(--t3);}
+.nav-row2 .sep{width:3px;height:3px;border-radius:50%;background:var(--t4);}
+.nav-w3w{color:var(--b2);}
+
+/* Pre-alert grid */
+.pa-row{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.pa-btn{
+  padding:11px 12px;border-radius:var(--r-md);
+  background:rgba(255,255,255,0.025);border:1px solid var(--line);
+  display:flex;flex-direction:column;gap:3px;cursor:pointer;
+  align-items:flex-start;transition:background .12s,border-color .12s;
+}
+.pa-btn:hover{background:rgba(255,255,255,0.045);border-color:var(--line-2);}
+.pa-btn b{font-family:var(--fc);font-size:10.5px;letter-spacing:1.3px;text-transform:uppercase;color:var(--t2);}
+.pa-btn span{font-family:var(--fh);font-weight:500;font-size:13px;color:var(--t1);}
+.pa-btn.done{background:rgba(80,192,32,0.06);border-color:rgba(80,192,32,0.25);}
+.pa-btn.done b{color:var(--g);}
+
+/* Tab bar */
+.tabbar{
+  flex-shrink:0;height:84px;
+  background:rgba(11,15,20,0.96);
+  backdrop-filter:blur(14px);
+  border-top:1px solid var(--line);
+  display:grid;grid-template-columns:repeat(4,1fr);
+  padding:8px 8px 22px;
+  gap:4px;
+}
+.tab-i{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;color:var(--t3);cursor:pointer;position:relative;
+  background:transparent;border:none;padding:6px 4px;
+  font-family:inherit;
+  border-radius:12px;
+  transition:color .12s,background .12s;
+}
+.tab-i:hover{background:rgba(255,255,255,.04);color:var(--t2);}
+.tab-i:active{background:rgba(255,255,255,.06);}
+.tab-i .mat{font-size:22px;}
+.tab-i .tl{font-family:var(--fc);font-size:10px;letter-spacing:1px;text-transform:uppercase;font-weight:600;}
+.tab-i.on{color:var(--g);background:rgba(80,192,32,.10);}
+.tab-i.on .mat{color:var(--g);}
+.tab-i .badge{
+  position:absolute;top:5px;left:50%;margin-left:2px;
+  background:var(--p1);color:#fff;
+  font-family:var(--fm);font-size:9px;font-weight:700;
+  min-width:16px;height:16px;border-radius:8px;
+  padding:0 4px;display:flex;align-items:center;justify-content:center;
+}
+
+/* Radio FAB */
+.fab{
+  position:absolute;bottom:106px;right:18px;z-index:20;
+  width:54px;height:54px;border-radius:50%;
+  background:var(--p1);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 8px 22px rgba(255,59,48,.5),0 0 0 5px rgba(255,59,48,.08);
+}
+.fab .mat{font-size:24px;}
+
+/* Side panel hint */
+.callouts{
+  position:fixed;left:30px;top:50%;transform:translateY(-50%);
+  display:flex;flex-direction:column;gap:14px;width:260px;
+}
+.callout{
+  background:rgba(17,22,29,0.95);backdrop-filter:blur(14px);
+  border:1px solid var(--line);border-radius:var(--r-md);
+  padding:14px 16px;font-family:var(--fm);font-size:12px;color:var(--t2);line-height:1.5;
+}
+.callout b{
+  display:block;font-family:var(--fc);font-size:10.5px;letter-spacing:1.4px;
+  color:var(--g);text-transform:uppercase;margin-bottom:5px;font-weight:600;
+}
+
+/* ── Side panels (Map / Radio) ─────────────────────── */
+.side-panel{
+  position:absolute;inset:0;background:var(--bg);
+  z-index:25;display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);
+}
+.side-panel.open{transform:translateX(0);}
+.sp-hdr{
+  flex-shrink:0;display:flex;align-items:center;gap:11px;
+  padding:56px 16px 14px;border-bottom:1px solid var(--line);
+}
+.sp-back{
+  width:36px;height:36px;border-radius:var(--r-md);
+  background:rgba(255,255,255,0.04);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;color:var(--t2);
+}
+.sp-title{font-family:var(--fh);font-weight:600;font-size:17px;color:var(--t1);}
+.sp-badge{
+  margin-left:auto;font-family:var(--fm);font-size:11px;color:var(--t3);
+  padding:3px 10px;background:rgba(255,255,255,0.04);
+  border:1px solid var(--line);border-radius:var(--r-pill);
+}
+#emt-map-el{flex:1;}
+
+/* Radio panel body */
+.radio-body{flex:1;overflow-y:auto;padding:14px;}
+.radio-body::-webkit-scrollbar{width:0;}
+.radio-ch-row{display:flex;gap:8px;margin-bottom:16px;}
+.rch{
+  flex:1;padding:10px 6px;border-radius:var(--r-md);
+  background:rgba(255,255,255,0.03);border:1px solid var(--line);
+  font-family:var(--fm);font-size:10px;color:var(--t2);text-align:center;
+  cursor:pointer;transition:all .12s;
+}
+.rch.on{background:rgba(80,192,32,0.10);border-color:rgba(80,192,32,0.35);color:var(--g);}
+.rch b{display:block;font-family:var(--fh);font-weight:600;font-size:13px;color:inherit;margin-bottom:2px;}
+.radio-log{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+.rl-item{padding:10px 12px;border-radius:var(--r-md);background:rgba(255,255,255,0.03);border:1px solid var(--line);}
+.rl-item.mine{background:rgba(0,81,155,0.10);border-color:rgba(39,170,225,0.18);}
+.rl-who{font-family:var(--fc);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--t3);margin-bottom:3px;}
+.rl-txt{font-family:var(--fh);font-size:13px;color:var(--t1);line-height:1.4;}
+.rl-ts{font-family:var(--fm);font-size:10px;color:var(--t4);margin-top:3px;}
+.ptt-wrap{position:sticky;bottom:0;background:var(--bg);padding:12px 0 4px;}
+.ptt-btn{
+  width:100%;height:68px;border-radius:var(--r-lg);
+  background:var(--surface-2);border:2px solid var(--line);
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  font-family:var(--fh);font-weight:600;font-size:16px;color:var(--t2);
+  cursor:pointer;transition:all .14s;user-select:none;-webkit-user-select:none;
+}
+.ptt-btn .mat{font-size:26px;}
+.ptt-btn.active{background:rgba(255,59,48,0.14);border-color:var(--p1);color:var(--p1);}
+
+/* Toast */
+.emt-toast{
+  position:fixed;bottom:110px;left:50%;transform:translateX(-50%) translateY(12px);
+  background:rgba(22,28,37,0.97);backdrop-filter:blur(14px);
+  border:1px solid var(--line-2);border-radius:var(--r-pill);
+  padding:10px 20px;font-family:var(--fh);font-size:13px;color:var(--t1);
+  white-space:nowrap;opacity:0;transition:opacity .18s,transform .18s;
+  pointer-events:none;z-index:200;
+}
+.emt-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ── ePCR panel ────────────────────────────────────── */
+.epcr-panel{
+  position:absolute;inset:0;background:var(--bg);
+  z-index:30;display:flex;flex-direction:column;
+  transform:translateY(100%);transition:transform .32s cubic-bezier(.4,0,.2,1);
+}
+.epcr-panel.open{transform:translateY(0);}
+.epcr-hdr{
+  flex-shrink:0;display:flex;align-items:center;gap:11px;
+  padding:56px 16px 14px;border-bottom:1px solid var(--line);
+}
+.epcr-back{
+  width:36px;height:36px;border-radius:var(--r-md);
+  background:rgba(255,255,255,0.04);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;color:var(--t2);
+}
+.epcr-title{font-family:var(--fh);font-weight:600;font-size:17px;color:var(--t1);}
+.epcr-prog{
+  margin-left:auto;font-family:var(--fm);font-size:11px;color:var(--t3);
+  padding:3px 10px;background:rgba(255,255,255,0.04);
+  border:1px solid var(--line);border-radius:var(--r-pill);
+}
+.epcr-scroll{flex:1;overflow:auto;padding:0 14px 14px;}
+.epcr-scroll::-webkit-scrollbar{width:0;}
+.epcr-sec{margin-top:18px;}
+.epcr-sec-h{
+  font-family:var(--fc);font-size:10.5px;letter-spacing:1.6px;
+  text-transform:uppercase;color:var(--t3);font-weight:600;margin-bottom:10px;
+}
+.epcr-field{margin-bottom:8px;}
+.epcr-field label{
+  display:block;font-family:var(--fc);font-size:10px;letter-spacing:1.2px;
+  text-transform:uppercase;color:var(--t3);margin-bottom:4px;
+}
+.epcr-field input{
+  width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--line);
+  border-radius:var(--r-md);padding:10px 12px;color:var(--t1);
+  font-family:var(--fm);font-size:13px;
+}
+.epcr-field input:focus{outline:none;border-color:rgba(80,192,32,0.5);}
+.epcr-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.epcr-vit-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.epcr-vit{
+  padding:10px 12px;background:rgba(255,255,255,0.02);
+  border:1px solid var(--line);border-radius:var(--r-md);
+}
+.epcr-vit-l{font-family:var(--fc);font-size:10px;letter-spacing:1.3px;text-transform:uppercase;color:var(--t3);}
+.epcr-vit-v{font-family:var(--fh);font-weight:600;font-size:15px;color:var(--t1);margin-top:2px;}
+.epcr-checks{display:flex;flex-direction:column;gap:7px;}
+.epcr-check{
+  display:flex;align-items:center;gap:10px;padding:9px 12px;
+  background:rgba(255,255,255,0.02);border:1px solid var(--line);
+  border-radius:var(--r-md);cursor:pointer;transition:border-color .12s;
+}
+.epcr-check:active{border-color:rgba(80,192,32,0.35);}
+.epcr-check input[type=checkbox]{width:16px;height:16px;accent-color:var(--g);cursor:pointer;flex-shrink:0;}
+.epcr-check span{font-family:var(--fh);font-size:13px;color:var(--t1);}
+.epcr-tariff-type{display:flex;gap:8px;margin-bottom:12px;}
+.tt-btn{
+  flex:1;padding:9px;border-radius:var(--r-md);
+  background:rgba(255,255,255,0.04);border:1px solid var(--line);
+  font-family:var(--fh);font-weight:600;font-size:14px;color:var(--t2);
+  cursor:pointer;transition:background .12s,color .12s,border-color .12s;
+}
+.tt-btn.on{background:rgba(80,192,32,0.10);border-color:rgba(80,192,32,0.35);color:var(--g);}
+.epcr-tariff-out{
+  background:rgba(255,255,255,0.02);border:1px solid var(--line);
+  border-radius:var(--r-md);overflow:hidden;margin-top:10px;
+}
+.tariff-row{
+  display:flex;justify-content:space-between;padding:10px 14px;
+  font-family:var(--fm);font-size:12px;color:var(--t2);border-bottom:1px solid var(--line);
+}
+.tariff-total{
+  display:flex;justify-content:space-between;padding:12px 14px;
+  font-family:var(--fh);font-weight:600;font-size:15px;color:var(--g);
+}
+.epcr-submit{
+  width:100%;margin-top:20px;height:54px;border-radius:var(--r-md);
+  background:var(--b);color:#fff;border:none;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  font-family:var(--fh);font-weight:600;font-size:16px;
+  cursor:pointer;transition:background .12s;
+}
+.epcr-submit .mat{font-size:20px;}
+.epcr-submit:hover{background:var(--b2);}
+.epcr-spacer{height:24px;}
+
+@media (max-width: 1100px){
+  .callouts{display:none;}
+}
+@media (max-width: 480px){
+  body{padding:8px;}
+  .phone{transform:scale(0.95);transform-origin:top center;}
+  .canvas-meta{display:none;}
+}
+@keyframes nacd-spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+
+/* ── SHA brand logo + animation ─────────────────── */
+.sha-logo-pill{display:flex;align-items:center;flex-shrink:0;padding:0;background:transparent;}
+.sha-logo-pill img{height:28px;width:auto;display:block;filter:invert(1) hue-rotate(195deg) saturate(1.4);animation:brand-glow 4s ease-in-out infinite;}
+@keyframes brand-glow{0%,100%{opacity:.82;}50%{opacity:1;}}
+.sha-nadc{font-family:var(--fh);font-weight:700;font-size:13px;letter-spacing:.3px;background:linear-gradient(90deg,var(--b2) 0%,var(--g) 45%,var(--b2) 90%);background-size:200% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:nadc-sweep 9s linear infinite;line-height:1.1;display:block;}
+@keyframes nadc-sweep{0%{background-position:100% 0;}100%{background-position:-100% 0;}}
+/* ── PSAP call-detail card ────────────────────────────────────────────── */
+.psap-grid{display:flex;flex-direction:column;gap:2px;}
+.psap-row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.psap-row:last-child{border-bottom:none;}
+.psap-l{font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(255,255,255,.4);letter-spacing:.6px;text-transform:uppercase;flex-shrink:0;min-width:78px;}
+.psap-v{font-family:'Exo 2',sans-serif;font-size:12px;color:rgba(255,255,255,.92);text-align:right;font-weight:500;line-height:1.35;word-break:break-word;}
+.psap-v.empty{color:rgba(255,255,255,.3);font-style:italic;}
+.card-h-r.det-E{background:rgba(255,59,48,.18);color:#FF6E66;padding:2px 8px;border-radius:999px;font-size:11px;font-family:'Exo 2',sans-serif;font-weight:700;letter-spacing:.4px;}
+.card-h-r.det-D{background:rgba(255,140,0,.18);color:#FFAA55;padding:2px 8px;border-radius:999px;font-size:11px;font-family:'Exo 2',sans-serif;font-weight:700;letter-spacing:.4px;}
+.card-h-r.det-C{background:rgba(245,177,0,.18);color:#F5C944;padding:2px 8px;border-radius:999px;font-size:11px;font-family:'Exo 2',sans-serif;font-weight:700;letter-spacing:.4px;}
+.card-h-r.det-B{background:rgba(80,192,32,.16);color:#7ADB48;padding:2px 8px;border-radius:999px;font-size:11px;font-family:'Exo 2',sans-serif;font-weight:700;letter-spacing:.4px;}
+.card-h-r.det-A{background:rgba(39,170,225,.16);color:#5CC4E8;padding:2px 8px;border-radius:999px;font-size:11px;font-family:'Exo 2',sans-serif;font-weight:700;letter-spacing:.4px;}
+
+/* ── Unit picker modal ────────────────────────────────────────────────── */
+.up-ov{position:fixed;inset:0;z-index:9500;background:rgba(3,8,15,.78);
+  display:none;align-items:center;justify-content:center;padding:14px;
+  backdrop-filter:blur(6px);}
+.up-ov.open{display:flex;}
+.up-modal{background:#0E1620;border:1px solid rgba(255,255,255,.08);
+  border-radius:16px;width:min(420px,100%);max-height:88vh;
+  display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,.65);}
+.up-head{display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.06);}
+.up-title{font-family:'Exo 2',sans-serif;font-weight:700;font-size:15px;color:#fff;}
+.up-close{background:none;border:none;color:rgba(255,255,255,.55);cursor:pointer;padding:4px 6px;}
+.up-close .mat{font-size:20px;}
+#up-search{margin:10px 12px;padding:10px 12px;background:#161E2A;border:1px solid rgba(255,255,255,.08);
+  border-radius:10px;color:#fff;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;}
+#up-search:focus{border-color:rgba(80,192,32,.45);}
+.up-current{padding:0 16px 8px;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:rgba(255,255,255,.45);letter-spacing:.6px;text-transform:uppercase;}
+.up-current b{color:#50C020;font-family:'Exo 2',sans-serif;font-weight:700;font-size:12px;text-transform:none;letter-spacing:0;}
+.up-list{flex:1;overflow-y:auto;padding:4px 8px 12px;}
+.up-row{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;cursor:pointer;
+  border:1px solid transparent;transition:background .12s,border-color .12s;}
+.up-row:hover{background:rgba(255,255,255,.04);}
+.up-row.sel{background:rgba(80,192,32,.14);border-color:rgba(80,192,32,.32);}
+.up-row .up-id{font-family:'Exo 2',sans-serif;font-weight:700;font-size:13px;color:#fff;min-width:58px;}
+.up-row .up-meta{flex:1;font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(255,255,255,.55);}
+.up-row .up-type{font-family:'Exo 2',sans-serif;font-weight:700;font-size:9.5px;letter-spacing:.6px;
+  padding:2px 7px;border-radius:999px;}
+.up-row .up-type.ALS{background:rgba(255,59,48,.16);color:#FF6E66;}
+.up-row .up-type.BLS{background:rgba(39,170,225,.16);color:#5CC4E8;}
+.up-row .up-status{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.5px;text-transform:uppercase;}
+.up-row .up-status.available{color:#50C020;}
+.up-row .up-status.dispatched,.up-row .up-status.en_route,.up-row .up-status.dispatching{color:#FF8C00;}
+.up-row .up-status.on_scene,.up-row .up-status.transport{color:#27AAE1;}
+.up-row .up-status.standby{color:rgba(255,255,255,.4);}
+.up-empty{padding:30px 16px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(255,255,255,.35);}
+
+/* Make appbar identity area look tappable */
+.aa-id{cursor:pointer;}
+.aa-id:hover .aa-call{color:#50C020;}
+
+
+/* ── App switcher (icon-forward) ─────────────────────────────────────── */
+.app-sw{position:relative;display:inline-flex;}
+.app-sw-btn{display:flex;align-items:center;gap:7px;padding:6px 12px 6px 10px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  border-radius:999px;color:rgba(255,255,255,.95);
+  font-family:'Exo 2',sans-serif;font-size:12.5px;font-weight:600;
+  cursor:pointer;transition:background .12s,border-color .12s;}
+.app-sw-btn:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.14);}
+.app-sw-btn.open{background:rgba(80,192,32,.12);border-color:rgba(80,192,32,.30);}
+.app-sw-btn .mat{font-size:18px;color:#50C020;}
+.app-sw-btn .asb-cur{letter-spacing:.2px;}
+.app-sw-btn .asb-arrow{font-size:14px !important;color:rgba(255,255,255,.4) !important;margin-left:1px;transition:transform .15s;}
+.app-sw-btn.open .asb-arrow{transform:rotate(180deg);}
+.app-sw-panel{display:none;position:absolute;top:calc(100% + 8px);left:0;
+  width:296px;background:rgba(14,22,32,.96);backdrop-filter:saturate(160%) blur(16px);
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:14px;box-shadow:0 18px 42px rgba(0,0,0,.7);
+  z-index:9000;overflow:hidden;padding:8px;}
+.app-sw-panel.open{display:block;animation:asPop .14s ease-out;}
+@keyframes asPop{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
+.asp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.asp-item{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:6px;padding:14px 6px 10px;background:transparent;color:rgba(255,255,255,.7);
+  text-decoration:none;text-align:center;border-radius:10px;
+  border:1px solid transparent;
+  transition:background .12s,color .12s,border-color .12s,transform .08s;}
+.asp-item:hover{background:rgba(255,255,255,.05);color:#fff;border-color:rgba(255,255,255,.08);}
+.asp-item:active{transform:scale(.96);}
+.asp-item.on{background:rgba(80,192,32,.10);color:#50C020;border-color:rgba(80,192,32,.25);}
+.asp-item .mat{font-size:30px;line-height:1;}
+.asp-item b{font-family:'Exo 2',sans-serif;font-weight:500;font-size:11px;display:block;letter-spacing:.1px;}
+
+</style>
+<link rel="stylesheet" href="/assets/tokens-v2.css">
+</head>
+<body>
+<div id="emt-topbar">
+  <div class="etb-brand">
+    <div class="sha-logo-pill"><img src="/sha-social-health-authority-logo.png" alt="SHA" loading="lazy"></div>
+    <div class="etb-bt"><b class="sha-nadc" style="font-size:12px;">NADC · EMT</b><span>Field App</span></div>
+  </div>
+  <div class="app-sw">
+  <button class="app-sw-btn" onclick="toggleAppSw()" aria-label="Switch app">
+    <span class="mat">apps</span>
+    <span class="asb-cur">EMT</span>
+    <span class="mat asb-arrow">expand_more</span>
+  </button>
+  <div class="app-sw-panel" id="app-sw-panel">
+    <div class="asp-grid">
+      <a class="asp-item" href="/dashboard" title="Wall"><span class="mat">tv</span><b>Wall</b></a>
+      <a class="asp-item" href="/psap" title="PSAP"><span class="mat">call</span><b>PSAP</b></a>
+      <a class="asp-item" href="/dispatch" title="Dispatch"><span class="mat">radar</span><b>Dispatch</b></a>
+      <a class="asp-item" href="/supervisor" title="Supervisor"><span class="mat">supervisor_account</span><b>Supervisor</b></a>
+      <a class="asp-item on" href="/emt" title="EMT"><span class="mat">directions_car</span><b>EMT</b></a>
+      <a class="asp-item" href="/hospital" title="Hospital"><span class="mat">local_hospital</span><b>Hospital</b></a>
+      <a class="asp-item" href="/claims" title="Claims"><span class="mat">receipt_long</span><b>Claims</b></a>
+      <a class="asp-item" href="/providers" title="Providers"><span class="mat">business</span><b>Providers</b></a>
+      <a class="asp-item" href="/admin" title="Admin"><span class="mat">admin_panel_settings</span><b>Admin</b></a>
+    </div>
+  </div>
+</div>
+</div>
+<div id="nacd-auth-overlay" style="position:fixed;inset:0;z-index:9000;background:rgba(3,12,23,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .2s;"><div style="font-family:'Exo 2',system-ui,sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,.35);text-transform:uppercase;">SHA · NADC</div><div style="width:26px;height:26px;border:2px solid rgba(80,192,32,.25);border-top-color:#50C020;border-radius:50%;animation:nacd-spin .8s linear infinite;"></div><div style="font-family:'Exo 2',system-ui,sans-serif;font-size:10px;color:rgba(255,255,255,.25);">Authenticating…</div></div>
+
+<div class="canvas-meta">
+  <span class="gd"></span>
+  EMT field app · <b>Unit A-014</b> · 390 × 844 · iOS 18
+</div>
+
+<div class="callouts">
+  <div class="callout">
+    <b>Status spine</b>
+    Step bar at top is the spine. Each step advances with one tap on the big green CTA. Currently on-scene, transport is next.
+  </div>
+  <div class="callout">
+    <b>Vitals — 48px+ targets</b>
+    Numerics 28px. Abnormal values shift red/orange — no flashing. Last reading timestamped.
+  </div>
+  <div class="callout">
+    <b>One accent</b>
+    Green is "go" — primary action. Priority red owns the hero. Blue for navigation. Nothing else competes.
+  </div>
+</div>
+
+<!-- ── Unit picker modal — tap appbar to open ─────────────────────────── -->
+<div id="up-ov" class="up-ov" onclick="closeUnitPicker(event)">
+  <div class="up-modal" onclick="event.stopPropagation()">
+    <div class="up-head">
+      <div class="up-title">Select your ambulance unit</div>
+      <button class="up-close" onclick="closeUnitPicker()"><span class="mat">close</span></button>
+    </div>
+    <input id="up-search" placeholder="Search by ID, county, type (ALS/BLS)…" oninput="renderUnitList()">
+    <div class="up-current" id="up-current">Current: <b>—</b></div>
+    <div id="up-list" class="up-list"></div>
+  </div>
+</div>
+
+<div class="phone">
+  <div class="screen">
+
+    <!-- iOS status bar -->
+    <div class="statusbar">
+      <div class="sb-l tab" id="sb-clock">14:38</div>
+      <div class="sb-r">
+        <div class="sb-bars"><i style="height:30%"></i><i style="height:55%"></i><i style="height:75%"></i><i style="height:100%"></i></div>
+        <span style="font-family:var(--fm);font-size:11px;margin-left:2px;">5G</span>
+        <div class="sb-bat"></div>
+      </div>
+    </div>
+
+    <!-- App bar -->
+    <div class="appbar">
+      <div class="aa-burger"><span class="mat">menu</span></div>
+      <div class="aa-id" onclick="openUnitPicker()" title="Tap to switch unit">
+        <div class="aa-call">A-014 · ALS</div>
+        <div class="aa-meta" id="user-nm">Tap to switch unit</div>
+      </div>
+      <div class="aa-conn"><span class="gd"></span>5G · GPS</div>
+    </div>
+
+    <!-- Priority hero -->
+    <div class="hero">
+      <div class="hero-r1">
+        <span class="pri-chip" id="pri-chip"><span class="d"></span>P1</span>
+        <span class="hero-id" id="hero-id">INC-2289</span>
+        <span class="hero-sla">
+          <span class="mat">timer</span>
+          <span class="tab" id="hero-el">04:12</span>
+        </span>
+      </div>
+      <div class="hero-type" id="hero-type">Cardiac arrest</div>
+      <div class="hero-code" id="hero-code"><b>09C3</b> · ineffective breathing · MPDS confirmed</div>
+    </div>
+
+    <!-- Stepper -->
+    <div class="stepper">
+      <div class="step-row">
+        <div class="step done"></div>
+        <div class="step done"></div>
+        <div class="step now"></div>
+        <div class="step"></div>
+        <div class="step"></div>
+      </div>
+      <div class="step-labels">
+        <span class="done">Dispatched</span>
+        <span class="done">En route</span>
+        <span class="now">On scene</span>
+        <span>Transport</span>
+        <span>At Hosp</span>
+      </div>
+    </div>
+
+    <!-- Action card -->
+    <div class="action-card">
+      <div class="ac-row">
+        <div class="ac-state-dot"></div>
+        <div>
+          <div class="ac-state-l">Current</div>
+          <div class="ac-state-v">On scene</div>
+        </div>
+        <div class="ac-state-time tab" id="ac-time">02:14</div>
+      </div>
+      <div class="ac-info">
+        <div class="ac-mini">
+          <div class="ac-mini-l">Patient</div>
+          <div class="ac-mini-v" id="ac-patient">—</div>
+        </div>
+        <div class="ac-mini">
+          <div class="ac-mini-l">To hospital</div>
+          <div class="ac-mini-v" id="ac-hosp">—</div>
+        </div>
+      </div>
+      <button class="ac-cta">
+        <span class="mat">arrow_forward</span>
+        Mark transport
+      </button>
+    </div>
+
+    <!-- Scroll zone -->
+    <div class="scroll">
+
+      <!-- Vitals -->
+      <div class="card">
+        <div class="card-h">
+          <div class="card-h-t">Patient · Vitals</div>
+          <div class="card-h-r warn"><span class="mat">timer</span><span id="vit-stale">0:38 ago</span></div>
+        </div>
+
+        <div class="pt-row">
+          <div class="pt-av"><span class="mat">person</span></div>
+          <div class="pt-info">
+            <div class="pt-n">F. Karanja, 64 M</div>
+            <div class="pt-m">SHA-114-2287 · Hx HTN, T2DM</div>
+          </div>
+        </div>
+
+        <div class="vitals">
+          <div class="vi alert">
+            <div class="vi-l">HR · bpm</div>
+            <div class="vi-v tab">142<span class="u">bpm</span></div>
+            <div class="vi-trend"><span class="mat">arrow_upward</span>tachycardia · 0:38</div>
+          </div>
+          <div class="vi warn">
+            <div class="vi-l">BP · mmHg</div>
+            <div class="vi-v tab">88<span class="u">/52</span></div>
+            <div class="vi-trend">hypotensive</div>
+          </div>
+          <div class="vi alert">
+            <div class="vi-l">SpO₂ · %</div>
+            <div class="vi-v tab">87<span class="u">%</span></div>
+            <div class="vi-trend"><span class="mat">arrow_downward</span>on 4L O₂ NC</div>
+          </div>
+          <div class="vi">
+            <div class="vi-l">RR · /min</div>
+            <div class="vi-v tab">28<span class="u">/min</span></div>
+            <div class="vi-trend">elevated</div>
+          </div>
+        </div>
+
+        <button class="add-vital"><span class="mat">add</span>Add set of vitals</button>
+      </div>
+
+      <!-- PSAP / triage info — carries everything the call-taker recorded -->
+      <div class="card" id="psap-card" style="display:none;">
+        <div class="card-h">
+          <div class="card-h-t">PSAP &middot; Call detail</div>
+          <div class="card-h-r" id="psap-det-chip">—</div>
+        </div>
+        <div class="psap-grid">
+          <div class="psap-row"><div class="psap-l">Caller</div><div class="psap-v" id="psap-caller">—</div></div>
+          <div class="psap-row"><div class="psap-l">Call back</div><div class="psap-v"><a id="psap-phone" href="#" style="color:#27AAE1;text-decoration:none;">—</a></div></div>
+          <div class="psap-row"><div class="psap-l">Patient</div><div class="psap-v" id="psap-patient">—</div></div>
+          <div class="psap-row"><div class="psap-l">Address</div><div class="psap-v" id="psap-address">—</div></div>
+          <div class="psap-row"><div class="psap-l">what3words</div><div class="psap-v" id="psap-w3w">—</div></div>
+          <div class="psap-row"><div class="psap-l">Landmark</div><div class="psap-v" id="psap-landmark">—</div></div>
+          <div class="psap-row"><div class="psap-l">Floor / gate</div><div class="psap-v" id="psap-floor">—</div></div>
+          <div class="psap-row"><div class="psap-l">Scene notes</div><div class="psap-v" id="psap-notes">—</div></div>
+          <div class="psap-row"><div class="psap-l">Determinant</div><div class="psap-v" id="psap-det">—</div></div>
+        </div>
+      </div>
+
+      <!-- Nav -->
+      <div class="nav-card">
+        <div class="nav-h">
+          <div class="nav-ic"><span class="mat">navigation</span></div>
+          <div class="nav-text">
+            <div class="nav-l">Heading to</div>
+            <div class="nav-v">Kenyatta National</div>
+          </div>
+          <div>
+            <div class="nav-eta tab">8:24</div>
+            <div class="nav-eta-sub">3.2km · L6</div>
+          </div>
+        </div>
+        <div class="nav-row2">
+          <span class="mat">my_location</span>
+          <span>Hospital Rd</span>
+          <span class="sep"></span>
+          <span>Ngong Rd</span>
+          <span class="sep"></span>
+          <span class="nav-w3w">///daily.crouch.steady</span>
+        </div>
+      </div>
+
+      <!-- Pre-alert + actions -->
+      <div class="card">
+        <div class="card-h">
+          <div class="card-h-t">Pre-alert + actions</div>
+        </div>
+        <div class="pa-row">
+          <div class="pa-btn done">
+            <b>✓ KNH pre-alerted</b>
+            <span>09:14 · ED Bay 3</span>
+          </div>
+          <div class="pa-btn">
+            <b>+ Re-alert</b>
+            <span>Add update</span>
+          </div>
+          <div class="pa-btn">
+            <b>Photo</b>
+            <span>Scene / patient</span>
+          </div>
+          <div class="pa-btn">
+            <b>ePCR draft</b>
+            <span>3 of 7 sections</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ePCR Panel -->
+    <div class="epcr-panel" id="epcr-panel">
+      <div class="epcr-hdr">
+        <button class="epcr-back" id="epcr-back"><span class="mat">arrow_back</span></button>
+        <div class="epcr-title">ePCR Draft</div>
+        <div class="epcr-prog" id="epcr-prog">4 / 7 sections</div>
+      </div>
+      <div class="epcr-scroll">
+
+        <!-- § Patient -->
+        <div class="epcr-sec">
+          <div class="epcr-sec-h">Patient</div>
+          <div class="epcr-field"><label>Full name</label><input type="text" id="ep-name" value="F. Karanja"></div>
+          <div class="epcr-row">
+            <div class="epcr-field"><label>SHA SHIF ID / NHIF No.</label>
+              <div style="display:flex;gap:6px">
+                <input type="text" id="ep-id" value="SHA-114-22874521" style="flex:1">
+                <button type="button" id="eligib-btn" onclick="checkEligibility()"
+                  style="padding:0 10px;border-radius:8px;background:rgba(39,170,225,.15);
+                  border:1px solid rgba(39,170,225,.3);color:#27AAE1;font-size:11px;
+                  font-family:'Barlow Condensed',sans-serif;font-weight:600;white-space:nowrap;cursor:pointer">
+                  Check
+                </button>
+              </div>
+              <div id="eligib-result" style="display:none;margin-top:6px;padding:8px;border-radius:8px;font-size:11px"></div>
+            </div>
+            <div class="epcr-field"><label>Age / Sex</label><input type="text" id="ep-age" value="64 M"></div>
+          </div>
+          <div class="epcr-field"><label>Medical history</label><input type="text" id="ep-hx" value="HTN, T2DM"></div>
+        </div>
+
+        <!-- § Incident -->
+        <div class="epcr-sec">
+          <div class="epcr-sec-h">Incident</div>
+          <div class="epcr-field"><label>Chief complaint</label><input type="text" id="ep-complaint" value="Cardiac arrest"></div>
+          <div class="epcr-field">
+            <label>ICD-11 Code</label>
+            <input type="text" id="ep-icd-search" placeholder="Search code or condition..."
+              style="margin-bottom:4px"
+              oninput="filterICD11(this.value)" onblur="hideICD11List()" onfocus="showICD11List(this.value)">
+            <div id="icd11-dropdown" style="display:none;background:#161C25;border:1px solid rgba(255,255,255,.1);
+              border-radius:8px;max-height:140px;overflow-y:auto;position:relative;z-index:10"></div>
+            <input type="hidden" id="ep-icd" value="I46.9">
+            <div id="icd11-selected" style="font-size:11px;color:#27AAE1;margin-top:3px">I46.9 — Cardiac arrest, unspecified</div>
+          </div>
+          <div class="epcr-field"><label>Response time</label><input type="text" id="ep-resp" value="06:42" readonly></div>
+          <div class="epcr-field"><label>Location</label><input type="text" id="ep-location" value="CBD / Nairobi Centre, Nairobi County"></div>
+        </div>
+
+        <!-- § Vitals snapshot -->
+        <div class="epcr-sec">
+          <div class="epcr-sec-h">Vitals snapshot</div>
+          <div class="epcr-vit-grid">
+            <div class="epcr-vit"><div class="epcr-vit-l">HR · bpm</div><div class="epcr-vit-v" id="ev-hr">142 bpm</div></div>
+            <div class="epcr-vit"><div class="epcr-vit-l">BP · mmHg</div><div class="epcr-vit-v" id="ev-bp">88 / 52</div></div>
+            <div class="epcr-vit"><div class="epcr-vit-l">SpO₂ · %</div><div class="epcr-vit-v" id="ev-spo2">87 %</div></div>
+            <div class="epcr-vit"><div class="epcr-vit-l">RR · /min</div><div class="epcr-vit-v" id="ev-rr">28 /min</div></div>
+          </div>
+        </div>
+
+        <!-- § Interventions -->
+        <div class="epcr-sec">
+          <div class="epcr-sec-h">Interventions</div>
+          <div class="epcr-checks">
+            <label class="epcr-check"><input type="checkbox" checked><span>IV / IO access established</span></label>
+            <label class="epcr-check"><input type="checkbox" checked><span>12-lead ECG acquired</span></label>
+            <label class="epcr-check"><input type="checkbox" checked><span>Defibrillation — 2 shocks delivered</span></label>
+            <label class="epcr-check"><input type="checkbox" checked><span>CPR initiated (5 cycles)</span></label>
+            <label class="epcr-check"><input type="checkbox" checked><span>O₂ therapy 4 L/min via NC</span></label>
+            <label class="epcr-check"><input type="checkbox"><span>Advanced airway (ET / LMA)</span></label>
+            <label class="epcr-check"><input type="checkbox"><span>Adrenaline 1 mg IV × 1</span></label>
+            <label class="epcr-check"><input type="checkbox"><span>Amiodarone 300 mg IV</span></label>
+          </div>
+        </div>
+
+        <!-- § SHIF Tariff -->
+        <div class="epcr-sec">
+          <div class="epcr-sec-h">SHIF Ambulance Tariff</div>
+          <div class="epcr-tariff-type">
+            <button class="tt-btn on" id="tt-als">ALS</button>
+            <button class="tt-btn" id="tt-bls">BLS</button>
+          </div>
+          <div class="epcr-field">
+            <label>Total distance (km)</label>
+            <input type="number" id="ep-dist" value="3.2" min="0" step="0.1">
+          </div>
+          <div class="epcr-tariff-out">
+            <div class="tariff-row">
+              <span>Base rate (0–25 km)</span>
+              <span id="tariff-base">KES 3,500</span>
+            </div>
+            <div class="tariff-row" id="tariff-km-row" style="display:none;">
+              <span id="tariff-km-lbl">Extra km</span>
+              <span id="tariff-km-val">—</span>
+            </div>
+            <div class="tariff-total">
+              <span>Total</span>
+              <span id="tariff-total">KES 3,500</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="epcr-submit" id="epcr-submit">
+          <span class="mat">cloud_upload</span>Submit to AfyaLink
+        </button>
+        <div class="epcr-spacer"></div>
+
+      </div>
+    </div>
+
+    <!-- Map panel -->
+    <div class="side-panel" id="map-panel">
+      <div class="sp-hdr">
+        <button class="sp-back" id="map-back"><span class="mat">arrow_back</span></button>
+        <div class="sp-title">Navigation Map</div>
+        <div class="sp-badge" id="map-badge">A-014</div>
+      </div>
+      <div id="emt-map-el"></div>
+    </div>
+
+    <!-- Radio panel -->
+    <div class="side-panel" id="radio-panel">
+      <div class="sp-hdr">
+        <button class="sp-back" id="radio-back"><span class="mat">arrow_back</span></button>
+        <div class="sp-title">Radio Comms</div>
+        <div class="sp-badge">CH 3 · Dispatch</div>
+      </div>
+      <div class="radio-body">
+        <div class="radio-ch-row">
+          <div class="rch on" data-ch="3"><b>CH 3</b>Dispatch</div>
+          <div class="rch" data-ch="1"><b>CH 1</b>Command</div>
+          <div class="rch" data-ch="7"><b>CH 7</b>Hospital</div>
+        </div>
+        <div class="radio-log" id="radio-log">
+          <div class="rl-item">
+            <div class="rl-who">Dispatch &middot; J. Kamau</div>
+            <div class="rl-txt">A-014 confirm on scene — patient critical, requesting hospital pre-alert</div>
+            <div class="rl-ts">14:36</div>
+          </div>
+          <div class="rl-item mine">
+            <div class="rl-who">A-014 &middot; You</div>
+            <div class="rl-txt">On scene, cardiac arrest, initiating CPR. Requesting KNH pre-alert.</div>
+            <div class="rl-ts">14:37</div>
+          </div>
+          <div class="rl-item">
+            <div class="rl-who">Dispatch &middot; J. Kamau</div>
+            <div class="rl-txt">KNH pre-alerted, ED Bay 3 ready. ETA 8 minutes confirmed.</div>
+            <div class="rl-ts">14:38</div>
+          </div>
+        </div>
+        <div class="ptt-wrap">
+          <button class="ptt-btn" id="ptt-btn">
+            <span class="mat">mic</span>Hold to Talk
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="emt-toast" id="emt-toast"></div>
+
+    <!-- Tab bar -->
+    <div class="tabbar">
+      <button class="tab-i on">
+        <span class="mat">dashboard</span>
+        <span class="tl">Status</span>
+      </button>
+      <button class="tab-i">
+        <span class="mat">map</span>
+        <span class="tl">Map</span>
+      </button>
+      <button class="tab-i">
+        <span class="badge">2</span>
+        <span class="mat">radio</span>
+        <span class="tl">Radio</span>
+      </button>
+      <button class="tab-i">
+        <span class="mat">description</span>
+        <span class="tl">ePCR</span>
+      </button>
+    </div>
+
+    <!-- Radio FAB -->
+    <button class="fab"><span class="mat">mic</span></button>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="/lib/nadc-state.js"></script>
+<script src="/lib/nadc-realtime.js"></script>
+<script src="/lib/nadc-auth.js"></script>
+<script>
+'use strict';
+var startSec = 4*60 + 12;
+var _incidentId = null;
+
+// ── Unit selection — switchable, persisted in localStorage. The "active" EMT
+// unit drives every read (incidents filtered to this unitId) and every write
+// (status updates, vitals, ePCR carry this unit_id).
+function _emtReadUnit() {
+  try { return localStorage.getItem('emt_unit') || 'A-014'; } catch (e) { return 'A-014'; }
+}
+function _emtWriteUnit(uid) {
+  try { localStorage.setItem('emt_unit', uid); } catch (e) {}
+  EMT_UNIT = uid;
+  _refreshEMTForUnit();
+}
+var EMT_UNIT = _emtReadUnit();
+
+// Called whenever the active unit changes — repaint appbar, clear stale
+// incident binding, re-run unit pickup against current NACDState snapshot.
+function _refreshEMTForUnit() {
+  _incidentId = null;
+  _liveDispatchInc = null;
+  _renderUnitLabel();
+  if (window.NACDState && NACDState.getState) {
+    var st = NACDState.getState();
+    if (st && st.incidents) {
+      // Drop existing incident-bound UI and let state:tick re-pick
+      var sel = null;
+      for (var i = 0; i < st.incidents.length; i++) {
+        var inc = st.incidents[i];
+        if (inc.unitId === EMT_UNIT && inc.status !== 'cleared' && inc.status !== 'cancelled') {
+          sel = inc; break;
+        }
+      }
+      if (sel) updateFromIncident(sel, st.hospitals);
+      else      _renderNoIncident();
+    }
+  }
+}
+
+function _renderUnitLabel() {
+  var unit = (window.NACDState && NACDState.findUnit) ? NACDState.findUnit(EMT_UNIT) : null;
+  var lbl  = EMT_UNIT + (unit && unit.type ? ' · ' + unit.type : '');
+  var call = document.querySelector('.aa-call');
+  if (call) call.textContent = lbl;
+  var nm   = document.getElementById('user-nm');
+  if (nm) nm.textContent = unit && unit.county ? unit.county + ' · ' + (unit.status || 'unknown') : 'Tap to switch unit';
+}
+
+function _renderNoIncident() {
+  var typeEl = document.getElementById('hero-type');
+  if (typeEl) typeEl.textContent = 'No active incident';
+  var codeEl = document.getElementById('hero-code');
+  if (codeEl) codeEl.innerHTML = '<b>' + EMT_UNIT + '</b> · waiting for dispatch';
+  var st = document.querySelector('.ac-state-v');
+  if (st) st.textContent = 'Available';
+  var cta = document.querySelector('.ac-cta');
+  if (cta) {
+    cta.innerHTML = '<span class="mat">radar</span>Awaiting dispatch';
+    cta.onclick = null;
+    cta.disabled = true;
+    cta.style.opacity = '.45';
+  }
+  // Clear stepper
+  document.querySelectorAll('.step').forEach(function (s) { s.className = 'step'; });
+  document.querySelectorAll('.step-labels span').forEach(function (s) { s.className = ''; });
+  // Hide PSAP card, reset action-card minis
+  var psapCard = document.getElementById('psap-card');
+  if (psapCard) psapCard.style.display = 'none';
+  var acPat = document.getElementById('ac-patient');
+  if (acPat) acPat.innerHTML = '<span style="color:rgba(255,255,255,.4);">—</span>';
+  var acHosp = document.getElementById('ac-hosp');
+  if (acHosp) acHosp.innerHTML = '<span style="color:rgba(255,255,255,.4);">—</span>';
+}
+
+// ── Unit picker ───────────────────────────────────────────────────────
+function openUnitPicker() {
+  var ov = document.getElementById('up-ov');
+  if (!ov) return;
+  ov.classList.add('open');
+  var cur = document.getElementById('up-current');
+  if (cur) cur.innerHTML = 'Current: <b>' + EMT_UNIT + '</b>';
+  renderUnitList();
+  var s = document.getElementById('up-search');
+  if (s) setTimeout(function(){ s.focus(); }, 80);
+}
+function closeUnitPicker(e) {
+  if (e && e.target && e.target.id !== 'up-ov') return; // only outside-click closes
+  var ov = document.getElementById('up-ov');
+  if (ov) ov.classList.remove('open');
+}
+function renderUnitList() {
+  var list = document.getElementById('up-list');
+  if (!list || !window.NACDState || !NACDState.getFleet) return;
+  var q = ((document.getElementById('up-search') || {}).value || '').toLowerCase().trim();
+  var fleet = NACDState.getFleet();
+  var matched = fleet.filter(function(u){
+    if (!q) return true;
+    var hay = ((u.id||'') + ' ' + (u.county||'') + ' ' + (u.type||'') + ' ' + (u.zone||'')).toLowerCase();
+    return hay.indexOf(q) !== -1;
+  });
+  matched.sort(function(a,b){ return (a.id||'').localeCompare(b.id||''); });
+  if (!matched.length) {
+    list.innerHTML = '<div class="up-empty">No units match "' + q + '"</div>';
+    return;
+  }
+  list.innerHTML = matched.slice(0, 80).map(function(u){
+    var sel  = u.id === EMT_UNIT ? ' sel' : '';
+    var stat = u.status || 'unknown';
+    return '<div class="up-row' + sel + '" onclick="pickUnit(\'' + u.id + '\')">'
+      +   '<div class="up-id">' + u.id + '</div>'
+      +   '<span class="up-type ' + (u.type || 'BLS') + '">' + (u.type || 'BLS') + '</span>'
+      +   '<div class="up-meta">' + (u.county || u.zone || '—') + '</div>'
+      +   '<div class="up-status ' + stat + '">' + stat.replace(/_/g,' ') + '</div>'
+      + '</div>';
+  }).join('');
+  if (matched.length > 80) {
+    list.innerHTML += '<div class="up-empty">+' + (matched.length - 80) + ' more — refine search</div>';
+  }
+}
+function pickUnit(uid) {
+  if (!uid) return;
+  if (uid === EMT_UNIT) { closeUnitPicker({target:{id:'up-ov'}}); return; }
+  _emtWriteUnit(uid);
+  showToast('Unit changed to ' + uid);
+  closeUnitPicker({target:{id:'up-ov'}});
+}
+
+// ── Module-level state (accessible from DOMContentLoaded AND fetch callback) ──
+var _emtSb = null;           // Supabase client after auth; null = demo/offline mode
+var _liveDispatchInc = null; // incident received from dispatch via BroadcastChannel
+var _authReadyCalled = false;// belt-and-braces guard for auth overlay fallback
+
+// ── Timeline / radio-log helper ───────────────────────────────────────────────
+function addTimelineEvent(text) {
+  var log = document.getElementById('radio-log');
+  if (!log) return;
+  var d = new Date();
+  var ts = pad(d.getHours())+':'+pad(d.getMinutes());
+  var item = document.createElement('div');
+  item.className = 'rl-item';
+  item.innerHTML = '<div class="rl-who">System &middot; NADC</div><div class="rl-txt">'+text+'</div><div class="rl-ts">'+ts+'</div>';
+  log.appendChild(item);
+  log.scrollTop = log.scrollHeight;
+}
+
+// ── Supabase persist helpers (no-ops until _emtSb is wired in _onNACDAuthReady) ──
+
+// Persist EMT status update to Supabase incidents table; fails silently.
+function _persistEMTStatus(incNumber, newStatus) {
+  if (!_emtSb) return;
+  var uuid = NACDState.getIncidentUuid && NACDState.getIncidentUuid(incNumber);
+  if (!uuid) { console.warn('[EMT] status not persisted — UUID not in map for', incNumber); return; }
+  _emtSb.from('incidents').update({ status: newStatus, updated_at: new Date().toISOString() })
+    .eq('id', uuid)
+    .then(function(r){ if(r.error) console.warn('[EMT] DB status update failed:', r.error.message); })
+    .catch(function(e){ console.warn('[EMT] DB status update exception:', e && e.message); });
+}
+
+// Persist vital signs to clinical_observations; RLS failure warns only.
+function _persistVitals(incNumber, vitals) {
+  if (!_emtSb) return;
+  var uuid = NACDState.getIncidentUuid && NACDState.getIncidentUuid(incNumber);
+  if (!uuid) { console.warn('[EMT] vitals not persisted — UUID not in map for', incNumber); return; }
+  _emtSb.from('clinical_observations').insert({
+    incident_id:      uuid,
+    heart_rate:       vitals.hr    || null,
+    bp_systolic:      vitals.sys   || null,
+    bp_diastolic:     vitals.dia   || null,
+    spo2:             vitals.spo2  || null,
+    respiratory_rate: vitals.rr    || null,
+    recorded_by:      EMT_UNIT,
+    recorded_at:      new Date().toISOString()
+  }).then(function(r){
+    if(r.error) console.warn('[EMT] vitals persist failed (RLS/table):', r.error.message,
+      '— clinical:update BroadcastChannel still active.');
+    else console.info('[EMT] vitals persisted to clinical_observations for', incNumber);
+  }).catch(function(e){ console.warn('[EMT] vitals persist exception:', e && e.message); });
+}
+
+// Persist ePCR submission to dispatch_events; always broadcasts via BroadcastChannel first.
+function _persistEPCR(incNumber, claimRef, icdCode, distKm) {
+  var uuid = NACDState.getIncidentUuid && NACDState.getIncidentUuid(incNumber);
+  if(typeof BroadcastChannel!=='undefined'){
+    try{
+      var _epcrBC=new BroadcastChannel('nadc-sync');
+      _epcrBC.postMessage({type:'epcr:submitted',source:'emt',
+        claimRef:claimRef,icdCode:icdCode,distanceKm:distKm,
+        unitId:EMT_UNIT,incidentNumber:incNumber});
+      _epcrBC.close();
+    }catch(e){}
+  }
+  if (!_emtSb) return; // BroadcastChannel above is sufficient for same-browser claims
+  _emtSb.from('dispatch_events').insert({
+    incident_id: uuid || null,
+    unit_id:     EMT_UNIT,
+    event_type:  'epcr_submitted',
+    event_note:  'ePCR submitted for '+(incNumber||'unknown')+' · '+(claimRef||''),
+    actor_type:  'emt',
+    payload:     { claimRef: claimRef, icdCode: icdCode, distanceKm: distKm, unitId: EMT_UNIT,
+                   incidentNumber: incNumber }
+  }).then(function(r){
+    if(r.error) console.warn('[EMT] ePCR dispatch_event failed:', r.error.message);
+    else console.info('[EMT] ePCR persisted to dispatch_events:', claimRef);
+  }).catch(function(e){ console.warn('[EMT] ePCR persist exception:', e && e.message); });
+}
+
+function ft(s){var m=Math.floor(s/60),x=s%60;return String(m).padStart(2,'0')+':'+String(x).padStart(2,'0');}
+function setText(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
+function pad(n){return String(n).padStart(2,'0');}
+
+function tickLocal(){
+  var d=new Date();
+  setText('sb-clock',pad(d.getHours())+':'+pad(d.getMinutes()));
+  startSec++;
+  setText('hero-el',ft(startSec));
+  setText('ac-time',ft(Math.max(0,startSec-118)));
+  var staleSec=startSec%90;
+  var stale=document.getElementById('vit-stale');
+  if(stale){
+    stale.textContent='0:'+pad(staleSec)+' ago';
+    var p=stale.parentElement;
+    if(p)p.className='card-h-r '+(staleSec>60?'warn':'');
+  }
+}
+tickLocal();setInterval(tickLocal,1000);
+
+function updateFromIncident(inc, hospitals){
+  if(!inc)return;
+  _incidentId = inc.id;
+  setText('hero-id', inc.number||'INC-—');
+  var type=document.getElementById('hero-type');
+  if(type)type.textContent=inc.complaint||'—';
+  var code=document.getElementById('hero-code');
+  if(code)code.innerHTML='<b>'+(inc.icd11||'—')+'</b> · '+inc.address;
+
+  // Status stepper — 5 steps: dispatched → en_route → on_scene → transport → at_hospital
+  var STATUS_STEPS=['dispatched','en_route','on_scene','transport','at_hospital'];
+  var curIdx=STATUS_STEPS.indexOf(inc.status);
+  var isCleared=(inc.status==='cleared'||inc.status==='cancelled');
+  document.querySelectorAll('.step').forEach(function(el,i){
+    el.className='step'+(isCleared?' done':i<curIdx?' done':i===curIdx?' now':'');
+  });
+  document.querySelectorAll('.step-labels span').forEach(function(el,i){
+    el.className=isCleared?'done':(i<curIdx?'done':i===curIdx?'now':'');
+  });
+
+  // CTA button
+  var cta=document.querySelector('.ac-cta');
+  if(cta){
+    var ctaMap={dispatched:'Mark en route',en_route:'Mark on scene',on_scene:'Mark transport',
+                transport:'Mark at hospital',at_hospital:'Mark cleared',cleared:'Incident Cleared'};
+    var ctaIcon={dispatched:'directions_car',en_route:'place',on_scene:'local_hospital',
+                 transport:'local_hospital',at_hospital:'check_circle',cleared:'done_all'};
+    cta.innerHTML='<span class="mat">'+(ctaIcon[inc.status]||'arrow_forward')+'</span>'+(ctaMap[inc.status]||'Update status');
+    cta.onclick=(function(i){return function(){
+      var next={dispatched:'en_route',en_route:'on_scene',on_scene:'transport',
+                transport:'at_hospital',at_hospital:'cleared'};
+      var ns=next[i.status];
+      if(!ns)return; // cleared has no next state — button is intentionally inert
+      // Try local NACDState first (simulation incidents)
+      var localInc=NACDState.findIncident?NACDState.findIncident(i.id):null;
+      if(localInc) NACDState.dispatch.updateStatus(i.id,NACDState.STATUS[ns.toUpperCase()]||ns);
+      // Persist status to Supabase; falls back silently to BroadcastChannel only
+      _persistEMTStatus(i.number, ns);
+      // Always broadcast to dispatch for cross-app / cross-device sync
+      if(typeof BroadcastChannel!=='undefined'){
+        try{
+          var _bc=new BroadcastChannel('nadc-sync');
+          _bc.postMessage({type:'unit:status_update',source:'emt',
+            unitId:EMT_UNIT,incidentId:i.id,newStatus:ns});
+          _bc.close();
+        }catch(e){}
+      }
+      // Timeline entries for key milestones
+      if(ns==='at_hospital') addTimelineEvent('Arrived at hospital — handover in progress');
+      if(ns==='cleared') addTimelineEvent('Incident '+(i.number||'')+' cleared — unit available');
+      // Optimistically update local display
+      i.status=ns;
+      updateFromIncident(i,NACDState.getHospitals?NACDState.getHospitals():[]);
+      showToast('Status → '+ns.replace(/_/g,' '));
+    };})(inc);
+  }
+
+  // Hospital in mini card + action-card mini
+  if(inc.hospitalId && hospitals){
+    var h=hospitals.find(function(x){return x.id===inc.hospitalId;});
+    if(h){
+      setText('nav-hosp',h.n||h.full);
+      var u=NACDState.findUnit(EMT_UNIT);
+      if(u&&h){
+        var dk=Math.sqrt(Math.pow(u.lat-h.lat,2)+Math.pow(u.lng-h.lng,2))*111;
+        setText('nav-eta',ft(Math.round(dk/40*3600)));
+        setText('nav-dist',dk.toFixed(1)+'km · L'+h.level);
+        var acHosp=document.getElementById('ac-hosp');
+        if(acHosp) acHosp.innerHTML='<b>'+(h.n||h.full)+'</b> · '+dk.toFixed(1)+'km';
+      }
+    }
+  } else {
+    var acHosp2=document.getElementById('ac-hosp');
+    if(acHosp2) acHosp2.innerHTML='<span style="color:rgba(255,255,255,.4);">Not yet assigned</span>';
+  }
+
+  // ── Priority chip ────────────────────────────────────────────────────
+  var priChip=document.getElementById('pri-chip');
+  if(priChip){
+    priChip.className='pri-chip p'+inc.priority;
+    priChip.innerHTML='<span class="d"></span>P'+inc.priority;
+  }
+
+  // ── Action-card patient mini ─────────────────────────────────────────
+  var ageSex=[];
+  if(inc.patientAge) ageSex.push(inc.patientAge);
+  if(inc.patientSex) ageSex.push(({M:'M',F:'F',U:'?'})[inc.patientSex]||inc.patientSex);
+  var acPat=document.getElementById('ac-patient');
+  if(acPat){
+    if(ageSex.length) acPat.innerHTML='<b>'+ageSex.join(' ')+'</b>';
+    else              acPat.innerHTML='<span style="color:rgba(255,255,255,.4);">Patient details on scene</span>';
+  }
+
+  // ── PSAP / triage card ───────────────────────────────────────────────
+  var psapCard=document.getElementById('psap-card');
+  var hasPsapData=inc.callerName||inc.callerPhone||inc.patientAge||inc.determinantCode
+                  ||inc.w3w||inc.address||inc.notes;
+  if(psapCard) psapCard.style.display=hasPsapData?'block':'none';
+  if(hasPsapData){
+    _setPsapField('psap-caller', inc.callerName ? inc.callerName + (inc.callerRelation?' ('+inc.callerRelation+')':'') : '');
+    // Phone — make tappable
+    var phoneEl=document.getElementById('psap-phone');
+    if(phoneEl){
+      if(inc.callerPhone){
+        phoneEl.textContent=inc.callerPhone;
+        phoneEl.href='tel:'+inc.callerPhone.replace(/[^\d+]/g,'');
+      } else {
+        phoneEl.textContent='—'; phoneEl.removeAttribute('href');
+      }
+    }
+    var patStr='';
+    if(inc.patientAge) patStr+=inc.patientAge+' yrs';
+    if(inc.patientSex) patStr+=(patStr?' · ':'')+(({M:'Male',F:'Female',U:'Unknown'})[inc.patientSex]||inc.patientSex);
+    _setPsapField('psap-patient', patStr);
+    _setPsapField('psap-address',  inc.address);
+    _setPsapField('psap-w3w',      inc.w3w);
+    _setPsapField('psap-landmark', inc.locationLandmark||inc.landmark);
+    _setPsapField('psap-floor',    inc.locationFloor||inc.floor);
+    _setPsapField('psap-notes',    inc.notes);
+    // Determinant
+    var detEl=document.getElementById('psap-det');
+    var chip =document.getElementById('psap-det-chip');
+    if(inc.determinantCode){
+      var lvlName={E:'Echo · life-threatening',D:'Delta · serious',C:'Charlie · potentially serious',B:'Bravo · potentially serious',A:'Alpha · non-emergent'}[inc.determinantLevel]||'';
+      if(detEl) detEl.textContent=inc.determinantCode+(lvlName?' · '+lvlName:'');
+      if(chip){ chip.textContent=inc.determinantLevel||'—'; chip.className='card-h-r det-'+(inc.determinantLevel||''); }
+    } else {
+      if(detEl) detEl.textContent='—';
+      if(chip){ chip.textContent='—'; chip.className='card-h-r'; }
+    }
+  }
+}
+
+// Helper — set a PSAP field with an empty-state fallback
+function _setPsapField(id, val){
+  var el=document.getElementById(id);
+  if(!el) return;
+  if(val && String(val).trim()){
+    el.textContent=val;
+    el.classList.remove('empty');
+  } else {
+    el.textContent='—';
+    el.classList.add('empty');
+  }
+}
+
+// Add IDs to nav elements for updates
+document.addEventListener('DOMContentLoaded',function(){
+  var navV=document.querySelector('.nav-v');
+  if(navV)navV.id='nav-hosp';
+  var navEta=document.querySelector('.nav-eta');
+  if(navEta)navEta.id='nav-eta';
+  var navSub=document.querySelector('.nav-eta-sub');
+  if(navSub)navSub.id='nav-dist';
+});
+
+/* ── ePCR logic ─────────────────────────────────────── */
+var _tariffType = 'ALS';
+var TARIFF = {
+  ALS: {base: 3500, perKm: 120, freeKm: 25},
+  BLS: {base: 2000, perKm: 80,  freeKm: 25}
+};
+
+function computeTariff(){
+  var dist = parseFloat(document.getElementById('ep-dist').value) || 0;
+  var t = TARIFF[_tariffType];
+  var extra = Math.max(0, dist - t.freeKm);
+  var extraFee = Math.round(extra * t.perKm);
+  var total = t.base + extraFee;
+  document.getElementById('tariff-base').textContent = 'KES ' + t.base.toLocaleString();
+  var kmRow = document.getElementById('tariff-km-row');
+  if(extra > 0){
+    kmRow.style.display = '';
+    document.getElementById('tariff-km-lbl').textContent = extra.toFixed(1) + ' km × KES ' + t.perKm;
+    document.getElementById('tariff-km-val').textContent = 'KES ' + extraFee.toLocaleString();
+  } else {
+    kmRow.style.display = 'none';
+  }
+  document.getElementById('tariff-total').textContent = 'KES ' + total.toLocaleString();
+}
+
+function openEPCR(){
+  closeAllPanels();
+  document.getElementById('epcr-panel').classList.add('open');
+  setTabActive(3);
+}
+
+function closeEPCR(){
+  closeAllPanels();
+  setTabActive(0);
+}
+
+/* ── Toast helper ───────────────────────────────────── */
+var _toastTimer = null;
+function showToast(msg){
+  var el = document.getElementById('emt-toast');
+  if(!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  if(_toastTimer) clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(function(){ el.classList.remove('show'); }, 2200);
+}
+
+/* ── Map panel ──────────────────────────────────────── */
+var MAPBOX_TOKEN = '';
+var _emtMap = null;
+
+function openMap(){
+  closeAllPanels();
+  document.getElementById('map-panel').classList.add('open');
+  setTabActive(1);
+  if(!_emtMap){
+    _emtMap = new mapboxgl.Map({
+      container:'emt-map-el',
+      style:'mapbox://styles/mapbox/navigation-night-v1',
+      center:[36.8219,-1.2921],
+      zoom:13,
+      accessToken:MAPBOX_TOKEN
+    });
+    _emtMap.on('load',function(){
+      var unit = NACDState.findUnit(EMT_UNIT);
+      var center = unit ? [unit.lng, unit.lat] : [36.8219,-1.2921];
+      _emtMap.setCenter(center);
+      var el = document.createElement('div');
+      el.style.cssText = 'width:14px;height:14px;border-radius:50%;background:#50C020;border:2.5px solid #fff;box-shadow:0 0 0 6px rgba(80,192,32,.2)';
+      new mapboxgl.Marker({element:el}).setLngLat(center).addTo(_emtMap);
+      setText('map-badge', EMT_UNIT + ' · on scene');
+    });
+  } else {
+    _emtMap.resize();
+  }
+}
+function closeMap(){
+  document.getElementById('map-panel').classList.remove('open');
+  setTabActive(0);
+}
+
+/* ── Radio panel ────────────────────────────────────── */
+var _pttActive = false;
+var _pttHoldTimer = null;
+
+function openRadio(){
+  closeAllPanels();
+  document.getElementById('radio-panel').classList.add('open');
+  setTabActive(2);
+}
+function closeRadio(){
+  document.getElementById('radio-panel').classList.remove('open');
+  setTabActive(0);
+}
+
+function closeAllPanels(){
+  document.getElementById('map-panel').classList.remove('open');
+  document.getElementById('radio-panel').classList.remove('open');
+  document.getElementById('epcr-panel').classList.remove('open');
+}
+
+function setTabActive(idx){
+  var tabs = document.querySelectorAll('.tab-i');
+  for(var i=0;i<tabs.length;i++) tabs[i].classList.remove('on');
+  if(tabs[idx]) tabs[idx].classList.add('on');
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  // Back button
+  var backBtn = document.getElementById('epcr-back');
+  if(backBtn) backBtn.onclick = closeEPCR;
+
+  var mapBack = document.getElementById('map-back');
+  if(mapBack) mapBack.onclick = closeMap;
+
+  var radioBack = document.getElementById('radio-back');
+  if(radioBack) radioBack.onclick = closeRadio;
+
+  // Tab bar wiring (all 4 tabs)
+  var tabs = document.querySelectorAll('.tab-i');
+  if(tabs[0]) tabs[0].onclick = function(){ closeAllPanels(); setTabActive(0); };  // Status
+  if(tabs[1]) tabs[1].onclick = openMap;    // Map
+  if(tabs[2]) tabs[2].onclick = openRadio;  // Radio
+  if(tabs[3]) tabs[3].onclick = openEPCR;  // ePCR
+
+  // Radio FAB → open radio panel
+  var fab = document.querySelector('.fab');
+  if(fab) fab.onclick = openRadio;
+
+  // PTT button
+  var pttBtn = document.getElementById('ptt-btn');
+  if(pttBtn){
+    function pttStart(){
+      _pttActive = true;
+      pttBtn.classList.add('active');
+      pttBtn.querySelector('.mat').textContent = 'mic';
+      pttBtn.childNodes[1] && (pttBtn.innerHTML = '<span class="mat">mic</span>Transmitting…');
+    }
+    function pttEnd(){
+      if(!_pttActive) return;
+      _pttActive = false;
+      pttBtn.innerHTML = '<span class="mat">mic</span>Hold to Talk';
+      pttBtn.classList.remove('active');
+      var log = document.getElementById('radio-log');
+      var d = new Date();
+      var ts = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+      var msgs = [
+        'Transporting now, ETA 8 minutes to KNH.',
+        'Copy dispatch, en route KNH ED.',
+        'Patient stable, vitals improving.'
+      ];
+      var item = document.createElement('div');
+      item.className = 'rl-item mine';
+      item.innerHTML = '<div class="rl-who">A-014 &middot; You</div><div class="rl-txt">'+msgs[Math.floor(Math.random()*msgs.length)]+'</div><div class="rl-ts">'+ts+'</div>';
+      log.appendChild(item);
+      log.scrollTop = log.scrollHeight;
+    }
+    pttBtn.addEventListener('mousedown', pttStart);
+    pttBtn.addEventListener('touchstart', function(e){e.preventDefault();pttStart();},{passive:false});
+    pttBtn.addEventListener('mouseup', pttEnd);
+    pttBtn.addEventListener('mouseleave', pttEnd);
+    pttBtn.addEventListener('touchend', pttEnd);
+  }
+
+  // Radio channel switcher
+  document.querySelectorAll('.rch').forEach(function(btn){
+    btn.onclick = function(){
+      document.querySelectorAll('.rch').forEach(function(b){b.classList.remove('on');});
+      btn.classList.add('on');
+      var ch = btn.getAttribute('data-ch');
+      showToast('Switched to CH ' + ch);
+    };
+  });
+
+  // Add vitals
+  var addVitalBtn = document.querySelector('.add-vital');
+  if(addVitalBtn){
+    addVitalBtn.onclick = function(){
+      var d = new Date();
+      var ts = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+      var hr = 100 + Math.floor(Math.random()*60);
+      var sys = 80 + Math.floor(Math.random()*40);
+      var dia = 50 + Math.floor(Math.random()*20);
+      var spo2 = 85 + Math.floor(Math.random()*12);
+      var rr = 18 + Math.floor(Math.random()*14);
+      var vGrid = addVitalBtn.previousElementSibling;
+      if(vGrid){
+        var row = document.createElement('div');
+        row.style.cssText = 'display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--line);';
+        row.innerHTML =
+          '<div class="vi'+(hr>120?' alert':'')+'"><div class="vi-l">HR &middot; bpm</div><div class="vi-v tab">'+hr+'<span class="u">bpm</span></div><div class="vi-trend">'+ts+'</div></div>'+
+          '<div class="vi'+(sys<90?' warn':'')+'"><div class="vi-l">BP &middot; mmHg</div><div class="vi-v tab">'+sys+'<span class="u">/'+dia+'</span></div><div class="vi-trend">'+ts+'</div></div>'+
+          '<div class="vi'+(spo2<90?' alert':'')+'"><div class="vi-l">SpO₂ &middot; %</div><div class="vi-v tab">'+spo2+'<span class="u">%</span></div><div class="vi-trend">'+ts+'</div></div>'+
+          '<div class="vi"><div class="vi-l">RR &middot; /min</div><div class="vi-v tab">'+rr+'<span class="u">/min</span></div><div class="vi-trend">'+ts+'</div></div>';
+        vGrid.parentNode.insertBefore(row, addVitalBtn);
+        showToast('Vitals recorded at ' + ts);
+      }
+      // Update ePCR vitals snapshot fields so the draft reflects latest readings
+      var hrEl=document.getElementById('ev-hr'); if(hrEl) hrEl.textContent=hr+' bpm';
+      var bpEl=document.getElementById('ev-bp'); if(bpEl) bpEl.textContent=sys+' / '+dia;
+      var spo2El=document.getElementById('ev-spo2'); if(spo2El) spo2El.textContent=spo2+' %';
+      var rrEl=document.getElementById('ev-rr'); if(rrEl) rrEl.textContent=rr+' /min';
+      // Build full observation object (GCS defaults to 15 unless known otherwise)
+      var gcs = 15;
+      var obs = { hr:hr, sys:sys, dia:dia, spo2:spo2, rr:rr, gcs:gcs, ts:new Date().toISOString() };
+      // Persist to NACDState fieldCare in-memory clinical record
+      if(NACDState.fieldCare && NACDState.fieldCare.recordObservation && _incidentId) {
+        NACDState.fieldCare.recordObservation(_incidentId, obs);
+      }
+      // Resolve incident number for DB + broadcast
+      var activeIncNum = _liveDispatchInc ? _liveDispatchInc.number : null;
+      if(!activeIncNum && _incidentId){
+        var _cur = NACDState.findIncident ? NACDState.findIncident(_incidentId) : null;
+        if(_cur) activeIncNum = _cur.number;
+      }
+      // Persist vitals to Supabase clinical_observations (non-blocking; warns on failure)
+      _persistVitals(activeIncNum, { hr:hr, sys:sys, dia:dia, spo2:spo2, rr:rr });
+      // Broadcast clinical update — includes incidentId + incidentNumber + observation
+      // for backward compat with Dispatch/Supervisor/Dashboard consumers
+      if(typeof BroadcastChannel!=='undefined'){
+        try{
+          var _cbc=new BroadcastChannel('nadc-sync');
+          _cbc.postMessage({type:'clinical:update',source:'emt',
+            unitId:EMT_UNIT,incidentId:_incidentId,incidentNumber:activeIncNum,
+            vitals:{hr:hr,sys:sys,dia:dia,spo2:spo2,rr:rr},
+            observation:obs});
+          _cbc.close();
+        }catch(e){}
+      }
+    };
+  }
+
+  // ePCR draft pa-btn
+  document.querySelectorAll('.pa-btn').forEach(function(btn){
+    var b = btn.querySelector('b');
+    if(b && b.textContent.indexOf('ePCR') !== -1) btn.onclick = openEPCR;
+  });
+
+  // Tariff type toggle
+  var alsBtn = document.getElementById('tt-als');
+  var blsBtn = document.getElementById('tt-bls');
+  if(alsBtn) alsBtn.onclick = function(){
+    _tariffType = 'ALS';
+    alsBtn.classList.add('on'); blsBtn.classList.remove('on');
+    computeTariff();
+  };
+  if(blsBtn) blsBtn.onclick = function(){
+    _tariffType = 'BLS';
+    blsBtn.classList.add('on'); alsBtn.classList.remove('on');
+    computeTariff();
+  };
+
+  // Distance input
+  var distEl = document.getElementById('ep-dist');
+  if(distEl) distEl.oninput = computeTariff;
+
+  // Submit — FHIR bundle success screen
+  var submitBtn = document.getElementById('epcr-submit');
+  if(submitBtn) submitBtn.onclick = function(){
+    var clmNum = 'CLM-2026-05-' + (Math.floor(Math.random() * 9000) + 1000);
+    var icdVal = document.getElementById('ep-icd') ? document.getElementById('ep-icd').value : 'I46.9';
+    var distKm = parseFloat(document.getElementById('ep-dist') ? document.getElementById('ep-dist').value : '0') || 0;
+    // Rescue Slice 4 — persist ePCR to dispatch_events and broadcast to claims.
+    // If Supabase unavailable, BroadcastChannel alone is sufficient for same-browser claims.
+    var activeIncNum = _liveDispatchInc ? _liveDispatchInc.number : null;
+    if(!activeIncNum && _incidentId){
+      var _curEp = NACDState.findIncident ? NACDState.findIncident(_incidentId) : null;
+      if(_curEp) activeIncNum = _curEp.number;
+    }
+    _persistEPCR(activeIncNum, clmNum, icdVal, distKm);
+    submitBtn.innerHTML =
+      '<div style="text-align:left;line-height:1.9;font-size:12px">' +
+      '<div style="font-size:14px;font-weight:700;color:#50C020;margin-bottom:6px">ePCR submitted ✅</div>' +
+      '<div>SHA claim pre-populated: <b>' + clmNum + '</b></div>' +
+      '<div>ICD-11: <b>' + icdVal + '</b></div>' +
+      '<div>FHIR bundle: Queued for AfyaLink submission</div>' +
+      '<div>eTIMS invoice: Generating...</div>' +
+      '</div>';
+    submitBtn.style.background='rgba(80,192,32,.15)';
+    submitBtn.style.border='1px solid rgba(80,192,32,.3)';
+    submitBtn.style.color='var(--t1)';
+    submitBtn.style.padding='12px';
+    submitBtn.style.textAlign='left';
+    addTimelineEvent('ePCR submitted — claim '+clmNum+' queued for SHA');
+    setTimeout(function(){ closeEPCR(); }, 3000);
+  };
+
+  computeTariff();
+});
+
+/* ─── ICD-11 searchable select ─────────────────────────────────────── */
+var ICD11_LIST = [
+  {code:'I46.9',  label:'Cardiac arrest, unspecified'},
+  {code:'I21.9',  label:'Acute myocardial infarction, unspecified'},
+  {code:'J80',    label:'Acute respiratory distress syndrome'},
+  {code:'S09.90', label:'Head injury, unspecified'},
+  {code:'S72.00', label:'Femoral fracture, closed'},
+  {code:'T39.1',  label:'Paracetamol overdose'},
+  {code:'O60.1',  label:'Preterm labour with preterm delivery'},
+  {code:'A09',    label:'Gastroenteritis and colitis, infectious'},
+  {code:'R55',    label:'Syncope and collapse'},
+  {code:'T14.9',  label:'Injury, unspecified'},
+  {code:'R00.1',  label:'Bradycardia, unspecified'},
+  {code:'J18.9',  label:'Pneumonia, unspecified'},
+  {code:'K92.1',  label:'Melaena — GI bleed'},
+  {code:'S22.20', label:'Fracture of sternum'},
+  {code:'T71',    label:'Asphyxiation'},
+  {code:'F32.9',  label:'Major depressive episode'},
+  {code:'G40.909',label:'Epilepsy, unspecified'},
+  {code:'E11.9',  label:'Type 2 diabetes, without complications'},
+  {code:'J44.1',  label:'COPD with acute exacerbation'},
+  {code:'I63.9',  label:'Cerebral infarction, unspecified'},
+  {code:'I10',    label:'Essential hypertension'},
+  {code:'N17.9',  label:'Acute kidney failure, unspecified'},
+  {code:'K35.80', label:'Acute appendicitis'},
+  {code:'S52.50', label:'Fracture of radius, unspecified'},
+  {code:'T75.1',  label:'Drowning and submersion'},
+  {code:'X10',    label:'Burns from hot household appliance'},
+  {code:'S72.10', label:'Pertrochanteric fracture'},
+  {code:'J06.9',  label:'Acute upper respiratory infection, unspecified'},
+  {code:'A41.9',  label:'Sepsis, unspecified'},
+  {code:'R07.9',  label:'Chest pain, unspecified'},
+  {code:'S32.00', label:'Lumbar vertebra fracture'},
+  {code:'R06.00', label:'Dyspnoea, unspecified'},
+  {code:'I50.9',  label:'Heart failure, unspecified'},
+  {code:'K70.3',  label:'Alcoholic cirrhosis of liver'},
+  {code:'Z87.39', label:'Personal history of other endocrine disorders'},
+  {code:'O62.0',  label:'Primary inadequate contractions — obstetric'},
+  {code:'P07.10', label:'Disorder of newborn related to short gestation'},
+  {code:'F10.20', label:'Alcohol dependence, uncomplicated'},
+  {code:'B54',    label:'Unspecified malaria'},
+  {code:'A01.00', label:'Typhoid fever, unspecified'},
+  {code:'B20',    label:'HIV disease resulting in infectious disease'},
+  {code:'C34.10', label:'Malignant neoplasm of upper lobe, bronchus'},
+  {code:'M79.3',  label:'Panniculitis, unspecified'},
+  {code:'S01.00', label:'Open wound of scalp'},
+  {code:'T36.0X5A',label:'Adverse effect of penicillin'},
+  {code:'S42.20', label:'Fracture of upper end of humerus'},
+  {code:'I82.4',  label:'Embolism and thrombosis of deep veins of leg'},
+  {code:'K57.30', label:'Diverticulosis of large intestine'},
+  {code:'S06.0X0A',label:'Concussion, unspecified'},
+  {code:'J96.00', label:'Acute respiratory failure, unspecified'}
+];
+
+var _icd11HideTimer = null;
+function filterICD11(q) {
+  showICD11List(q);
+}
+function showICD11List(q) {
+  var dd = document.getElementById('icd11-dropdown');
+  if (!dd) return;
+  var term = (q || '').toLowerCase();
+  var results = [];
+  for (var i = 0; i < ICD11_LIST.length; i++) {
+    var item = ICD11_LIST[i];
+    if (!term || item.code.toLowerCase().indexOf(term) !== -1 || item.label.toLowerCase().indexOf(term) !== -1) {
+      results.push(item);
+    }
+    if (results.length >= 10) break;
+  }
+  if (!results.length) { dd.style.display = 'none'; return; }
+  var html = '';
+  for (var j = 0; j < results.length; j++) {
+    var r = results[j];
+    html += '<div style="padding:7px 10px;font-size:11px;cursor:pointer;color:rgba(255,255,255,.7);' +
+      'border-bottom:1px solid rgba(255,255,255,.05)" ' +
+      'onmousedown="selectICD11(\'' + r.code + '\',\'' + r.label.replace(/'/g,'\\\'') + '\')">' +
+      '<span style="color:#27AAE1;font-family:\'JetBrains Mono\',monospace">' + r.code + '</span> — ' + r.label +
+      '</div>';
+  }
+  dd.innerHTML = html;
+  dd.style.display = 'block';
+}
+function hideICD11List() {
+  _icd11HideTimer = setTimeout(function() {
+    var dd = document.getElementById('icd11-dropdown');
+    if (dd) dd.style.display = 'none';
+  }, 200);
+}
+function selectICD11(code, label) {
+  if (_icd11HideTimer) { clearTimeout(_icd11HideTimer); _icd11HideTimer = null; }
+  var hidden = document.getElementById('ep-icd');
+  var search = document.getElementById('ep-icd-search');
+  var sel    = document.getElementById('icd11-selected');
+  var dd     = document.getElementById('icd11-dropdown');
+  if (hidden) hidden.value = code;
+  if (search) search.value = '';
+  if (sel)    sel.textContent = code + ' — ' + label;
+  if (dd)     dd.style.display = 'none';
+}
+
+/* ─── AfyaLink eligibility mock ─────────────────────────────────────── */
+function checkEligibility() {
+  var idEl = document.getElementById('ep-id');
+  var res  = document.getElementById('eligib-result');
+  var btn  = document.getElementById('eligib-btn');
+  if (!idEl || !res) return;
+  var val = idEl.value.replace(/\D/g,'');
+  btn.textContent = '...';
+  btn.style.opacity = '.5';
+  res.style.display = 'none';
+  setTimeout(function() {
+    btn.textContent = 'Check';
+    btn.style.opacity = '1';
+    res.style.display = 'block';
+    if (val.length >= 8) {
+      res.style.background = 'rgba(52,199,89,.08)';
+      res.style.border = '1px solid rgba(52,199,89,.25)';
+      res.style.color = '#34C759';
+      res.innerHTML =
+        '<b>✅ Member active</b> — KE-NHIF-' + val.slice(-8) + '<br>' +
+        'Benefit type: SHIF Ambulance<br>' +
+        'Pre-auth required: No (emergency)';
+    } else {
+      res.style.background = 'rgba(255,140,0,.08)';
+      res.style.border = '1px solid rgba(255,140,0,.25)';
+      res.style.color = '#FF8C00';
+      res.innerHTML = '<b>⚠ Member not found</b> — verify ID and retry';
+    }
+  }, 1500);
+}
+
+/* Pre-fill ePCR from live incident data */
+function prefillEPCR(inc){
+  if(!inc) return;
+  var v = document.getElementById('ep-complaint');
+  if(v) v.value = inc.complaint || v.value;
+  var iv = document.getElementById('ep-icd');
+  if(iv) iv.value = inc.icd11 || iv.value;
+  var lv = document.getElementById('ep-location');
+  if(lv) lv.value = inc.address || lv.value;
+}
+
+fetch('/api/config').then(function(r){return r.json();}).catch(function(){return{};})
+.then(function(cfg){
+  NACDState.init({supabaseUrl:cfg.supabaseUrl||'',supabaseKey:cfg.supabaseAnonKey||'',seedIncidents:12,autoStart:true});
+
+  // Belt-and-braces demo safety guard: if _onNACDAuthReady is not called within 4 s,
+  // dismiss the overlay so the demo is never blocked by auth in offline / demo mode.
+  setTimeout(function(){
+    if(!_authReadyCalled){
+      var ov=document.getElementById('nacd-auth-overlay');
+      if(ov){ov.style.opacity='0';setTimeout(function(){ov.style.display='none';},220);}
+      console.info('[EMT] Auth overlay dismissed by 4s fallback (demo/offline mode)');
+    }
+  },4000);
+
+  window._onNACDAuthReady=function(auth){
+    _authReadyCalled=true; // prevents the 4s fallback from firing redundantly
+    var ov=document.getElementById('nacd-auth-overlay');
+    if(ov){ov.style.opacity='0';setTimeout(function(){ov.style.display='none';},220);}
+    // Wire Supabase client so module-level helpers can write to DB
+    _emtSb=NACDState.getSupabaseClient?NACDState.getSupabaseClient():null;
+    if(!auth.user)return;
+    var name=auth.user.fullName||auth.user.username||'EMT';
+    var nmEl=document.getElementById('user-nm');
+    if(nmEl)nmEl.textContent=EMT_UNIT+' · '+name;
+  };
+  if(window.NACDAuth) NACDAuth.init({supabaseUrl:cfg.supabaseUrl,supabaseAnonKey:cfg.supabaseAnonKey,clerkPublishableKey:cfg.clerkPublishableKey},'emt');
+
+  NACDState.on('state:tick',function(state){
+    // Always refresh unit label so status/county/type stays current
+    _renderUnitLabel();
+    // Prefer dispatch-synced incident over local simulation, but only if it's
+    // actually for this unit (avoid showing another unit's job).
+    if(_liveDispatchInc&&_liveDispatchInc.status!=='cleared'&&_liveDispatchInc.status!=='cancelled'
+       && (!_liveDispatchInc.unitId || _liveDispatchInc.unitId===EMT_UNIT)){
+      updateFromIncident(_liveDispatchInc,state.hospitals);
+      prefillEPCR(_liveDispatchInc);
+      return;
+    }
+    var myInc=state.incidents.find(function(i){
+      return i.unitId===EMT_UNIT&&i.status!=='cleared'&&i.status!=='cancelled';
+    });
+    if(myInc){ updateFromIncident(myInc,state.hospitals); prefillEPCR(myInc); }
+    else     { _renderNoIncident(); }
+  });
+
+  // nadc-sync: receive assignment updates from dispatch
+  if(typeof BroadcastChannel!=='undefined'){
+    var _emtSyncBC=new BroadcastChannel('nadc-sync');
+    _emtSyncBC.onmessage=function(ev){
+      var d=ev.data;
+      if(!d||d.source==='emt') return;
+      if(d.type==='incident:updated'&&d.incident){
+        var inc=d.incident;
+        if(inc.unitId!==EMT_UNIT) return;
+        if(inc.status==='cleared'||inc.status==='cancelled'){
+          _liveDispatchInc=null;
+          showToast('Incident cleared — available');
+          addTimelineEvent('Incident '+(inc.number||'')+' cleared — unit available');
+        } else {
+          _liveDispatchInc=inc;
+          updateFromIncident(inc,NACDState.getHospitals?NACDState.getHospitals():[]);
+          prefillEPCR(inc);
+          if(inc.status==='dispatched') showToast('Assignment received: '+inc.number+' · P'+inc.priority);
+        }
+      }
+    };
+  }
+});
+</script>
+
+<script>
+(function(){
+  function toggleAppSw(){
+    var p=document.getElementById('app-sw-panel');
+    var b=document.querySelector('.app-sw-btn');
+    if(!p) return;
+    var willOpen = !p.classList.contains('open');
+    p.classList.toggle('open');
+    if(b) b.classList.toggle('open', willOpen);
+  }
+  document.addEventListener('click',function(e){
+    var p=document.getElementById('app-sw-panel');
+    if(!p||!p.classList.contains('open')) return;
+    if(p.contains(e.target)) return;
+    if(e.target.closest && e.target.closest('.app-sw-btn')) return;
+    p.classList.remove('open');
+    var b=document.querySelector('.app-sw-btn');
+    if(b) b.classList.remove('open');
+  });
+  // Expose as global so inline onclick can call it
+  window.toggleAppSw = toggleAppSw;
+})();
+</script>
+
+</body>
+</html>

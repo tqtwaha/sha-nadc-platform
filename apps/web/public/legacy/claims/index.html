@@ -1,0 +1,1541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SHA NADC — Claims & Payments</title>
+<meta name="description" content="SHA National Ambulance Dispatch Centre — real-time emergency coordination platform for the Republic of Kenya.">
+<meta name="theme-color" content="#00519B">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SHA NADC">
+<meta property="og:title" content="SHA · National Ambulance Dispatch Centre">
+<meta property="og:description" content="Real-time emergency coordination · Republic of Kenya">
+<meta property="og:url" content="https://sha-nadc.silicongw.com/claims">
+<meta property="og:image" content="https://sha-nadc.silicongw.com/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="1200">
+<meta property="og:image:alt" content="SHA National Ambulance Dispatch Centre">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SHA · National Ambulance Dispatch Centre">
+<meta name="twitter:description" content="Real-time emergency coordination · Republic of Kenya">
+<meta name="twitter:image" content="https://sha-nadc.silicongw.com/assets/og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Barlow+Condensed:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<style>
+:root{
+  --bg:#0B0F14;--surface:#11161D;--surface-2:#161C25;
+  --line:rgba(255,255,255,.06);--line-2:rgba(255,255,255,.10);
+  --t1:rgba(255,255,255,.95);--t2:rgba(255,255,255,.62);--t3:rgba(255,255,255,.40);--t4:rgba(255,255,255,.22);
+  --b:#00519B;--b2:#27AAE1;
+  --g:#50C020;--g2:#3DA818;
+  --p1:#FF3B30;--p2:#FF8C00;--p3:#F5B100;--ok:#34C759;
+  --amber:#F0A020;--purple:#9060e0;--gold:#FFD700;
+  --r-sm:8px;--r-md:12px;--r-lg:16px;--r-pill:999px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--t1);font-family:"Exo 2",sans-serif;font-size:13px;overflow:hidden}
+
+/* ── TOP BAR ─────────────────────────────────────────────────────────────── */
+#topbar{
+  height:52px;background:var(--surface);border-bottom:1px solid var(--line-2);
+  display:flex;align-items:center;gap:12px;padding:0 16px;flex-shrink:0;
+}
+.tb-logo{display:flex;align-items:center;gap:8px}
+.tb-sha{font-size:18px;font-weight:700;color:var(--g);letter-spacing:-.5px}
+.tb-sub{font-size:11px;color:var(--t3);font-family:"Barlow Condensed",sans-serif;letter-spacing:.5px}
+.tb-div{width:1px;height:28px;background:var(--line-2);margin:0 4px}
+.tb-title{font-size:14px;font-weight:600;color:var(--t1)}
+.tb-badge{background:#9060e020;border:1px solid #9060e055;color:#9060e0;
+  font-family:"Barlow Condensed",sans-serif;font-size:10px;font-weight:600;letter-spacing:.8px;
+  padding:2px 8px;border-radius:var(--r-pill)}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.tb-clock{font-family:"JetBrains Mono",monospace;font-size:13px;color:var(--t2)}
+.pg-nav{display:flex;align-items:center;gap:2px;}
+.pn{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:var(--r-pill);text-decoration:none;font-family:var(--fh);font-size:11.5px;font-weight:500;color:var(--t2);transition:background .15s,color .15s;white-space:nowrap;}
+.pn:hover{background:rgba(255,255,255,.05);color:var(--t1);}
+.pn.on{background:rgba(80,192,32,.13);color:var(--g);}
+.pn .mat{font-family:"Material Symbols Outlined";font-weight:400;font-size:14px;line-height:1;}
+.pn .pm{font-family:"JetBrains Mono",monospace;font-size:8px;color:rgba(255,255,255,.25);letter-spacing:.6px;text-transform:uppercase;margin-left:1px;}
+.pn.on .pm{color:rgba(80,192,32,.5);}
+
+/* ── KPI STRIP ───────────────────────────────────────────────────────────── */
+#kpi-strip{
+  display:flex;gap:1px;background:var(--line);border-bottom:1px solid var(--line-2);
+  flex-shrink:0;height:64px;
+}
+.kpi-cell{
+  flex:1;background:var(--surface);display:flex;flex-direction:column;
+  justify-content:center;padding:0 16px;position:relative;overflow:hidden;
+}
+.kpi-cell::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--accent,var(--b2))}
+.kpi-label{font-family:"Barlow Condensed",sans-serif;font-size:10px;font-weight:600;
+  letter-spacing:.8px;color:var(--t3);text-transform:uppercase;margin-bottom:4px}
+.kpi-val{font-family:"JetBrains Mono",monospace;font-size:22px;font-weight:500;color:var(--t1);
+  transition:color .3s}
+.kpi-cell[data-accent="red"]   {--accent:var(--p1)}
+.kpi-cell[data-accent="amber"] {--accent:var(--amber)}
+.kpi-cell[data-accent="blue"]  {--accent:var(--b2)}
+.kpi-cell[data-accent="green"] {--accent:var(--g)}
+
+/* ── MAIN LAYOUT ─────────────────────────────────────────────────────────── */
+#main{display:flex;flex:1;overflow:hidden;min-height:0}
+
+/* ── LEFT: QUEUE ─────────────────────────────────────────────────────────── */
+#panel-queue{
+  width:340px;flex-shrink:0;display:flex;flex-direction:column;
+  border-right:1px solid var(--line-2);overflow:hidden;
+}
+.panel-hdr{
+  padding:12px 14px 10px;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:8px;flex-shrink:0;
+}
+.panel-hdr-title{font-size:14px;font-weight:600;flex:1}
+.panel-hdr-count{font-family:"Barlow Condensed",sans-serif;font-size:11px;color:var(--t3);
+  background:var(--surface-2);border-radius:var(--r-pill);padding:2px 8px}
+
+/* Filter tabs */
+.filter-tabs{display:flex;padding:8px 10px;gap:4px;flex-shrink:0;border-bottom:1px solid var(--line)}
+.ftab{padding:4px 10px;border-radius:var(--r-pill);font-family:"Barlow Condensed",sans-serif;
+  font-size:11px;font-weight:600;letter-spacing:.4px;cursor:pointer;border:none;background:none;
+  color:var(--t3);transition:background .15s,color .15s}
+.ftab.active{background:rgba(255,255,255,.08);color:var(--t1)}
+.ftab:hover:not(.active){color:var(--t2)}
+
+/* Bulk actions bar */
+#bulk-bar{
+  display:none;padding:8px 12px;background:rgba(39,170,225,.08);
+  border-bottom:1px solid rgba(39,170,225,.2);flex-shrink:0;
+  gap:6px;align-items:center;flex-wrap:wrap;
+}
+#bulk-bar.visible{display:flex}
+.bulk-count{font-size:12px;color:var(--b2);flex:1;font-weight:600}
+.bulk-btn{padding:4px 10px;border-radius:var(--r-sm);font-size:11px;cursor:pointer;border:1px solid;
+  font-family:"Barlow Condensed",sans-serif;font-weight:600;letter-spacing:.4px;transition:opacity .15s}
+.bulk-btn:hover{opacity:.8}
+.bulk-btn.ba{background:rgba(80,192,32,.15);border-color:rgba(80,192,32,.3);color:var(--g)}
+.bulk-btn.bf{background:rgba(240,160,32,.12);border-color:rgba(240,160,32,.3);color:var(--amber)}
+.bulk-btn.br{background:rgba(255,59,48,.12);border-color:rgba(255,59,48,.3);color:var(--p1)}
+.bulk-btn.bsa{background:rgba(255,255,255,.06);border-color:var(--line-2);color:var(--t2)}
+
+/* Claims list */
+#claims-list{flex:1;overflow-y:auto;padding:6px}
+.claim-card{
+  border-radius:var(--r-md);border:1px solid var(--line);
+  background:var(--surface);margin-bottom:6px;cursor:pointer;
+  position:relative;overflow:hidden;transition:border-color .15s,background .15s;
+  display:flex;flex-direction:column;
+}
+.claim-card:hover{border-color:var(--line-2);background:var(--surface-2)}
+.claim-card.selected{border-color:var(--b2);background:rgba(39,170,225,.06)}
+.claim-card-pri{position:absolute;left:0;top:0;bottom:0;width:3px}
+.claim-card-pri.p1{background:var(--p1)}
+.claim-card-pri.p2{background:var(--p2)}
+.claim-card-pri.p3{background:var(--p3)}
+.claim-card-body{padding:10px 12px 10px 16px}
+.cc-row1{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.cc-id{font-family:"JetBrains Mono",monospace;font-size:12px;font-weight:500;flex:1}
+.cc-badges{display:flex;gap:4px}
+.cc-badge{font-family:"Barlow Condensed",sans-serif;font-size:10px;font-weight:600;letter-spacing:.4px;
+  padding:2px 6px;border-radius:var(--r-pill);background:rgba(255,255,255,.08);color:var(--t2)}
+.cc-badge.als{background:rgba(39,170,225,.15);color:var(--b2)}
+.cc-badge.bls{background:rgba(80,192,32,.12);color:var(--g)}
+.cc-badge.p1{background:rgba(255,59,48,.15);color:var(--p1)}
+.cc-badge.p2{background:rgba(255,140,0,.15);color:var(--p2)}
+.cc-badge.p3{background:rgba(245,177,0,.12);color:var(--p3)}
+.cc-provider{font-size:12px;color:var(--t1);font-weight:600;margin-bottom:3px}
+.cc-meta{font-size:11px;color:var(--t3);margin-bottom:5px}
+.cc-bottom{display:flex;align-items:center;gap:6px}
+.cc-tariff{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--t2)}
+.cc-status-pill{font-family:"Barlow Condensed",sans-serif;font-size:10px;font-weight:600;
+  letter-spacing:.5px;padding:2px 8px;border-radius:var(--r-pill);margin-left:auto}
+.fraud-flag{font-family:"Barlow Condensed",sans-serif;font-size:10px;font-weight:700;
+  color:var(--p1);background:rgba(255,59,48,.12);padding:2px 6px;border-radius:var(--r-pill)}
+.cc-actions{display:flex;gap:6px;padding:0 12px 10px 16px}
+.cc-action-btn{flex:1;padding:5px 0;border-radius:var(--r-sm);font-size:11px;font-weight:600;
+  cursor:pointer;border:1px solid;transition:opacity .15s;text-align:center;
+  font-family:"Barlow Condensed",sans-serif;letter-spacing:.4px}
+.cc-action-btn:hover{opacity:.8}
+.cc-action-btn.review{background:rgba(39,170,225,.1);border-color:rgba(39,170,225,.25);color:var(--b2)}
+.cc-action-btn.quick-approve{background:rgba(80,192,32,.1);border-color:rgba(80,192,32,.25);color:var(--g)}
+
+/* Checkbox */
+.cc-check{position:absolute;top:10px;right:10px;width:16px;height:16px;
+  accent-color:var(--b2);cursor:pointer}
+
+/* ── CENTRE: CLAIM DETAIL ─────────────────────────────────────────────────── */
+#panel-detail{
+  flex:1;display:flex;flex-direction:column;overflow:hidden;
+  border-right:1px solid var(--line-2);min-width:0;
+}
+.detail-placeholder{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:12px;color:var(--t3);
+}
+.detail-placeholder .ms{font-size:48px;color:var(--t4)}
+.detail-placeholder p{font-size:14px}
+#detail-content{display:none;flex:1;overflow-y:auto;flex-direction:column}
+#detail-content.visible{display:flex}
+
+.detail-hdr{padding:16px;border-bottom:1px solid var(--line);flex-shrink:0}
+.dh-row1{display:flex;align-items:flex-start;gap:12px;margin-bottom:8px}
+.dh-id{font-family:"JetBrains Mono",monospace;font-size:18px;font-weight:500;flex:1}
+.dh-status-pill{padding:4px 14px;border-radius:var(--r-pill);font-family:"Barlow Condensed",sans-serif;
+  font-size:12px;font-weight:700;letter-spacing:.6px}
+.dh-provider{font-size:13px;color:var(--t2);margin-bottom:4px}
+.dh-submitted{font-size:11px;color:var(--t3)}
+
+.detail-section{padding:14px 16px;border-bottom:1px solid var(--line)}
+.ds-title{font-family:"Barlow Condensed",sans-serif;font-size:11px;font-weight:600;
+  letter-spacing:.8px;color:var(--t3);text-transform:uppercase;margin-bottom:10px}
+
+/* FHIR validation rows */
+.fhir-row{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px;color:var(--t2)}
+.fhir-row .ms{font-size:16px}
+.fhir-label{flex:1}
+.fhir-ok{color:var(--ok)}
+.fhir-fail{color:var(--p1)}
+
+/* Fraud panel */
+.fraud-panel{background:var(--surface-2);border-radius:var(--r-md);padding:12px;
+  border:1px solid var(--line)}
+.fraud-score-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.fraud-score-num{font-family:"JetBrains Mono",monospace;font-size:24px;font-weight:500}
+.fraud-risk-label{font-family:"Barlow Condensed",sans-serif;font-size:13px;font-weight:700;
+  letter-spacing:.4px;padding:3px 10px;border-radius:var(--r-pill)}
+.fraud-risk-label.low{background:rgba(52,199,89,.15);color:var(--ok)}
+.fraud-risk-label.high{background:rgba(255,59,48,.15);color:var(--p1);animation:fpulse 2s infinite}
+@keyframes fpulse{0%,100%{opacity:1}50%{opacity:.7}}
+.fraud-flag-item{display:flex;gap:6px;font-size:11px;color:var(--p1);margin-top:6px;
+  padding:4px 6px;background:rgba(255,59,48,.06);border-radius:var(--r-sm)}
+.fraud-flag-item .ms{font-size:14px;flex-shrink:0}
+
+/* Tariff table */
+.tariff-table{width:100%;font-size:12px}
+.tariff-table td{padding:4px 0;color:var(--t2)}
+.tariff-table td:last-child{text-align:right;font-family:"JetBrains Mono",monospace;color:var(--t1)}
+.tariff-divider td{border-top:1px solid var(--line);padding-top:8px;font-weight:600;color:var(--t1)}
+
+/* ePCR collapsible */
+.collapsible-hdr{display:flex;align-items:center;cursor:pointer;gap:6px;user-select:none}
+.collapsible-hdr .ms{font-size:16px;color:var(--t3);transition:transform .2s}
+.collapsible-hdr.open .ms{transform:rotate(90deg)}
+.collapsible-body{display:none;padding-top:10px}
+.collapsible-body.open{display:block}
+
+/* Docs checklist */
+.doc-row{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12px;border-bottom:1px solid var(--line)}
+.doc-row:last-child{border-bottom:none}
+.doc-name{flex:1;color:var(--t2)}
+.doc-status{font-family:"Barlow Condensed",sans-serif;font-size:11px;font-weight:600;
+  padding:2px 8px;border-radius:var(--r-pill)}
+.doc-status.ok{background:rgba(52,199,89,.12);color:var(--ok)}
+.doc-status.warn{background:rgba(245,177,0,.12);color:var(--p3)}
+.doc-status.pending{background:rgba(255,255,255,.06);color:var(--t3)}
+
+/* Decision row */
+.decision-row{
+  display:flex;gap:8px;padding:14px 16px;border-top:1px solid var(--line-2);
+  background:var(--surface);flex-shrink:0;flex-wrap:wrap;
+}
+.dec-btn{padding:7px 16px;border-radius:var(--r-sm);font-size:12px;font-weight:600;
+  cursor:pointer;border:1px solid;transition:opacity .15s;font-family:"Barlow Condensed",sans-serif;
+  letter-spacing:.5px}
+.dec-btn:hover{opacity:.8}
+.dec-btn.approve{background:rgba(80,192,32,.15);border-color:rgba(80,192,32,.3);color:var(--g)}
+.dec-btn.deduct{background:rgba(245,177,0,.1);border-color:rgba(245,177,0,.25);color:var(--p3)}
+.dec-btn.info{background:rgba(255,255,255,.06);border-color:var(--line-2);color:var(--t2)}
+.dec-btn.dispute{background:rgba(240,160,32,.1);border-color:rgba(240,160,32,.25);color:var(--amber)}
+.dec-btn.reject{background:rgba(255,59,48,.12);border-color:rgba(255,59,48,.25);color:var(--p1)}
+
+/* Deduction inline form */
+#deduction-form{
+  display:none;padding:14px 16px;border-top:1px solid var(--line);
+  background:rgba(245,177,0,.04);flex-shrink:0;
+}
+#deduction-form.visible{display:block}
+.ded-row{display:flex;gap:10px;margin-bottom:10px;align-items:flex-end}
+.ded-field{flex:1;display:flex;flex-direction:column;gap:4px}
+.ded-label{font-size:11px;color:var(--t3);font-family:"Barlow Condensed",sans-serif;
+  letter-spacing:.4px;font-weight:600}
+.ded-input{background:var(--surface-2);border:1px solid var(--line-2);border-radius:var(--r-sm);
+  padding:6px 10px;color:var(--t1);font-size:12px;font-family:"Exo 2",sans-serif;
+  outline:none}
+.ded-input:focus{border-color:var(--b2)}
+.ded-input select{background:var(--surface-2);color:var(--t1)}
+.ded-confirm{padding:7px 18px;background:rgba(80,192,32,.15);border:1px solid rgba(80,192,32,.3);
+  color:var(--g);border-radius:var(--r-sm);font-size:12px;font-weight:600;cursor:pointer;
+  font-family:"Barlow Condensed",sans-serif;letter-spacing:.4px}
+.ded-cancel{padding:7px 14px;background:none;border:1px solid var(--line-2);
+  color:var(--t3);border-radius:var(--r-sm);font-size:12px;cursor:pointer;margin-left:6px}
+
+/* ── RIGHT: PAYMENTS ─────────────────────────────────────────────────────── */
+#panel-payments{
+  width:320px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden;
+}
+.prov-card{
+  border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:6px;
+  padding:12px;background:var(--surface);transition:border-color .15s;
+}
+.prov-card:hover{border-color:var(--line-2)}
+.prov-name{font-size:13px;font-weight:600;margin-bottom:4px}
+.prov-meta{font-size:11px;color:var(--t3);margin-bottom:8px}
+.prov-method{font-family:"Barlow Condensed",sans-serif;font-size:10px;font-weight:600;
+  letter-spacing:.5px;color:var(--b2);background:rgba(39,170,225,.1);
+  padding:2px 7px;border-radius:var(--r-pill)}
+.prov-footer{display:flex;align-items:center;margin-top:8px;gap:8px}
+.prov-queue-btn{
+  padding:5px 12px;border-radius:var(--r-sm);font-size:11px;font-weight:600;cursor:pointer;
+  border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:var(--t2);
+  font-family:"Barlow Condensed",sans-serif;letter-spacing:.4px;transition:all .15s;margin-left:auto;
+}
+.prov-queue-btn.queued{background:rgba(80,192,32,.12);border-color:rgba(80,192,32,.25);color:var(--g)}
+.prov-queue-btn:hover:not(.queued){background:rgba(255,255,255,.08)}
+
+.routing-rule{
+  padding:8px 14px;background:rgba(39,170,225,.05);border-radius:var(--r-sm);
+  border:1px solid rgba(39,170,225,.12);font-size:11px;color:var(--t3);margin-bottom:10px;
+  font-family:"JetBrains Mono",monospace;
+}
+.run-batch-btn{
+  width:100%;padding:10px;border-radius:var(--r-md);background:rgba(80,192,32,.15);
+  border:1px solid rgba(80,192,32,.3);color:var(--g);font-size:14px;font-weight:700;
+  cursor:pointer;font-family:"Barlow Condensed",sans-serif;letter-spacing:.6px;
+  transition:opacity .15s;margin-bottom:12px;
+}
+.run-batch-btn:hover{opacity:.8}
+.run-batch-btn:disabled{opacity:.3;cursor:default}
+
+/* eTIMS panel */
+.etims-panel{
+  border:1px solid var(--line-2);border-radius:var(--r-md);padding:12px;
+  background:var(--surface-2);
+}
+.etims-row{display:flex;align-items:center;gap:8px;font-size:12px;padding:3px 0}
+.etims-label{color:var(--t3);flex:1}
+.etims-val{color:var(--t2);font-family:"JetBrains Mono",monospace;font-size:11px}
+.etims-dot{width:8px;height:8px;border-radius:50%;background:var(--g);
+  animation:pulse 2s infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.etims-gen-btn{padding:4px 10px;border-radius:var(--r-sm);font-size:11px;font-weight:600;
+  cursor:pointer;background:rgba(39,170,225,.1);border:1px solid rgba(39,170,225,.25);color:var(--b2);
+  font-family:"Barlow Condensed",sans-serif;letter-spacing:.4px}
+
+/* ── PAYMENT BATCH MODAL ─────────────────────────────────────────────────── */
+#modal-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;
+  align-items:center;justify-content:center;backdrop-filter:blur(4px);
+}
+#modal-overlay.visible{display:flex}
+#batch-modal{
+  background:var(--surface);border:1px solid var(--line-2);border-radius:var(--r-lg);
+  width:520px;max-height:80vh;overflow-y:auto;padding:24px;
+}
+.modal-title{font-size:18px;font-weight:700;margin-bottom:16px;color:var(--t1)}
+.modal-section{margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.modal-row{display:flex;justify-content:space-between;font-size:13px;padding:3px 0}
+.modal-row .label{color:var(--t3)}
+.modal-row .val{color:var(--t1);font-family:"JetBrains Mono",monospace}
+.modal-total{font-size:15px;font-weight:700;display:flex;justify-content:space-between;
+  margin-bottom:16px}
+.modal-total .val{color:var(--g);font-family:"JetBrains Mono",monospace}
+.dual-auth{display:flex;gap:8px;align-items:center;font-size:12px;padding:10px;
+  background:rgba(255,255,255,.03);border-radius:var(--r-sm);border:1px solid var(--line);margin-bottom:16px}
+.da-check{font-size:14px}
+.da-ok{color:var(--ok)}
+.da-wait{color:var(--t3)}
+.modal-btns{display:flex;gap:10px;justify-content:flex-end}
+.modal-btn{padding:9px 22px;border-radius:var(--r-sm);font-size:13px;font-weight:600;cursor:pointer;
+  border:1px solid;font-family:"Barlow Condensed",sans-serif;letter-spacing:.5px}
+.modal-btn.cancel{background:none;border-color:var(--line-2);color:var(--t2)}
+.modal-btn.confirm{background:rgba(80,192,32,.15);border-color:rgba(80,192,32,.3);color:var(--g)}
+.modal-btn:hover{opacity:.8}
+
+/* Live feed */
+#live-feed{display:none;margin-top:14px;font-family:"JetBrains Mono",monospace;font-size:11px;
+  background:rgba(0,0,0,.4);border-radius:var(--r-sm);padding:12px;max-height:200px;overflow-y:auto}
+#live-feed.visible{display:block}
+.lf-line{padding:2px 0;color:var(--t2)}
+.lf-line.ok{color:var(--ok)}
+.lf-line.done{color:var(--g);font-weight:700}
+
+/* ── SCROLLBAR ────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
+
+/* ── STATUS PILL COLOURS ─────────────────────────────────────────────────── */
+.pill-QUEUED        {background:rgba(245,177,0,.15);color:var(--p3)}
+.pill-UNDER_REVIEW  {background:rgba(240,160,32,.15);color:var(--amber)}
+.pill-APPROVED      {background:rgba(39,170,225,.15);color:var(--b2)}
+.pill-DISPUTED      {background:rgba(255,140,0,.15);color:var(--p2)}
+.pill-REJECTED      {background:rgba(255,59,48,.15);color:var(--p1)}
+.pill-PAID          {background:rgba(80,192,32,.15);color:var(--g)}
+
+/* ── SKELETON ─────────────────────────────────────────────────────────────── */
+.skeleton{
+  background:linear-gradient(90deg,var(--surface),var(--surface-2),var(--surface));
+  background-size:200%;animation:shimmer 1.5s infinite;border-radius:4px;
+}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.sk-card{height:88px;margin-bottom:6px;border-radius:var(--r-md)}
+
+/* ── TOAST ────────────────────────────────────────────────────────────────── */
+#toast{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--surface-2);border:1px solid var(--line-2);border-radius:var(--r-md);
+  padding:10px 20px;font-size:13px;color:var(--t1);opacity:0;
+  transition:opacity .25s,transform .25s;z-index:9999;pointer-events:none;
+  backdrop-filter:blur(10px);
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@keyframes nacd-spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+/* Live claim badge — dispatch-originated claims */
+.cc-live-badge{display:inline-flex;align-items:center;padding:1px 5px;background:rgba(80,192,32,.15);border:1px solid rgba(80,192,32,.3);border-radius:var(--r-pill);font-family:"JetBrains Mono",monospace;font-size:8px;font-weight:600;letter-spacing:.6px;color:var(--g);margin-right:4px;vertical-align:middle;}
+
+/* ── SHA brand logo + animation ─────────────────── */
+.sha-logo-pill{display:flex;align-items:center;flex-shrink:0;padding:0;background:transparent;}
+.sha-logo-pill img{height:28px;width:auto;display:block;filter:invert(1) hue-rotate(195deg) saturate(1.4);animation:brand-glow 4s ease-in-out infinite;}
+@keyframes brand-glow{0%,100%{opacity:.82;}50%{opacity:1;}}
+.sha-nadc{font-family:var(--fh);font-weight:700;font-size:13px;letter-spacing:.3px;background:linear-gradient(90deg,var(--b2) 0%,var(--g) 45%,var(--b2) 90%);background-size:200% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:nadc-sweep 9s linear infinite;line-height:1.1;display:block;}
+@keyframes nadc-sweep{0%{background-position:100% 0;}100%{background-position:-100% 0;}}
+
+/* ── App switcher (icon-forward) ─────────────────────────────────────── */
+.app-sw{position:relative;display:inline-flex;}
+.app-sw-btn{display:flex;align-items:center;gap:7px;padding:6px 12px 6px 10px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  border-radius:999px;color:rgba(255,255,255,.95);
+  font-family:'Exo 2',sans-serif;font-size:12.5px;font-weight:600;
+  cursor:pointer;transition:background .12s,border-color .12s;}
+.app-sw-btn:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.14);}
+.app-sw-btn.open{background:rgba(80,192,32,.12);border-color:rgba(80,192,32,.30);}
+.app-sw-btn .mat{font-size:18px;color:#50C020;}
+.app-sw-btn .asb-cur{letter-spacing:.2px;}
+.app-sw-btn .asb-arrow{font-size:14px !important;color:rgba(255,255,255,.4) !important;margin-left:1px;transition:transform .15s;}
+.app-sw-btn.open .asb-arrow{transform:rotate(180deg);}
+.app-sw-panel{display:none;position:absolute;top:calc(100% + 8px);left:0;
+  width:296px;background:rgba(14,22,32,.96);backdrop-filter:saturate(160%) blur(16px);
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:14px;box-shadow:0 18px 42px rgba(0,0,0,.7);
+  z-index:9000;overflow:hidden;padding:8px;}
+.app-sw-panel.open{display:block;animation:asPop .14s ease-out;}
+@keyframes asPop{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
+.asp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.asp-item{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:6px;padding:14px 6px 10px;background:transparent;color:rgba(255,255,255,.7);
+  text-decoration:none;text-align:center;border-radius:10px;
+  border:1px solid transparent;
+  transition:background .12s,color .12s,border-color .12s,transform .08s;}
+.asp-item:hover{background:rgba(255,255,255,.05);color:#fff;border-color:rgba(255,255,255,.08);}
+.asp-item:active{transform:scale(.96);}
+.asp-item.on{background:rgba(80,192,32,.10);color:#50C020;border-color:rgba(80,192,32,.25);}
+.asp-item .mat{font-size:30px;line-height:1;}
+.asp-item b{font-family:'Exo 2',sans-serif;font-weight:500;font-size:11px;display:block;letter-spacing:.1px;}
+
+</style>
+<link rel="stylesheet" href="/assets/tokens-v2.css">
+</head>
+<body>
+<div id="nacd-auth-overlay" style="position:fixed;inset:0;z-index:9000;background:rgba(3,12,23,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .2s;"><div style="font-family:'Exo 2',system-ui,sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,.35);text-transform:uppercase;">SHA · NADC</div><div style="width:26px;height:26px;border:2px solid rgba(80,192,32,.25);border-top-color:#50C020;border-radius:50%;animation:nacd-spin .8s linear infinite;"></div><div style="font-family:'Exo 2',system-ui,sans-serif;font-size:10px;color:rgba(255,255,255,.25);">Authenticating…</div></div>
+<div style="display:flex;flex-direction:column;height:100%">
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <div class="tb-logo">
+    <div class="sha-logo-pill" style="height:26px;padding:2px 5px;"><img src="/sha-social-health-authority-logo.png" alt="SHA" loading="lazy" style="height:20px;"></div>
+    <div>
+      <div class="tb-sha sha-nadc" style="font-size:12px;">NADC</div>
+      <div class="tb-sub">NATIONAL AMBULANCE DISPATCH CENTRE</div>
+    </div>
+  </div>
+  <div class="tb-div"></div>
+  <div class="tb-title">Claims &amp; Payments</div>
+  <div class="tb-badge">CLAIMS CONSOLE</div>
+  <div class="app-sw">
+  <button class="app-sw-btn" onclick="toggleAppSw()" aria-label="Switch app">
+    <span class="mat">apps</span>
+    <span class="asb-cur">Claims</span>
+    <span class="mat asb-arrow">expand_more</span>
+  </button>
+  <div class="app-sw-panel" id="app-sw-panel">
+    <div class="asp-grid">
+      <a class="asp-item" href="/dashboard" title="Wall"><span class="mat">tv</span><b>Wall</b></a>
+      <a class="asp-item" href="/psap" title="PSAP"><span class="mat">call</span><b>PSAP</b></a>
+      <a class="asp-item" href="/dispatch" title="Dispatch"><span class="mat">radar</span><b>Dispatch</b></a>
+      <a class="asp-item" href="/supervisor" title="Supervisor"><span class="mat">supervisor_account</span><b>Supervisor</b></a>
+      <a class="asp-item" href="/emt" title="EMT"><span class="mat">directions_car</span><b>EMT</b></a>
+      <a class="asp-item" href="/hospital" title="Hospital"><span class="mat">local_hospital</span><b>Hospital</b></a>
+      <a class="asp-item on" href="/claims" title="Claims"><span class="mat">receipt_long</span><b>Claims</b></a>
+      <a class="asp-item" href="/providers" title="Providers"><span class="mat">business</span><b>Providers</b></a>
+      <a class="asp-item" href="/admin" title="Admin"><span class="mat">admin_panel_settings</span><b>Admin</b></a>
+    </div>
+  </div>
+</div>
+  <div class="tb-right">
+    <div class="tb-clock" id="clock">--:--:--</div>
+    <div style="display:flex;align-items:center;gap:6px;padding:3px 10px 3px 4px;border-radius:999px;background:rgba(255,255,255,.06);font-family:'Exo 2',sans-serif;font-size:11px;color:rgba(255,255,255,.62);">
+      <div id="user-av" style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#00519B,#27AAE1);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:8.5px;color:#fff;">?</div>
+      <span id="user-nm" style="max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</span>
+    </div>
+    <button title="Sign out" onclick="if(window.Clerk)window.Clerk.signOut().then(function(){location.reload();})" style="display:flex;align-items:center;padding:5px 7px;border-radius:999px;background:transparent;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-family:'Material Symbols Outlined';font-size:16px;font-weight:400;font-style:normal;">logout</button>
+  </div>
+</div>
+
+<!-- KPI STRIP -->
+<div id="kpi-strip">
+  <div class="kpi-cell" data-accent="red">
+    <div class="kpi-label">Claims Queued</div>
+    <div class="kpi-val" id="kpi-queued">—</div>
+  </div>
+  <div class="kpi-cell" data-accent="amber">
+    <div class="kpi-label">Under Review</div>
+    <div class="kpi-val" id="kpi-review">—</div>
+  </div>
+  <div class="kpi-cell" data-accent="blue">
+    <div class="kpi-label">Approved (Unpaid)</div>
+    <div class="kpi-val" id="kpi-approved">—</div>
+  </div>
+  <div class="kpi-cell" data-accent="green">
+    <div class="kpi-label">Paid Today</div>
+    <div class="kpi-val" id="kpi-paid-today">—</div>
+  </div>
+  <div class="kpi-cell" data-accent="blue">
+    <div class="kpi-label">Avg Claim Value</div>
+    <div class="kpi-val" id="kpi-avg">—</div>
+  </div>
+  <div class="kpi-cell" data-accent="red">
+    <div class="kpi-label">Fraud Flags</div>
+    <div class="kpi-val" id="kpi-fraud">—</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- LEFT: QUEUE -->
+  <div id="panel-queue">
+    <div class="panel-hdr">
+      <span class="material-symbols-outlined" style="font-size:18px;color:var(--t3)">receipt_long</span>
+      <span class="panel-hdr-title">Claims Queue</span>
+      <span class="panel-hdr-count" id="queue-total">0 claims</span>
+    </div>
+    <div class="filter-tabs" id="filter-tabs">
+      <button class="ftab active" data-filter="ALL">All</button>
+      <button class="ftab" data-filter="QUEUED">Queued</button>
+      <button class="ftab" data-filter="UNDER_REVIEW">Review</button>
+      <button class="ftab" data-filter="APPROVED">Approved</button>
+      <button class="ftab" data-filter="DISPUTED">Disputed</button>
+      <button class="ftab" data-filter="PAID">Paid</button>
+    </div>
+    <div id="bulk-bar">
+      <span class="bulk-count" id="bulk-count-label">0 selected</span>
+      <button class="bulk-btn bsa" onclick="selectAllVisible()">Select All</button>
+      <button class="bulk-btn ba" onclick="bulkApprove()">Bulk Approve</button>
+      <button class="bulk-btn bf" onclick="bulkFlag()">Bulk Flag</button>
+      <button class="bulk-btn br" onclick="bulkReject()">Bulk Reject</button>
+    </div>
+    <div id="claims-list">
+      <div class="sk-card skeleton"></div>
+      <div class="sk-card skeleton"></div>
+      <div class="sk-card skeleton"></div>
+      <div class="sk-card skeleton"></div>
+    </div>
+  </div>
+
+  <!-- CENTRE: DETAIL -->
+  <div id="panel-detail">
+    <div class="detail-placeholder" id="detail-placeholder">
+      <span class="material-symbols-outlined ms">receipt_long</span>
+      <p>Select a claim to review</p>
+    </div>
+    <div id="detail-content">
+      <!-- Filled by JS -->
+    </div>
+    <div id="deduction-form">
+      <div style="font-size:12px;font-weight:600;color:var(--p3);margin-bottom:10px">
+        Approve with Deduction
+      </div>
+      <div class="ded-row">
+        <div class="ded-field">
+          <label class="ded-label">Deduction Amount (KES)</label>
+          <input class="ded-input" type="number" id="ded-amount" placeholder="0" min="0">
+        </div>
+        <div class="ded-field" style="flex:2">
+          <label class="ded-label">Reason</label>
+          <select class="ded-input" id="ded-reason">
+            <option>SLA breach</option>
+            <option>Incomplete ePCR</option>
+            <option>Distance discrepancy</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="ded-row">
+        <div class="ded-field" style="flex:1">
+          <label class="ded-label">Note</label>
+          <input class="ded-input" id="ded-note" placeholder="Optional note">
+        </div>
+      </div>
+      <button class="ded-confirm" onclick="confirmDeduction()">Confirm &amp; Approve</button>
+      <button class="ded-cancel" onclick="cancelDeduction()">Cancel</button>
+    </div>
+    <div class="decision-row" id="decision-row" style="display:none">
+      <button class="dec-btn approve"  onclick="doApprove()">Approve</button>
+      <button class="dec-btn deduct"   onclick="toggleDeduction()">Approve with Deduction ▾</button>
+      <button class="dec-btn info"     onclick="doRequestInfo()">Request Info</button>
+      <button class="dec-btn dispute"  onclick="doDispute()">Dispute</button>
+      <button class="dec-btn reject"   onclick="doReject()">Reject</button>
+    </div>
+  </div>
+
+  <!-- RIGHT: PAYMENTS -->
+  <div id="panel-payments">
+    <div class="panel-hdr">
+      <span class="material-symbols-outlined" style="font-size:18px;color:var(--t3)">payments</span>
+      <span class="panel-hdr-title">Payment Processing</span>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:10px">
+      <div class="routing-rule">Payments ≥ KES 500,000 → PesaLink RTGS &nbsp;·&nbsp; Below → M-Pesa B2C</div>
+      <button class="run-batch-btn" id="run-batch-btn" onclick="openBatchModal()">
+        ▶ Run Payment Batch
+      </button>
+      <div id="providers-list">
+        <div class="sk-card skeleton"></div>
+        <div class="sk-card skeleton"></div>
+        <div class="sk-card skeleton"></div>
+      </div>
+      <div style="margin-top:12px">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;
+          letter-spacing:.8px;color:var(--t3);text-transform:uppercase;margin-bottom:8px">
+          KRA eTIMS Integration
+        </div>
+        <div class="etims-panel">
+          <div class="etims-row">
+            <span class="etims-label">eTIMS Status</span>
+            <div class="etims-dot"></div>
+            <span style="font-size:11px;color:var(--g)">Connected</span>
+          </div>
+          <div class="etims-row">
+            <span class="etims-label">Tax period</span>
+            <span class="etims-val">May 2026</span>
+            <button class="etims-gen-btn" onclick="genEtims()">Generate Invoice</button>
+          </div>
+          <div class="etims-row">
+            <span class="etims-label">Last generated</span>
+            <span class="etims-val">15 Apr 2026 · ETIMS-REF-20260415-0039</span>
+          </div>
+          <div class="etims-row" style="margin-top:6px">
+            <button class="etims-gen-btn" onclick="dlEtims()" style="margin-left:auto">
+              Download PDF
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div><!-- /main -->
+
+<!-- BATCH MODAL -->
+<div id="modal-overlay">
+  <div id="batch-modal">
+    <div class="modal-title">Payment Batch Summary</div>
+    <div class="modal-section" id="batch-summary-section"><!-- filled by JS --></div>
+    <div class="dual-auth">
+      <span class="da-check da-ok">✅</span>
+      <span style="color:var(--t2)">sha_claims · Authorised</span>
+      <span class="da-check da-wait" style="margin-left:auto">⏳</span>
+      <span style="color:var(--t3)">Awaiting sha_admin</span>
+    </div>
+    <div id="live-feed"></div>
+    <div class="modal-btns" id="modal-btns">
+      <button class="modal-btn cancel" onclick="closeModal()">Cancel</button>
+      <button class="modal-btn confirm" id="modal-confirm-btn" onclick="confirmBatch()">Confirm &amp; Execute</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="/lib/nadc-state.js"></script>
+<script src="/lib/nadc-realtime.js"></script>
+<script src="/lib/nadc-auth.js"></script>
+<script>
+// ─── State ────────────────────────────────────────────────────────────────────
+var _claims       = [];
+var _activeFilter = 'ALL';
+var _selectedId   = null;
+var _selectedClaim= null;
+var _checked      = {};   // claimId → true
+var _queuedProvs  = {};   // providerId → true
+var _batchRunning = false;
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function fmtKES(n) {
+  if (n >= 1000000) return 'KES ' + (n / 1000000).toFixed(1) + 'M';
+  if (n >= 1000)    return 'KES ' + n.toLocaleString();
+  return 'KES ' + n;
+}
+function fmtDate(ts) {
+  if (!ts) return '—';
+  var d = new Date(ts);
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+}
+function fmtTime(ts) {
+  if (!ts) return '—';
+  var d = new Date(ts);
+  return d.toLocaleTimeString('en-KE', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+function timeAgo(ts) {
+  var diff = (Date.now() - ts) / 1000;
+  if (diff < 60)   return Math.floor(diff) + 's ago';
+  if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+  if (diff < 86400)return Math.floor(diff / 3600) + 'h ago';
+  return Math.floor(diff / 86400) + 'd ago';
+}
+function showToast(msg, type) {
+  var t = document.getElementById('toast');
+  var colors = {success:'var(--g)',error:'var(--p1)',warning:'var(--amber)',info:'var(--b2)'};
+  t.style.borderColor = colors[type] || 'var(--line-2)';
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 3000);
+}
+
+// ─── Status pill ─────────────────────────────────────────────────────────────
+function statusPill(status) {
+  var labels = {QUEUED:'Queued',UNDER_REVIEW:'Under Review',APPROVED:'Approved',
+    DISPUTED:'Disputed',REJECTED:'Rejected',PAID:'Paid'};
+  return '<span class="cc-status-pill pill-' + status + '">' + (labels[status] || status) + '</span>';
+}
+function statusPillBig(status) {
+  var labels = {QUEUED:'QUEUED',UNDER_REVIEW:'UNDER REVIEW',APPROVED:'APPROVED',
+    DISPUTED:'DISPUTED',REJECTED:'REJECTED',PAID:'PAID'};
+  return '<span class="dh-status-pill pill-' + status + '">' + (labels[status] || status) + '</span>';
+}
+
+// ─── Clock ────────────────────────────────────────────────────────────────────
+function updateClock() {
+  document.getElementById('clock').textContent =
+    new Date().toLocaleTimeString('en-KE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ─── KPI render ──────────────────────────────────────────────────────────────
+function renderKPIs(claims) {
+  var queued = 0, review = 0, approved = 0, paid = 0, fraud = 0, total = 0, count = 0;
+  var todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  for (var i = 0; i < claims.length; i++) {
+    var c = claims[i];
+    if (c.status === 'QUEUED')       queued++;
+    if (c.status === 'UNDER_REVIEW') review++;
+    if (c.status === 'APPROVED')     approved++;
+    if (c.status === 'PAID' && c.paidAt && c.paidAt > todayStart.getTime()) paid += c.tariff - c.deductions;
+    if (c.fraudScore > 60)           fraud++;
+    total += c.tariff;
+    count++;
+  }
+  document.getElementById('kpi-queued').textContent    = queued;
+  document.getElementById('kpi-review').textContent    = review;
+  document.getElementById('kpi-approved').textContent  = approved;
+  document.getElementById('kpi-paid-today').textContent= paid > 0 ? fmtKES(paid) : 'KES 0';
+  document.getElementById('kpi-avg').textContent       = count ? fmtKES(Math.floor(total / count)) : '—';
+  document.getElementById('kpi-fraud').textContent     = fraud;
+}
+
+// ─── Filter ───────────────────────────────────────────────────────────────────
+function filteredClaims() {
+  if (_activeFilter === 'ALL') return _claims;
+  var out = [];
+  for (var i = 0; i < _claims.length; i++) {
+    if (_claims[i].status === _activeFilter) out.push(_claims[i]);
+  }
+  return out;
+}
+
+// ─── Queue render ─────────────────────────────────────────────────────────────
+function renderQueue() {
+  var list = filteredClaims();
+  document.getElementById('queue-total').textContent = list.length + ' claims';
+  var el = document.getElementById('claims-list');
+  if (!list.length) {
+    el.innerHTML = '<div style="text-align:center;color:var(--t3);padding:32px 0;font-size:13px">No claims in this filter</div>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < list.length; i++) {
+    var c = list[i];
+    var priClass = 'p' + c.priority;
+    var checked  = _checked[c.id] ? 'checked' : '';
+    var fraudBadge = c.fraudScore > 60 ? '<span class="fraud-flag">⚠ HIGH RISK</span>' : '';
+    var liveBadge  = c.fromIncident ? '<span class="cc-live-badge">LIVE</span>' : '';
+    html += '<div class="claim-card' + (c.id === _selectedId ? ' selected' : '') + '" data-id="' + c.id + '" onclick="selectClaim(\'' + c.id + '\')">' +
+      '<div class="claim-card-pri ' + priClass + '"></div>' +
+      '<input type="checkbox" class="cc-check" ' + checked + ' onclick="toggleCheck(event,\'' + c.id + '\')">' +
+      '<div class="claim-card-body">' +
+        '<div class="cc-row1">' +
+          '<span class="cc-id">' + c.id + '</span>' +
+          liveBadge +
+          '<div class="cc-badges">' +
+            '<span class="cc-badge ' + c.unitType.toLowerCase() + '">' + c.unitType + '</span>' +
+            '<span class="cc-badge ' + priClass + '">P' + c.priority + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="cc-provider">' + c.providerName + '</div>' +
+        '<div class="cc-meta">' + c.incidentId + ' &nbsp;·&nbsp; ' + fmtDate(c.submittedAt) + '</div>' +
+        '<div class="cc-bottom">' +
+          '<span class="cc-tariff">' + fmtKES(c.tariff) + ' · ' + c.distanceKm + 'km · ' + (c.hospitalName || 'KNH') + '</span>' +
+          statusPill(c.status) +
+        '</div>' +
+        (fraudBadge ? '<div style="margin-top:4px">' + fraudBadge + '</div>' : '') +
+        '<div class="cc-meta" style="margin-top:3px">Submitted ' + timeAgo(c.submittedAt) + '</div>' +
+      '</div>' +
+      '<div class="cc-actions">' +
+        '<button class="cc-action-btn review" onclick="event.stopPropagation();reviewClaim(\'' + c.id + '\')">Review</button>' +
+        (c.status === 'QUEUED' ? '<button class="cc-action-btn quick-approve" onclick="event.stopPropagation();quickApprove(\'' + c.id + '\')">Quick Approve</button>' : '') +
+      '</div>' +
+    '</div>';
+  }
+  el.innerHTML = html;
+  updateBulkBar();
+}
+
+// ─── Claim selection ──────────────────────────────────────────────────────────
+function selectClaim(id) {
+  _selectedId = id;
+  for (var i = 0; i < _claims.length; i++) {
+    if (_claims[i].id === id) { _selectedClaim = _claims[i]; break; }
+  }
+  renderQueue();
+  renderDetail(_selectedClaim);
+}
+
+function reviewClaim(id) {
+  NACDState.claims.underReviewClaim(id);
+  for (var i = 0; i < _claims.length; i++) {
+    if (_claims[i].id === id) { _claims[i].status = 'UNDER_REVIEW'; break; }
+  }
+  selectClaim(id);
+  showToast('Claim moved to Under Review', 'info');
+}
+
+function quickApprove(id) {
+  NACDState.claims.approveClaim(id, 0, '');
+  for (var i = 0; i < _claims.length; i++) {
+    if (_claims[i].id === id) {
+      _claims[i].status = 'APPROVED';
+      _claims[i].approvedAt = Date.now();
+    }
+  }
+  if (_selectedId === id) renderDetail(_selectedClaim);
+  renderQueue();
+  renderKPIs(_claims);
+  showToast('Claim approved', 'success');
+}
+
+// ─── Detail render ────────────────────────────────────────────────────────────
+function renderDetail(c) {
+  if (!c) return;
+  var ph = document.getElementById('detail-placeholder');
+  var dc = document.getElementById('detail-content');
+  var dr = document.getElementById('decision-row');
+  ph.style.display = 'none';
+  dc.classList.add('visible');
+  var terminal = (c.status === 'PAID' || c.status === 'REJECTED');
+  dr.style.display = terminal ? 'none' : 'flex';
+
+  var fraudHigh = c.fraudScore > 60;
+  var fraudColor = fraudHigh ? 'var(--p1)' : 'var(--ok)';
+  var fraudLabel = fraudHigh
+    ? '<span class="fraud-risk-label high">🔴 HIGH RISK — manual review required</span>'
+    : '<span class="fraud-risk-label low">🟢 LOW RISK</span>';
+
+  var fraudFlags = '';
+  if (fraudHigh) {
+    fraudFlags =
+      '<div class="fraud-flag-item"><span class="material-symbols-outlined ms">warning</span>Flag 1: Same patient, same provider, 3rd transport in 24h</div>' +
+      '<div class="fraud-flag-item"><span class="material-symbols-outlined ms">warning</span>Flag 2: Distance claimed (' + c.distanceKm + 'km) may exceed GPS route</div>' +
+      '<div class="fraud-flag-item"><span class="material-symbols-outlined ms">warning</span>Flag 3: Claim submitted after unusual delay — manual review required</div>';
+  } else {
+    fraudFlags = '<div style="font-size:12px;color:var(--t3);margin-top:4px">No flags detected.</div>';
+  }
+
+  var baseKES  = c.unitType === 'ALS' ? 3500 : 2000;
+  var extraKm  = c.distanceKm > 25 ? c.distanceKm - 25 : 0;
+  var extraKES = extraKm * 85;
+  var subtotal = baseKES + extraKES;
+  var payable  = subtotal - (c.deductions || 0);
+
+  var docsHtml =
+    '<div class="doc-row"><span class="doc-name">ePCR Report</span><span class="doc-status ok">✅ Complete</span></div>' +
+    '<div class="doc-row"><span class="doc-name">Patient Consent</span><span class="doc-status ok">✅ Signed</span></div>' +
+    '<div class="doc-row"><span class="doc-name">KRA eTIMS Invoice</span>' +
+      (c.status === 'PAID' ? '<span class="doc-status ok">✅ ETIMS-REF-' + (20260500 + parseInt(c.id.slice(-2)||'1')) + '</span>' :
+       '<span class="doc-status pending">⏳ Generating...</span>') + '</div>' +
+    '<div class="doc-row"><span class="doc-name">Crew Manifest</span><span class="doc-status ok">✅ Filed</span></div>';
+
+  var fhirOk = c.fhirValid;
+  var eligOk = c.eligibilityValid;
+
+  dc.innerHTML =
+    // Header
+    '<div class="detail-hdr">' +
+      '<div class="dh-row1">' +
+        '<div class="dh-id">' + c.id + '</div>' +
+        statusPillBig(c.status) +
+      '</div>' +
+      '<div class="dh-provider">' + c.providerName + ' &nbsp;·&nbsp; ' + c.unitId + ' (' + c.unitType + ') &nbsp;·&nbsp; ' + c.incidentId + '</div>' +
+      '<div class="dh-submitted">Submitted: ' + fmtDate(c.submittedAt) + ', ' + fmtTime(c.submittedAt) + ' by system</div>' +
+    '</div>' +
+
+    // FHIR Validation
+    '<div class="detail-section">' +
+      '<div class="ds-title">FHIR Bundle Validation</div>' +
+      '<div class="fhir-row"><span class="material-symbols-outlined ms ' + (fhirOk?'fhir-ok':'fhir-fail') + '">' + (fhirOk?'check_circle':'cancel') + '</span>' +
+        '<span class="fhir-label">FHIR bundle received &amp; schema valid</span>' +
+        '<span>ICD-11 ' + c.icd11Code + ' — ' + c.icd11Label + '</span></div>' +
+      '<div class="fhir-row"><span class="material-symbols-outlined ms ' + (eligOk?'fhir-ok':'fhir-fail') + '">' + (eligOk?'check_circle':'cancel') + '</span>' +
+        '<span class="fhir-label">AfyaLink eligibility</span>' +
+        (eligOk ? '<span class="fhir-ok">✅ NHIF active (redacted: KE-***-' + (4000 + (parseInt(c.id.slice(-3))||100)) + ')</span>' :
+                  '<span class="fhir-fail">⚠ Member verification pending</span>') +
+        (!eligOk ? '<button onclick="revalidateFHIR(\'' + c.id + '\')" style="padding:2px 8px;border-radius:var(--r-sm);font-size:10px;font-weight:600;cursor:pointer;background:rgba(39,170,225,.1);border:1px solid rgba(39,170,225,.25);color:var(--b2);font-family:\'Barlow Condensed\',sans-serif;letter-spacing:.4px">Re-validate</button>' : '') +
+      '</div>' +
+      '<div class="fhir-row"><span class="material-symbols-outlined ms fhir-ok">check_circle</span>' +
+        '<span class="fhir-label">Tariff validation</span>' +
+        '<span>' + c.unitType + ' ' + c.distanceKm + 'km → ' + fmtKES(c.tariff) + ' (below cap)</span></div>' +
+      '<div class="fhir-row"><span class="material-symbols-outlined ms fhir-ok">check_circle</span>' +
+        '<span class="fhir-label">Duplicate check</span>' +
+        '<span>No duplicates in 90-day window</span></div>' +
+    '</div>' +
+
+    // Fraud
+    '<div class="detail-section">' +
+      '<div class="ds-title">Fraud Intelligence</div>' +
+      '<div class="fraud-panel">' +
+        '<div class="fraud-score-row">' +
+          '<span class="fraud-score-num" style="color:' + fraudColor + '">' + c.fraudScore + '/100</span>' +
+          fraudLabel +
+        '</div>' +
+        fraudFlags +
+      '</div>' +
+    '</div>' +
+
+    // Tariff breakdown
+    '<div class="detail-section">' +
+      '<div class="ds-title">Tariff Breakdown</div>' +
+      '<table class="tariff-table">' +
+        '<tr><td>Base tariff (' + c.unitType + ', 0–25km)</td><td>' + fmtKES(baseKES) + '</td></tr>' +
+        (extraKm > 0
+          ? '<tr><td>Additional ' + extraKm + 'km × KES 85</td><td>' + fmtKES(extraKES) + '</td></tr>'
+          : '<tr><td>Additional per-km</td><td>—</td></tr>') +
+        '<tr><td>Subtotal</td><td>' + fmtKES(subtotal) + '</td></tr>' +
+        '<tr><td>SHA deductions</td><td>' + (c.deductions ? '− ' + fmtKES(c.deductions) + (c.deductionReason ? ' (' + c.deductionReason + ')' : '') : '—') + '</td></tr>' +
+        '<tr class="tariff-divider"><td>Payable to provider</td><td style="color:var(--g)">' + fmtKES(payable) + '</td></tr>' +
+      '</table>' +
+    '</div>' +
+
+    // ePCR summary (collapsible)
+    '<div class="detail-section">' +
+      '<div class="ds-title collapsible-hdr" id="epcr-hdr" onclick="toggleEPCR()">' +
+        '<span style="flex:1">ePCR Summary</span>' +
+        '<span class="material-symbols-outlined">chevron_right</span>' +
+      '</div>' +
+      '<div class="collapsible-body" id="epcr-body">' +
+        '<div style="font-size:12px;color:var(--t2);line-height:1.8">' +
+          '<b>Chief complaint:</b> ' + c.icd11Label + '<br>' +
+          '<b>Vitals:</b> HR 92bpm / BP 118/76 / SpO₂ 97% / RR 18<br>' +
+          '<b>ICD-11:</b> ' + c.icd11Code + ' — ' + c.icd11Label + '<br>' +
+          '<b>Interventions:</b> IV access, O₂ 4L/min, 12-lead ECG<br>' +
+          '<b>Transport:</b> Patient stabilised, transported to ' + (c.hospitalName || 'KNH') +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+
+    // Documents
+    '<div class="detail-section">' +
+      '<div class="ds-title">Document Checklist</div>' +
+      docsHtml +
+    '</div>';
+}
+
+function toggleEPCR() {
+  var hdr  = document.getElementById('epcr-hdr');
+  var body = document.getElementById('epcr-body');
+  if (!hdr || !body) return;
+  hdr.classList.toggle('open');
+  body.classList.toggle('open');
+}
+
+// ─── Decision actions ─────────────────────────────────────────────────────────
+function doApprove() {
+  if (!_selectedClaim) return;
+  NACDState.claims.approveClaim(_selectedClaim.id, 0, '');
+  _selectedClaim.status = 'APPROVED';
+  _selectedClaim.approvedAt = Date.now();
+  renderDetail(_selectedClaim);
+  renderQueue();
+  renderKPIs(_claims);
+  showToast('Claim ' + _selectedClaim.id + ' approved', 'success');
+  closeDeduction();
+}
+
+function toggleDeduction() {
+  var df = document.getElementById('deduction-form');
+  df.classList.toggle('visible');
+}
+
+function cancelDeduction() { closeDeduction(); }
+function closeDeduction()  {
+  var df = document.getElementById('deduction-form');
+  df.classList.remove('visible');
+}
+
+function confirmDeduction() {
+  if (!_selectedClaim) return;
+  var amt    = parseFloat(document.getElementById('ded-amount').value) || 0;
+  var reason = document.getElementById('ded-reason').value;
+  NACDState.claims.approveClaim(_selectedClaim.id, amt, reason);
+  _selectedClaim.status      = 'APPROVED';
+  _selectedClaim.approvedAt  = Date.now();
+  _selectedClaim.deductions  = amt;
+  _selectedClaim.deductionReason = reason;
+  closeDeduction();
+  renderDetail(_selectedClaim);
+  renderQueue();
+  renderKPIs(_claims);
+  showToast('Approved with KES ' + amt + ' deduction (' + reason + ')', 'success');
+}
+
+function revalidateFHIR(id) {
+  showToast('Re-validating AfyaLink eligibility...', 'info');
+  setTimeout(function() {
+    for (var i = 0; i < _claims.length; i++) {
+      if (_claims[i].id === id) { _claims[i].eligibilityValid = true; break; }
+    }
+    if (_selectedClaim && _selectedClaim.id === id) {
+      _selectedClaim.eligibilityValid = true;
+      renderDetail(_selectedClaim);
+    }
+    showToast('AfyaLink: Member eligibility confirmed ✅', 'success');
+  }, 1800);
+}
+
+function doRequestInfo() {
+  if (!_selectedClaim) return;
+  showToast('Info request sent to ' + _selectedClaim.providerName, 'info');
+}
+
+function doDispute() {
+  if (!_selectedClaim) return;
+  NACDState.claims.disputeClaim(_selectedClaim.id, 'Manual dispute raised by sha_claims');
+  _selectedClaim.status = 'DISPUTED';
+  renderDetail(_selectedClaim);
+  renderQueue();
+  renderKPIs(_claims);
+  showToast('Claim ' + _selectedClaim.id + ' marked as Disputed', 'warning');
+}
+
+function doReject() {
+  if (!_selectedClaim) return;
+  NACDState.claims.rejectClaim(_selectedClaim.id, 'Rejected by sha_claims');
+  _selectedClaim.status = 'REJECTED';
+  renderDetail(_selectedClaim);
+  renderQueue();
+  renderKPIs(_claims);
+  showToast('Claim ' + _selectedClaim.id + ' rejected', 'error');
+}
+
+// ─── Bulk actions ─────────────────────────────────────────────────────────────
+function toggleCheck(e, id) {
+  e.stopPropagation();
+  if (e.target.checked) { _checked[id] = true; }
+  else { delete _checked[id]; }
+  updateBulkBar();
+}
+
+function updateBulkBar() {
+  var keys = Object.keys(_checked);
+  var bar  = document.getElementById('bulk-bar');
+  var lbl  = document.getElementById('bulk-count-label');
+  if (keys.length >= 2) {
+    bar.classList.add('visible');
+    lbl.textContent = keys.length + ' selected';
+  } else {
+    bar.classList.remove('visible');
+  }
+}
+
+function selectAllVisible() {
+  var list = filteredClaims();
+  for (var i = 0; i < list.length; i++) { _checked[list[i].id] = true; }
+  renderQueue();
+}
+
+function bulkApprove() {
+  var ids = Object.keys(_checked);
+  NACDState.claims.batchApprove(ids);
+  for (var i = 0; i < _claims.length; i++) {
+    for (var j = 0; j < ids.length; j++) {
+      if (_claims[i].id === ids[j] && _claims[i].status === 'QUEUED') {
+        _claims[i].status = 'APPROVED'; _claims[i].approvedAt = Date.now();
+      }
+    }
+  }
+  _checked = {};
+  renderQueue(); renderKPIs(_claims);
+  showToast(ids.length + ' claims approved', 'success');
+}
+
+function bulkFlag() {
+  var ids = Object.keys(_checked);
+  for (var i = 0; i < _claims.length; i++) {
+    for (var j = 0; j < ids.length; j++) {
+      if (_claims[i].id === ids[j]) { _claims[i].status = 'UNDER_REVIEW'; }
+    }
+  }
+  _checked = {};
+  renderQueue(); renderKPIs(_claims);
+  showToast(ids.length + ' claims flagged for review', 'warning');
+}
+
+function bulkReject() {
+  var ids = Object.keys(_checked);
+  for (var i = 0; i < _claims.length; i++) {
+    for (var j = 0; j < ids.length; j++) {
+      if (_claims[i].id === ids[j]) { _claims[i].status = 'REJECTED'; }
+    }
+  }
+  _checked = {};
+  renderQueue(); renderKPIs(_claims);
+  showToast(ids.length + ' claims rejected', 'error');
+}
+
+// ─── Providers render ─────────────────────────────────────────────────────────
+function renderProviders(claims) {
+  var byProv = {};
+  for (var i = 0; i < claims.length; i++) {
+    var c = claims[i];
+    if (c.status !== 'APPROVED') continue;
+    if (!byProv[c.providerId]) {
+      byProv[c.providerId] = { name:c.providerName, count:0, total:0, method:'M-Pesa B2C' };
+    }
+    byProv[c.providerId].count++;
+    byProv[c.providerId].total += (c.tariff - (c.deductions || 0));
+    if (byProv[c.providerId].total >= 500000) byProv[c.providerId].method = 'PesaLink RTGS';
+  }
+
+  var ids = Object.keys(byProv);
+  var el  = document.getElementById('providers-list');
+  var btn = document.getElementById('run-batch-btn');
+
+  if (!ids.length) {
+    el.innerHTML = '<div style="text-align:center;color:var(--t3);padding:24px 0;font-size:12px">No approved claims awaiting payment</div>';
+    btn.disabled = true;
+    return;
+  }
+  btn.disabled = false;
+
+  var html = '';
+  for (var p = 0; p < ids.length; p++) {
+    var pid = ids[p];
+    var pv  = byProv[pid];
+    var queued = _queuedProvs[pid] ? ' queued' : '';
+    var qLabel = _queuedProvs[pid] ? '✓ Queued' : 'Queue for Next Run';
+    html += '<div class="prov-card">' +
+      '<div class="prov-name">' + pv.name + '</div>' +
+      '<div class="prov-meta">' + pv.count + ' approved claims &nbsp;·&nbsp; ' + fmtKES(pv.total) + '</div>' +
+      '<div style="display:flex;align-items:center;gap:6px">' +
+        '<span class="prov-method">Method: ' + pv.method + '</span>' +
+        '<span style="font-size:11px;color:var(--t4)">Last paid: 15 Apr 2026</span>' +
+      '</div>' +
+      '<div class="prov-footer">' +
+        '<button class="prov-queue-btn' + queued + '" onclick="toggleQueue(\'' + pid + '\')">' + qLabel + '</button>' +
+      '</div>' +
+    '</div>';
+  }
+  el.innerHTML = html;
+}
+
+function toggleQueue(pid) {
+  if (_queuedProvs[pid]) { delete _queuedProvs[pid]; }
+  else { _queuedProvs[pid] = true; }
+  renderProviders(_claims);
+}
+
+// ─── Batch modal ──────────────────────────────────────────────────────────────
+function openBatchModal() {
+  var byProv = {};
+  for (var i = 0; i < _claims.length; i++) {
+    var c = _claims[i];
+    if (c.status !== 'APPROVED') continue;
+    if (!byProv[c.providerId]) {
+      byProv[c.providerId] = { name:c.providerName, count:0, total:0 };
+    }
+    byProv[c.providerId].count++;
+    byProv[c.providerId].total += (c.tariff - (c.deductions || 0));
+  }
+
+  var ids = Object.keys(byProv);
+  var grandTotal = 0; var mpesa = 0; var rtgs = 0; var mpesaTotal = 0; var rtgsTotal = 0;
+  for (var p = 0; p < ids.length; p++) {
+    grandTotal += byProv[ids[p]].total;
+    if (byProv[ids[p]].total >= 500000) { rtgs++; rtgsTotal += byProv[ids[p]].total; }
+    else { mpesa++; mpesaTotal += byProv[ids[p]].total; }
+  }
+
+  var html = '<div class="modal-row"><span class="label">Providers</span><span class="val">' + ids.length + '</span></div>';
+  if (mpesa) html += '<div class="modal-row"><span class="label">M-Pesa B2C</span><span class="val">' + mpesa + ' providers · ' + fmtKES(mpesaTotal) + '</span></div>';
+  if (rtgs)  html += '<div class="modal-row"><span class="label">PesaLink RTGS</span><span class="val">' + rtgs + ' providers · ' + fmtKES(rtgsTotal) + '</span></div>';
+  html += '<div class="modal-row" style="margin-top:6px;padding-top:6px;border-top:1px solid var(--line)"><span class="label">KRA eTIMS</span><span class="val">Generating consolidated invoice...</span></div>';
+
+  document.getElementById('batch-summary-section').innerHTML = html;
+  document.getElementById('live-feed').classList.remove('visible');
+  document.getElementById('live-feed').innerHTML = '';
+  document.getElementById('modal-btns').style.display = 'flex';
+  document.getElementById('modal-overlay').classList.add('visible');
+
+  window._batchProviders = byProv;
+  window._batchTotal = grandTotal;
+}
+
+function closeModal() {
+  if (_batchRunning) return;
+  document.getElementById('modal-overlay').classList.remove('visible');
+}
+
+function confirmBatch() {
+  if (_batchRunning) return;
+  _batchRunning = true;
+  document.getElementById('modal-btns').style.display = 'none';
+  var feed = document.getElementById('live-feed');
+  feed.classList.add('visible');
+  feed.innerHTML = '';
+
+  var byProv  = window._batchProviders || {};
+  var ids     = Object.keys(byProv);
+  var txBase  = 2400 + Math.floor(Math.random() * 100);
+  var now     = new Date();
+  var timeStr = now.toTimeString().slice(0,8);
+  var delay   = 0;
+
+  function addLine(txt, cls, dt) {
+    setTimeout(function() {
+      var line = document.createElement('div');
+      line.className = 'lf-line ' + (cls || '');
+      line.textContent = txt;
+      feed.appendChild(line);
+      feed.scrollTop = feed.scrollHeight;
+    }, dt);
+  }
+
+  addLine(timeStr + ' — Initiating payment batch · ' + ids.length + ' providers · ' + fmtKES(window._batchTotal), '', 0);
+  delay = 200;
+
+  for (var p = 0; p < ids.length; p++) {
+    (function(pv, d) {
+      setTimeout(function() {
+        var ts = new Date().toTimeString().slice(0,8);
+        if (pv.total >= 500000) {
+          var rtgsRef = 'RTGS-SHA-' + Date.now().toString().slice(-6) + Math.random().toString(36).slice(-3).toUpperCase();
+          addLine(ts + ' — ' + pv.name + ': ' + fmtKES(pv.total) + ' → PesaLink RTGS: ' + rtgsRef + ' ⏳', '', 0);
+        } else {
+          var txnRef = 'QK' + (txBase++) + Math.random().toString(36).slice(2,5).toUpperCase();
+          addLine(ts + ' — ' + pv.name + ': ' + fmtKES(pv.total) + ' → M-Pesa TXN: ' + txnRef + ' ✅', 'ok', 0);
+        }
+        feed.scrollTop = feed.scrollHeight;
+      }, d);
+    })(byProv[ids[p]], delay);
+    delay += 500;
+  }
+
+  var finalDelay = delay + 800;
+  setTimeout(function() {
+    var ts2 = new Date().toTimeString().slice(0,8);
+    addLine(ts2 + ' — KRA eTIMS: ETIMS-SHA-20260519-' + (1000 + ids.length) + ' generated ✅', 'ok', 0);
+    addLine(ts2 + ' — BATCH COMPLETE · ' + fmtKES(window._batchTotal) + ' disbursed', 'done', 200);
+    feed.scrollTop = feed.scrollHeight;
+  }, finalDelay);
+  delay = finalDelay + 300;
+
+  setTimeout(function() {
+    NACDState.claims.triggerPaymentRun([]);
+    _claims = NACDState.getClaims();
+    renderQueue(); renderKPIs(_claims); renderProviders(_claims);
+    _batchRunning = false;
+    _queuedProvs = {};
+    setTimeout(function() {
+      document.getElementById('modal-overlay').classList.remove('visible');
+      showToast('Payment batch complete · ' + fmtKES(window._batchTotal) + ' disbursed', 'success');
+    }, 1500);
+  }, delay + 800);
+}
+
+// ─── eTIMS ────────────────────────────────────────────────────────────────────
+function genEtims() {
+  showToast('Generating eTIMS invoice for May 2026...', 'info');
+  setTimeout(function() { showToast('ETIMS-REF-20260517-0047 generated ✅', 'success'); }, 2000);
+}
+function dlEtims() {
+  var ref = 'ETIMS-REF-20260415-0039';
+  var approved = 0; var total = 0;
+  for (var i = 0; i < _claims.length; i++) {
+    if (_claims[i].status === 'APPROVED' || _claims[i].status === 'PAID') {
+      approved++;
+      total += _claims[i].tariff - (_claims[i].deductions || 0);
+    }
+  }
+  var lines = [
+    'SHA NATIONAL AMBULANCE DISPATCH CENTRE',
+    'KRA eTIMS Electronic Invoice',
+    '─────────────────────────────────────',
+    'Reference : ' + ref,
+    'Date      : 15 Apr 2026',
+    'Tax Period: April 2026',
+    'PIN       : P051999999X',
+    '',
+    'Description                    Amount (KES)',
+    '─────────────────────────────────────────────',
+    'SHIF Ambulance Transport Claims (' + approved + ')   ' + total.toLocaleString(),
+    'ALS/BLS Tariff — per SHIF Schedule',
+    '',
+    'Subtotal                       KES ' + total.toLocaleString(),
+    'VAT (0% — healthcare exempt)   KES 0',
+    'TOTAL PAYABLE                  KES ' + total.toLocaleString(),
+    '',
+    'Signed: SHA Claims System',
+    'eTIMS CU Serial: SHA-CU-2026-001',
+    ref
+  ].join('\n');
+  var blob = new Blob([lines], { type: 'text/plain' });
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  a.href     = url;
+  a.download = ref + '.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Downloaded ' + ref, 'success');
+}
+
+// ─── Filter tabs ──────────────────────────────────────────────────────────────
+document.getElementById('filter-tabs').addEventListener('click', function(e) {
+  var btn = e.target.closest('.ftab');
+  if (!btn) return;
+  var tabs = document.querySelectorAll('.ftab');
+  for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
+  btn.classList.add('active');
+  _activeFilter = btn.dataset.filter;
+  renderQueue();
+});
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+fetch('/api/config')
+  .then(function(r) { return r.json(); })
+  .catch(function() { return {}; })
+  .then(function(cfg) {
+    NACDState.init({supabaseUrl:cfg.supabaseUrl||'',supabaseKey:cfg.supabaseAnonKey||'',seedIncidents:12,autoStart:true});
+
+    window._onNACDAuthReady=function(auth){
+      var ov=document.getElementById('nacd-auth-overlay');
+      if(ov){ov.style.opacity='0';setTimeout(function(){ov.style.display='none';},220);}
+      if(!auth.user)return;
+      var name=auth.user.fullName||auth.user.username||'User';
+      var ini=name.split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase();
+      var avEl=document.getElementById('user-av');var nmEl=document.getElementById('user-nm');
+      if(avEl)avEl.textContent=ini;if(nmEl)nmEl.textContent=name;
+    };
+    if(window.NACDAuth) NACDAuth.init({supabaseUrl:cfg.supabaseUrl,supabaseAnonKey:cfg.supabaseAnonKey,clerkPublishableKey:cfg.clerkPublishableKey},'claims');
+
+    NACDState.on('state:initialized', function() {
+      _claims = NACDState.getClaims();
+      renderKPIs(_claims);
+      renderQueue();
+      renderProviders(_claims);
+    });
+
+    NACDState.on('state:tick', function() {
+      _claims = NACDState.getClaims();
+      renderKPIs(_claims);
+    });
+
+    // Immediately refresh queue when an incident clears and generates a claim
+    NACDState.on('claims:updated', function() {
+      _claims = NACDState.getClaims();
+      renderKPIs(_claims);
+      renderQueue();
+      renderProviders(_claims);
+    });
+
+    // Also refresh when any incident is updated (in case of manual clear)
+    NACDState.on('incident:updated', function(inc) {
+      if (inc && inc.status === 'cleared') {
+        setTimeout(function() {
+          _claims = NACDState.getClaims();
+          renderKPIs(_claims);
+          renderQueue();
+        }, 800);  // brief delay to let _autoSyncClaims() run first
+      }
+    });
+
+    // nacd-sync: receive cleared incidents from dispatch + EMT ePCR events → auto-create claim
+    if(typeof BroadcastChannel!=='undefined'){
+      var _claimsSyncBC=new BroadcastChannel('nadc-sync');
+      _claimsSyncBC.onmessage=function(ev){
+        var d=ev.data;
+        if(!d) return;
+
+        // Existing path: dispatch clears an incident → create claim
+        if(d.source==='dispatch'&&d.type==='incident:updated'&&d.incident&&d.incident.status==='cleared'){
+          NACDState.claims.injectFromDispatch(d.incident);
+          _claims=NACDState.getClaims();
+          renderKPIs(_claims);
+          renderQueue();
+          renderProviders(_claims);
+        }
+
+        // EMT path: ePCR submitted → stage claim using claimRef as the canonical key
+        if(d.source==='emt'&&d.type==='epcr:submitted'&&d.claimRef){
+          var _ref=d.claimRef;
+          var _hasEpcr=false;
+          for(var _ci=0;_ci<_claims.length;_ci++){
+            if(_claims[_ci].id===_ref||_claims[_ci].incidentId===_ref){_hasEpcr=true;break;}
+          }
+          if(!_hasEpcr){
+            try{
+              NACDState.claims.injectFromDispatch({
+                id:_ref, number:_ref,
+                icd11:d.icdCode||d.icd11||'', complaint:'EMT ePCR',
+                unitId:d.unitId||null, status:'cleared',
+                clearedAt:Date.now(), priority:2,
+                lat:0, lng:0
+              });
+            }catch(e){}
+            _claims=NACDState.getClaims();
+            renderKPIs(_claims);
+            renderQueue();
+            renderProviders(_claims);
+            showToast('ePCR received \xb7 '+_ref+' queued','success');
+          }
+        }
+
+        // EMT path: unit cleared with claimRef → stage claim if not already present
+        if(d.source==='emt'&&d.type==='unit:status_update'&&d.newStatus==='cleared'&&d.claimRef){
+          var _ref2=d.claimRef;
+          var _hasClr=false;
+          for(var _ci2=0;_ci2<_claims.length;_ci2++){
+            if(_claims[_ci2].id===_ref2||_claims[_ci2].incidentId===_ref2){_hasClr=true;break;}
+          }
+          if(!_hasClr){
+            try{
+              NACDState.claims.injectFromDispatch({
+                id:_ref2, number:_ref2,
+                icd11:'', complaint:'Ambulance transport',
+                unitId:d.unitId||null, status:'cleared',
+                clearedAt:Date.now(), priority:2,
+                incidentId:d.incidentId||null,
+                lat:0, lng:0
+              });
+            }catch(e){}
+            _claims=NACDState.getClaims();
+            renderKPIs(_claims);
+            renderQueue();
+            renderProviders(_claims);
+          }
+        }
+      };
+    }
+
+    // ── Rescue Slice 5: Supabase Realtime CustomEvent listeners ──────────────────
+    // nadc:epcr:submitted — fired by NACDRealtime when a dispatch_events row with
+    // event_type='epcr_submitted' arrives via Supabase Realtime (cross-device path).
+    // Deduplicates against existing queue using claimRef / incident_id.
+    window.addEventListener('nadc:epcr:submitted', function(ev) {
+      var row = ev && ev.detail;
+      if (!row) return;
+      var payload  = row.payload || {};
+      var claimRef = payload.claimRef || null;
+      // Dedup: skip if already in queue
+      var alreadyIn = false;
+      for (var ci = 0; ci < _claims.length; ci++) {
+        if (_claims[ci].id === claimRef ||
+            (claimRef && _claims[ci].incidentId === claimRef)) {
+          alreadyIn = true; break;
+        }
+      }
+      if (alreadyIn) return;
+      // Inject via NACDState to keep in-memory state consistent
+      try {
+        NACDState.claims.injectFromDispatch({
+          id: claimRef, number: claimRef,
+          icd11: payload.icdCode || '', complaint: 'EMT ePCR (Realtime)',
+          unitId: row.unit_id || null, status: 'cleared',
+          clearedAt: Date.now(), priority: 2, lat: 0, lng: 0
+        });
+      } catch(e) {}
+      _claims = NACDState.getClaims();
+      renderKPIs(_claims);
+      renderQueue();
+      renderProviders(_claims);
+      showToast('ePCR (Realtime) \xb7 ' + (claimRef || 'claim') + ' queued', 'success');
+    });
+
+    // nadc:invoice:updated — fired by NACDRealtime when a case_invoices row changes.
+    // Updates the status of an existing claim in the queue to reflect DB truth.
+    window.addEventListener('nadc:invoice:updated', function(ev) {
+      var detail = ev && ev.detail;
+      if (!detail || !detail.row) return;
+      var dbRow = detail.row;
+      // Map DB status → JS status
+      var statusMap = { queued:'QUEUED', submitted:'UNDER_REVIEW', approved:'APPROVED',
+                        rejected:'REJECTED', payment_completed:'PAID', draft:'QUEUED' };
+      var jsStatus = statusMap[dbRow.status] || null;
+      if (!jsStatus) return;
+      // Find claim by invoice_number or incident_id UUID (use getSupabaseClient for UUID map)
+      var updated = false;
+      for (var ci = 0; ci < _claims.length; ci++) {
+        if (_claims[ci].id === dbRow.invoice_number ||
+            (dbRow.invoice_number && _claims[ci].incidentId === dbRow.invoice_number)) {
+          _claims[ci].status = jsStatus;
+          updated = true; break;
+        }
+      }
+      if (updated) {
+        renderKPIs(_claims);
+        renderQueue();
+        renderProviders(_claims);
+        console.info('[Claims] invoice:updated from Realtime', dbRow.invoice_number, '→', jsStatus);
+      }
+    });
+  });
+</script>
+
+<script>
+(function(){
+  function toggleAppSw(){
+    var p=document.getElementById('app-sw-panel');
+    var b=document.querySelector('.app-sw-btn');
+    if(!p) return;
+    var willOpen = !p.classList.contains('open');
+    p.classList.toggle('open');
+    if(b) b.classList.toggle('open', willOpen);
+  }
+  document.addEventListener('click',function(e){
+    var p=document.getElementById('app-sw-panel');
+    if(!p||!p.classList.contains('open')) return;
+    if(p.contains(e.target)) return;
+    if(e.target.closest && e.target.closest('.app-sw-btn')) return;
+    p.classList.remove('open');
+    var b=document.querySelector('.app-sw-btn');
+    if(b) b.classList.remove('open');
+  });
+  // Expose as global so inline onclick can call it
+  window.toggleAppSw = toggleAppSw;
+})();
+</script>
+
+</body>
+</html>

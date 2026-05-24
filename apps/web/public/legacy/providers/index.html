@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SHA NADC — Provider Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Barlow+Condensed:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<style>
+:root{
+  --bg:#0B0F14;--surface:#11161D;--surface-2:#161C25;
+  --line:rgba(255,255,255,.06);--line-2:rgba(255,255,255,.10);
+  --t1:rgba(255,255,255,.95);--t2:rgba(255,255,255,.62);--t3:rgba(255,255,255,.40);--t4:rgba(255,255,255,.22);
+  --b:#00519B;--b2:#27AAE1;--g:#50C020;--g2:#3DA818;
+  --p1:#FF3B30;--p2:#FF8C00;--p3:#F5B100;--ok:#34C759;
+  --amber:#F0A020;--purple:#9060E0;
+  --r-sm:8px;--r-md:12px;--r-lg:16px;--r-pill:999px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--t1);font-family:"Exo 2",sans-serif;font-size:13px;overflow:hidden}
+
+/* ── TOP BAR ─────────────────────────────────────────────────────────────── */
+#topbar{height:52px;background:var(--surface);border-bottom:1px solid var(--line-2);display:flex;align-items:center;gap:12px;padding:0 16px;flex-shrink:0}
+.tb-logo{display:flex;align-items:center;gap:8px}
+.sha-logo-pill{display:flex;align-items:center;flex-shrink:0;padding:0;background:transparent}
+.sha-logo-pill img{height:28px;width:auto;display:block;filter:invert(1) hue-rotate(195deg) saturate(1.4);animation:brand-glow 4s ease-in-out infinite}
+@keyframes brand-glow{0%,100%{opacity:.82}50%{opacity:1}}
+.sha-nadc{font-family:"Exo 2",sans-serif;font-weight:700;font-size:13px;letter-spacing:.3px;background:linear-gradient(90deg,var(--b2) 0%,var(--g) 45%,var(--b2) 90%);background-size:200% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:nadc-sweep 9s linear infinite;line-height:1.1;display:block}
+@keyframes nadc-sweep{0%{background-position:100% 0}100%{background-position:-100% 0}}
+.tb-sub{font-size:11px;color:var(--t3);font-family:"Barlow Condensed",sans-serif;letter-spacing:.5px}
+.tb-div{width:1px;height:28px;background:var(--line-2);margin:0 4px}
+.tb-title{font-size:14px;font-weight:600;color:var(--t1)}
+.tb-badge{background:rgba(144,96,224,.2);border:1px solid rgba(144,96,224,.4);color:#9060E0;font-family:"Barlow Condensed",sans-serif;font-size:10px;font-weight:600;letter-spacing:.8px;padding:2px 8px;border-radius:var(--r-pill)}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.tb-clock{font-family:"JetBrains Mono",monospace;font-size:13px;color:var(--t2)}
+.pg-nav{display:flex;align-items:center;gap:2px;margin-left:16px}
+.pn{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:var(--r-pill);text-decoration:none;font-size:11.5px;font-weight:500;color:var(--t2);transition:background .15s,color .15s;white-space:nowrap}
+.pn:hover{background:rgba(255,255,255,.05);color:var(--t1)}
+.pn.on{background:rgba(80,192,32,.13);color:var(--g)}
+.pn .mat{font-family:"Material Symbols Outlined";font-weight:400;font-size:14px;line-height:1}
+.pn .pm{font-family:"JetBrains Mono",monospace;font-size:8px;color:rgba(255,255,255,.25);letter-spacing:.6px;text-transform:uppercase;margin-left:1px}
+.pn.on .pm{color:rgba(80,192,32,.5)}
+
+/* ── KPI STRIP ───────────────────────────────────────────────────────────── */
+#kpi-strip{display:flex;gap:1px;background:var(--line);border-bottom:1px solid var(--line-2);flex-shrink:0;height:64px}
+.kpi-cell{flex:1;background:var(--surface);display:flex;flex-direction:column;justify-content:center;padding:0 16px;position:relative;overflow:hidden}
+.kpi-cell::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--accent,var(--b2))}
+.kpi-label{font-family:"Barlow Condensed",sans-serif;font-size:10px;font-weight:600;letter-spacing:.8px;color:var(--t3);text-transform:uppercase;margin-bottom:4px}
+.kpi-val{font-family:"JetBrains Mono",monospace;font-size:22px;font-weight:500;color:var(--t1);transition:color .3s}
+.kpi-cell[data-accent="purple"]{--accent:var(--purple)}
+.kpi-cell[data-accent="green"] {--accent:var(--g)}
+.kpi-cell[data-accent="blue"]  {--accent:var(--b2)}
+.kpi-cell[data-accent="amber"] {--accent:var(--amber)}
+
+/* ── MAIN LAYOUT ─────────────────────────────────────────────────────────── */
+#main{display:flex;flex:1;overflow:hidden;min-height:0}
+
+/* ── LEFT: PROVIDER LIST ─────────────────────────────────────────────────── */
+#panel-list{width:300px;flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid var(--line-2);overflow:hidden}
+.panel-hdr{padding:12px 14px 10px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;flex-shrink:0}
+.panel-hdr-title{font-size:14px;font-weight:600;flex:1}
+.plist-search{display:flex;align-items:center;gap:6px;margin:8px 10px;padding:6px 10px;background:var(--surface-2);border:1px solid var(--line-2);border-radius:var(--r-sm)}
+.plist-search input{flex:1;background:none;border:none;outline:none;color:var(--t1);font-family:"Exo 2",sans-serif;font-size:12px}
+.plist-search input::placeholder{color:var(--t3)}
+.plist-search .mat{font-family:"Material Symbols Outlined";font-size:16px;color:var(--t3)}
+#provider-list{flex:1;overflow-y:auto;padding:6px}
+
+.prov-card{border-radius:var(--r-md);border:1px solid var(--line);background:var(--surface);margin-bottom:6px;cursor:pointer;position:relative;overflow:hidden;transition:border-color .15s,background .15s}
+.prov-card:hover{border-color:var(--line-2);background:var(--surface-2)}
+.prov-card.selected{border-color:var(--purple);background:rgba(144,96,224,.06)}
+.pc-accent{position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--g)}
+.pc-accent.mpesa{background:var(--ok)}
+.pc-body{padding:10px 12px 10px 16px}
+.pc-row1{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+.pc-name{font-size:13px;font-weight:600;flex:1}
+.pc-badge{font-family:"Barlow Condensed",sans-serif;font-size:10px;font-weight:600;letter-spacing:.4px;padding:2px 6px;border-radius:var(--r-pill)}
+.pc-badge.active{background:rgba(80,192,32,.15);color:var(--g)}
+.pc-badge.pending{background:rgba(245,177,0,.12);color:var(--p3)}
+.pc-meta{font-size:11px;color:var(--t3);margin-bottom:5px}
+.pc-stats{display:flex;gap:10px}
+.pc-stat{display:flex;flex-direction:column;gap:1px}
+.pc-stat-val{font-family:"JetBrains Mono",monospace;font-size:13px;font-weight:500;color:var(--t1)}
+.pc-stat-lbl{font-size:10px;color:var(--t3)}
+
+/* ── RIGHT: DETAIL PANEL ─────────────────────────────────────────────────── */
+#panel-detail{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--t3)}
+.empty-state .ms{font-size:56px;color:var(--t4)}
+
+/* Tab bar */
+.tab-bar{display:flex;gap:0;border-bottom:1px solid var(--line-2);flex-shrink:0;background:var(--surface);padding:0 16px}
+.tb-tab{padding:12px 16px;font-size:12px;font-weight:600;font-family:"Barlow Condensed",sans-serif;letter-spacing:.4px;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.tb-tab:hover{color:var(--t2)}
+.tb-tab.active{color:var(--t1);border-bottom-color:var(--purple)}
+.tb-tab .mat{font-family:"Material Symbols Outlined";font-size:14px;font-weight:400;line-height:1}
+
+/* Tab content */
+.tab-content{display:none;flex:1;overflow-y:auto;min-height:0}
+.tab-content.active{display:flex;flex-direction:column}
+
+/* Provider header bar */
+#prov-hdr{padding:16px 20px;border-bottom:1px solid var(--line);flex-shrink:0;background:var(--surface)}
+.ph-row1{display:flex;align-items:center;gap:12px;margin-bottom:4px}
+.ph-name{font-size:20px;font-weight:700;flex:1}
+.ph-badge{font-family:"Barlow Condensed",sans-serif;font-size:12px;font-weight:700;letter-spacing:.6px;padding:4px 12px;border-radius:var(--r-pill);background:rgba(80,192,32,.15);color:var(--g)}
+.ph-meta{font-size:12px;color:var(--t3)}
+
+/* ── DASHBOARD TAB ───────────────────────────────────────────────────────── */
+.dash-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:20px}
+.dash-kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:14px 16px;position:relative;overflow:hidden}
+.dash-kpi::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--accent,var(--b2))}
+.dk-label{font-family:"Barlow Condensed",sans-serif;font-size:10px;font-weight:600;letter-spacing:.8px;color:var(--t3);text-transform:uppercase;margin-bottom:6px}
+.dk-val{font-family:"JetBrains Mono",monospace;font-size:24px;font-weight:500;color:var(--t1)}
+.dk-sub{font-size:11px;color:var(--t3);margin-top:3px}
+.dash-section{padding:0 20px 20px;display:flex;flex-direction:column;gap:8px}
+.section-title{font-family:"Barlow Condensed",sans-serif;font-size:11px;font-weight:600;letter-spacing:.8px;color:var(--t3);text-transform:uppercase;margin-bottom:4px}
+.activity-row{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm);font-size:12px;color:var(--t2)}
+.ar-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ar-time{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--t3);margin-left:auto}
+
+/* ── FLEET TAB ───────────────────────────────────────────────────────────── */
+.fleet-toolbar{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line);flex-shrink:0}
+.fleet-search{display:flex;align-items:center;gap:6px;padding:5px 10px;background:var(--surface-2);border:1px solid var(--line-2);border-radius:var(--r-sm);flex:1}
+.fleet-search input{flex:1;background:none;border:none;outline:none;color:var(--t1);font-family:"Exo 2",sans-serif;font-size:12px}
+.fleet-search input::placeholder{color:var(--t3)}
+.fleet-search .mat{font-family:"Material Symbols Outlined";font-size:15px;color:var(--t3)}
+.add-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:var(--r-sm);background:rgba(80,192,32,.15);border:1px solid rgba(80,192,32,.3);color:var(--g);font-size:12px;font-weight:600;cursor:pointer;font-family:"Barlow Condensed",sans-serif;letter-spacing:.4px;transition:opacity .15s;flex-shrink:0}
+.add-btn:hover{opacity:.8}
+.add-btn .mat{font-family:"Material Symbols Outlined";font-size:15px;font-weight:400}
+
+.fleet-table{width:100%;border-collapse:collapse;font-size:12px}
+.ft-hdr{position:sticky;top:0;background:var(--surface-2);z-index:1}
+.ft-hdr th{padding:8px 12px;text-align:left;font-family:"Barlow Condensed",sans-serif;font-size:10px;font-weight:600;letter-spacing:.6px;color:var(--t3);text-transform:uppercase;border-bottom:1px solid var(--line-2)}
+.ft-hdr th:first-child{padding-left:16px}
+.fleet-table tbody tr{border-bottom:1px solid var(--line);transition:background .1s;cursor:pointer}
+.fleet-table tbody tr:hover{background:var(--surface-2)}
+.fleet-table td{padding:9px 12px;color:var(--t2)}
+.fleet-table td:first-child{padding-left:16px;font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--t1);font-weight:500}
+.unit-type-badge{font-family:"Barlow Condensed",sans-serif;font-size:10px;font-weight:600;letter-spacing:.4px;padding:2px 7px;border-radius:var(--r-pill)}
+.unit-type-badge.als{background:rgba(39,170,225,.15);color:var(--b2)}
+.unit-type-badge.bls{background:rgba(80,192,32,.12);color:var(--g)}
+.status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px}
+.status-sel{
+  background:var(--surface-2);border:1px solid var(--line);border-radius:6px;
+  color:var(--t1);font-family:'Exo 2',sans-serif;font-size:11.5px;
+  padding:3px 22px 3px 8px;cursor:pointer;outline:none;
+  appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2362758a' stroke-width='2.5'><path d='M6 9l6 6 6-6'/></svg>");
+  background-repeat:no-repeat;background-position:right 6px center;
+  transition:border-color .12s, background-color .12s;
+}
+.status-sel:hover{border-color:var(--line-2);background-color:var(--bg-2);}
+.status-sel:focus{border-color:rgba(80,192,32,.45);}
+.status-cell{white-space:nowrap;}
+.status-dot.available{background:var(--g)}
+.status-dot.dispatched{background:var(--p2)}
+.status-dot.off{background:var(--t4)}
+
+/* ── CREW TAB ────────────────────────────────────────────────────────────── */
+.crew-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;padding:16px}
+.crew-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:14px;display:flex;flex-direction:column;gap:6px;transition:border-color .15s}
+.crew-card:hover{border-color:var(--line-2)}
+.cc-avi{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;margin-bottom:4px;flex-shrink:0}
+.cc-name{font-size:13px;font-weight:600;color:var(--t1)}
+.cc-role{font-family:"Barlow Condensed",sans-serif;font-size:11px;font-weight:600;letter-spacing:.4px;color:var(--t3)}
+.cc-detail{font-size:11px;color:var(--t3)}
+.cc-shift-badge{font-family:"Barlow Condensed",sans-serif;font-size:10px;font-weight:600;letter-spacing:.4px;padding:2px 8px;border-radius:var(--r-pill);margin-top:auto;align-self:flex-start}
+.cc-shift-badge.on{background:rgba(80,192,32,.15);color:var(--g)}
+.cc-shift-badge.off{background:rgba(255,255,255,.06);color:var(--t3)}
+
+/* ── INVOICES TAB ────────────────────────────────────────────────────────── */
+.inv-toolbar{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line);flex-shrink:0}
+.inv-filter{font-family:"Barlow Condensed",sans-serif;font-size:11px;font-weight:600;letter-spacing:.4px;padding:4px 10px;border-radius:var(--r-pill);cursor:pointer;border:none;background:none;color:var(--t3);transition:background .15s,color .15s}
+.inv-filter.active{background:rgba(255,255,255,.08);color:var(--t1)}
+.inv-table{width:100%;border-collapse:collapse;font-size:12px}
+.inv-table th{padding:8px 12px;text-align:left;font-family:"Barlow Condensed",sans-serif;font-size:10px;font-weight:600;letter-spacing:.6px;color:var(--t3);text-transform:uppercase;border-bottom:1px solid var(--line-2);background:var(--surface-2);position:sticky;top:0;z-index:1}
+.inv-table td{padding:9px 12px;color:var(--t2);border-bottom:1px solid var(--line)}
+.inv-table td:first-child{font-family:"JetBrains Mono",monospace;color:var(--t1)}
+.inv-pill{font-family:"Barlow Condensed",sans-serif;font-size:10px;font-weight:600;letter-spacing:.4px;padding:2px 7px;border-radius:var(--r-pill)}
+.inv-pill.QUEUED{background:rgba(245,177,0,.15);color:var(--p3)}
+.inv-pill.UNDER_REVIEW{background:rgba(240,160,32,.15);color:var(--amber)}
+.inv-pill.APPROVED{background:rgba(39,170,225,.15);color:var(--b2)}
+.inv-pill.PAID{background:rgba(80,192,32,.15);color:var(--g)}
+.inv-pill.DISPUTED{background:rgba(255,140,0,.15);color:var(--p2)}
+.inv-pill.REJECTED{background:rgba(255,59,48,.15);color:var(--p1)}
+
+/* ── ONBOARDING TAB ──────────────────────────────────────────────────────── */
+.ob-wrap{padding:20px;max-width:680px}
+.ob-stepper{display:flex;flex-direction:column;gap:0}
+.ob-step{display:flex;gap:16px;position:relative}
+.ob-step:not(:last-child)::after{content:'';position:absolute;left:15px;top:32px;bottom:-1px;width:2px;background:var(--line-2)}
+.ob-step.done::after{background:var(--g)}
+.ob-step-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;padding-bottom:24px}
+.ob-circle{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;border:2px solid var(--line-2);background:var(--surface-2);color:var(--t3);z-index:1;position:relative}
+.ob-circle.done{background:var(--g);border-color:var(--g);color:#fff}
+.ob-circle.active{background:rgba(144,96,224,.2);border-color:var(--purple);color:var(--purple)}
+.ob-circle .mat{font-family:"Material Symbols Outlined";font-size:14px;font-weight:400}
+.ob-body{flex:1;padding:4px 0 24px}
+.ob-title{font-size:14px;font-weight:600;margin-bottom:4px}
+.ob-desc{font-size:12px;color:var(--t3);line-height:1.6;margin-bottom:8px}
+.ob-date{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--t3)}
+.ob-action{display:inline-block;padding:5px 12px;border-radius:var(--r-sm);font-size:11px;font-weight:600;cursor:pointer;font-family:"Barlow Condensed",sans-serif;letter-spacing:.4px;border:1px solid rgba(144,96,224,.3);background:rgba(144,96,224,.1);color:var(--purple);transition:opacity .15s;margin-top:6px}
+.ob-action:hover{opacity:.8}
+
+/* ── SLA TAB ─────────────────────────────────────────────────────────────── */
+.sla-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:20px}
+.sla-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:16px}
+.sla-card-title{font-family:"Barlow Condensed",sans-serif;font-size:11px;font-weight:600;letter-spacing:.8px;color:var(--t3);text-transform:uppercase;margin-bottom:12px}
+.sla-metric{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.sla-metric-label{font-size:12px;color:var(--t2)}
+.sla-metric-val{font-family:"JetBrains Mono",monospace;font-size:13px;font-weight:500;color:var(--t1)}
+.sla-bar-wrap{height:6px;background:var(--surface-2);border-radius:3px;overflow:hidden;margin-bottom:14px}
+.sla-bar-fill{height:100%;border-radius:3px;transition:width .5s}
+.sla-policy-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--line);font-size:12px}
+.sla-policy-row:last-child{border-bottom:none}
+.sla-policy-label{color:var(--t2)}
+.sla-policy-target{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--t3)}
+.sla-policy-status{font-family:"Barlow Condensed",sans-serif;font-size:10px;font-weight:600;letter-spacing:.4px;padding:2px 7px;border-radius:var(--r-pill)}
+.sla-policy-status.ok{background:rgba(52,199,89,.12);color:var(--ok)}
+.sla-policy-status.warn{background:rgba(245,177,0,.12);color:var(--p3)}
+.sla-policy-status.fail{background:rgba(255,59,48,.12);color:var(--p1)}
+
+/* ── SETTINGS TAB ────────────────────────────────────────────────────────── */
+.settings-wrap{padding:20px;max-width:580px;display:flex;flex-direction:column;gap:20px}
+.settings-section{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:16px}
+.ss-title{font-family:"Barlow Condensed",sans-serif;font-size:11px;font-weight:600;letter-spacing:.8px;color:var(--t3);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.ss-title .mat{font-family:"Material Symbols Outlined";font-size:14px;font-weight:400;color:var(--t3)}
+.field-row{display:flex;gap:12px;margin-bottom:10px}
+.field-group{flex:1;display:flex;flex-direction:column;gap:4px}
+.field-label{font-size:11px;color:var(--t3);font-family:"Barlow Condensed",sans-serif;letter-spacing:.4px;font-weight:600}
+.field-val{font-size:12px;color:var(--t1);padding:6px 10px;background:var(--surface-2);border:1px solid var(--line-2);border-radius:var(--r-sm)}
+.field-val.mono{font-family:"JetBrains Mono",monospace}
+.settings-btn{padding:7px 16px;border-radius:var(--r-sm);font-size:12px;font-weight:600;cursor:pointer;border:1px solid;font-family:"Barlow Condensed",sans-serif;letter-spacing:.4px;transition:opacity .15s}
+.settings-btn:hover{opacity:.8}
+.settings-btn.save{background:rgba(80,192,32,.15);border-color:rgba(80,192,32,.3);color:var(--g)}
+.settings-btn.danger{background:rgba(255,59,48,.1);border-color:rgba(255,59,48,.25);color:var(--p1)}
+
+/* ── SHARED ──────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface-2);border:1px solid var(--line-2);border-radius:var(--r-md);padding:10px 20px;font-size:13px;color:var(--t1);opacity:0;transition:opacity .25s,transform .25s;z-index:9999;pointer-events:none;backdrop-filter:blur(10px)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@keyframes nacd-spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.skeleton{background:linear-gradient(90deg,var(--surface),var(--surface-2),var(--surface));background-size:200%;animation:shimmer 1.5s infinite;border-radius:4px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ── App switcher (icon-forward) ─────────────────────────────────────── */
+.app-sw{position:relative;display:inline-flex;}
+.app-sw-btn{display:flex;align-items:center;gap:7px;padding:6px 12px 6px 10px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  border-radius:999px;color:rgba(255,255,255,.95);
+  font-family:'Exo 2',sans-serif;font-size:12.5px;font-weight:600;
+  cursor:pointer;transition:background .12s,border-color .12s;}
+.app-sw-btn:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.14);}
+.app-sw-btn.open{background:rgba(80,192,32,.12);border-color:rgba(80,192,32,.30);}
+.app-sw-btn .mat{font-size:18px;color:#50C020;}
+.app-sw-btn .asb-cur{letter-spacing:.2px;}
+.app-sw-btn .asb-arrow{font-size:14px !important;color:rgba(255,255,255,.4) !important;margin-left:1px;transition:transform .15s;}
+.app-sw-btn.open .asb-arrow{transform:rotate(180deg);}
+.app-sw-panel{display:none;position:absolute;top:calc(100% + 8px);left:0;
+  width:296px;background:rgba(14,22,32,.96);backdrop-filter:saturate(160%) blur(16px);
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:14px;box-shadow:0 18px 42px rgba(0,0,0,.7);
+  z-index:9000;overflow:hidden;padding:8px;}
+.app-sw-panel.open{display:block;animation:asPop .14s ease-out;}
+@keyframes asPop{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
+.asp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.asp-item{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:6px;padding:14px 6px 10px;background:transparent;color:rgba(255,255,255,.7);
+  text-decoration:none;text-align:center;border-radius:10px;
+  border:1px solid transparent;
+  transition:background .12s,color .12s,border-color .12s,transform .08s;}
+.asp-item:hover{background:rgba(255,255,255,.05);color:#fff;border-color:rgba(255,255,255,.08);}
+.asp-item:active{transform:scale(.96);}
+.asp-item.on{background:rgba(80,192,32,.10);color:#50C020;border-color:rgba(80,192,32,.25);}
+.asp-item .mat{font-size:30px;line-height:1;}
+.asp-item b{font-family:'Exo 2',sans-serif;font-weight:500;font-size:11px;display:block;letter-spacing:.1px;}
+
+</style>
+<link rel="stylesheet" href="/assets/tokens-v2.css">
+</head>
+<body>
+<div id="nacd-auth-overlay" style="position:fixed;inset:0;z-index:9000;background:rgba(3,12,23,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .2s;">
+  <div style="font-family:'Exo 2',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,.35);text-transform:uppercase;">SHA · NADC</div>
+  <div style="width:26px;height:26px;border:2px solid rgba(80,192,32,.25);border-top-color:#50C020;border-radius:50%;animation:nacd-spin .8s linear infinite;"></div>
+  <div style="font-family:'Exo 2',sans-serif;font-size:10px;color:rgba(255,255,255,.25);">Authenticating…</div>
+</div>
+<div style="display:flex;flex-direction:column;height:100%">
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <div class="tb-logo">
+    <div class="sha-logo-pill" style="height:26px;padding:2px 5px;"><img src="/sha-social-health-authority-logo.png" alt="SHA" loading="lazy" style="height:20px;"></div>
+    <div>
+      <div class="sha-nadc" style="font-size:12px;">NADC</div>
+      <div class="tb-sub">NATIONAL AMBULANCE DISPATCH CENTRE</div>
+    </div>
+  </div>
+  <div class="tb-div"></div>
+  <div class="tb-title">Provider Portal</div>
+  <div class="tb-badge">PROVIDERS</div>
+  <div class="app-sw">
+  <button class="app-sw-btn" onclick="toggleAppSw()" aria-label="Switch app">
+    <span class="mat">apps</span>
+    <span class="asb-cur">Providers</span>
+    <span class="mat asb-arrow">expand_more</span>
+  </button>
+  <div class="app-sw-panel" id="app-sw-panel">
+    <div class="asp-grid">
+      <a class="asp-item" href="/dashboard" title="Wall"><span class="mat">tv</span><b>Wall</b></a>
+      <a class="asp-item" href="/psap" title="PSAP"><span class="mat">call</span><b>PSAP</b></a>
+      <a class="asp-item" href="/dispatch" title="Dispatch"><span class="mat">radar</span><b>Dispatch</b></a>
+      <a class="asp-item" href="/supervisor" title="Supervisor"><span class="mat">supervisor_account</span><b>Supervisor</b></a>
+      <a class="asp-item" href="/emt" title="EMT"><span class="mat">directions_car</span><b>EMT</b></a>
+      <a class="asp-item" href="/hospital" title="Hospital"><span class="mat">local_hospital</span><b>Hospital</b></a>
+      <a class="asp-item" href="/claims" title="Claims"><span class="mat">receipt_long</span><b>Claims</b></a>
+      <a class="asp-item on" href="/providers" title="Providers"><span class="mat">business</span><b>Providers</b></a>
+      <a class="asp-item" href="/admin" title="Admin"><span class="mat">admin_panel_settings</span><b>Admin</b></a>
+    </div>
+  </div>
+</div>
+  <div class="tb-right">
+    <div class="tb-clock" id="clock">--:--:--</div>
+    <div style="display:flex;align-items:center;gap:6px;padding:3px 10px 3px 4px;border-radius:999px;background:rgba(255,255,255,.06);font-family:'Exo 2',sans-serif;font-size:11px;color:rgba(255,255,255,.62);">
+      <div id="user-av" style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#00519B,#27AAE1);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:8.5px;color:#fff;">?</div>
+      <span id="user-nm" style="max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</span>
+    </div>
+    <button title="Sign out" onclick="if(window.Clerk)window.Clerk.signOut().then(function(){location.reload();})" style="display:flex;align-items:center;padding:5px 7px;border-radius:999px;background:transparent;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-family:'Material Symbols Outlined';font-size:16px;font-weight:400;">logout</button>
+  </div>
+</div>
+
+<!-- KPI STRIP -->
+<div id="kpi-strip">
+  <div class="kpi-cell" data-accent="purple">
+    <div class="kpi-label">Active Providers</div>
+    <div class="kpi-val" id="kpi-providers">—</div>
+  </div>
+  <div class="kpi-cell" data-accent="blue">
+    <div class="kpi-label">Total Fleet Units</div>
+    <div class="kpi-val" id="kpi-fleet">—</div>
+  </div>
+  <div class="kpi-cell" data-accent="green">
+    <div class="kpi-label">Avg SLA Compliance</div>
+    <div class="kpi-val" id="kpi-sla">—</div>
+  </div>
+  <div class="kpi-cell" data-accent="amber">
+    <div class="kpi-label">MTD Disbursements</div>
+    <div class="kpi-val" id="kpi-mtd">—</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- LEFT: PROVIDER LIST -->
+  <div id="panel-list">
+    <div class="panel-hdr">
+      <span class="material-symbols-outlined" style="font-size:18px;color:var(--t3)">business</span>
+      <span class="panel-hdr-title">Contracted Providers</span>
+    </div>
+    <div class="plist-search">
+      <span class="mat">search</span>
+      <input id="prov-search" type="text" placeholder="Search provider…" oninput="filterProviders(this.value)">
+    </div>
+    <div id="provider-list">
+      <div class="skeleton" style="height:88px;border-radius:12px;margin:6px"></div>
+      <div class="skeleton" style="height:88px;border-radius:12px;margin:6px"></div>
+      <div class="skeleton" style="height:88px;border-radius:12px;margin:6px"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: DETAIL -->
+  <div id="panel-detail">
+    <div class="empty-state" id="empty-state">
+      <span class="material-symbols-outlined ms">business</span>
+      <p>Select a provider to view details</p>
+    </div>
+
+    <!-- Provider header (shown when a provider is selected) -->
+    <div id="prov-hdr" style="display:none">
+      <div class="ph-row1">
+        <span class="ph-name" id="ph-name">—</span>
+        <span class="ph-badge" id="ph-badge">ACTIVE</span>
+      </div>
+      <div class="ph-meta" id="ph-meta">—</div>
+    </div>
+
+    <!-- Tab bar -->
+    <div class="tab-bar" id="tab-bar" style="display:none">
+      <div class="tb-tab active" data-tab="dash"><span class="mat">dashboard</span>Dashboard</div>
+      <div class="tb-tab" data-tab="fleet"><span class="mat">directions_car</span>Fleet</div>
+      <div class="tb-tab" data-tab="crew"><span class="mat">groups</span>Crew</div>
+      <div class="tb-tab" data-tab="invoices"><span class="mat">receipt_long</span>Invoices</div>
+      <div class="tb-tab" data-tab="onboarding"><span class="mat">checklist</span>Onboarding</div>
+      <div class="tb-tab" data-tab="sla"><span class="mat">speed</span>SLA</div>
+      <div class="tb-tab" data-tab="settings"><span class="mat">settings</span>Settings</div>
+    </div>
+
+    <!-- Dashboard Tab -->
+    <div class="tab-content active" id="tab-dash">
+      <div class="dash-grid" id="dash-kpi-grid"><!-- filled by JS --></div>
+      <div class="dash-section">
+        <div class="section-title">Recent Activity</div>
+        <div id="dash-activity"><!-- filled by JS --></div>
+      </div>
+    </div>
+
+    <!-- Fleet Tab -->
+    <div class="tab-content" id="tab-fleet">
+      <div class="fleet-toolbar">
+        <div class="fleet-search">
+          <span class="mat">search</span>
+          <input type="text" placeholder="Filter units…" oninput="filterFleet(this.value)">
+        </div>
+        <button class="add-btn" onclick="showToast('Vehicle addition — contract amendment required (SHA/EMS/2026)', 'info')">
+          <span class="mat">add</span>Add Vehicle
+        </button>
+      </div>
+      <div style="overflow-y:auto;flex:1">
+        <table class="fleet-table">
+          <thead class="ft-hdr">
+            <tr>
+              <th>Unit ID</th><th>Type</th><th>Zone</th><th>Status</th><th>GPS</th><th>Last Incident</th>
+            </tr>
+          </thead>
+          <tbody id="fleet-tbody"><!-- filled by JS --></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Crew Tab -->
+    <div class="tab-content" id="tab-crew">
+      <div class="fleet-toolbar">
+        <div class="fleet-search">
+          <span class="mat">search</span>
+          <input type="text" placeholder="Filter crew…" oninput="filterCrew(this.value)">
+        </div>
+        <button class="add-btn" onclick="showToast('Crew addition — requires KMPDC licence verification', 'info')">
+          <span class="mat">person_add</span>Add Crew
+        </button>
+      </div>
+      <div class="crew-grid" id="crew-grid"><!-- filled by JS --></div>
+    </div>
+
+    <!-- Invoices Tab -->
+    <div class="tab-content" id="tab-invoices">
+      <div class="inv-toolbar">
+        <button class="inv-filter active" data-inv="ALL">All</button>
+        <button class="inv-filter" data-inv="QUEUED">Queued</button>
+        <button class="inv-filter" data-inv="APPROVED">Approved</button>
+        <button class="inv-filter" data-inv="PAID">Paid</button>
+        <button class="inv-filter" data-inv="DISPUTED">Disputed</button>
+        <button class="add-btn" style="margin-left:auto" onclick="showToast('New manual claim — contact SHA Claims Console', 'info')">
+          <span class="mat">add</span>New Claim
+        </button>
+      </div>
+      <div style="overflow-y:auto;flex:1">
+        <table class="inv-table">
+          <thead>
+            <tr><th>Claim ID</th><th>Incident</th><th>Unit</th><th>Amount</th><th>Submitted</th><th>Status</th></tr>
+          </thead>
+          <tbody id="inv-tbody"><!-- filled by JS --></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Onboarding Tab -->
+    <div class="tab-content" id="tab-onboarding">
+      <div style="overflow-y:auto;flex:1">
+        <div class="ob-wrap">
+          <div style="font-size:14px;font-weight:600;margin-bottom:16px;color:var(--t1)" id="ob-headline">Provider Onboarding</div>
+          <div class="ob-stepper" id="ob-stepper"><!-- filled by JS --></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLA Tab -->
+    <div class="tab-content" id="tab-sla">
+      <div style="overflow-y:auto;flex:1">
+        <div class="sla-grid" id="sla-grid"><!-- filled by JS --></div>
+      </div>
+    </div>
+
+    <!-- Settings Tab -->
+    <div class="tab-content" id="tab-settings">
+      <div style="overflow-y:auto;flex:1">
+        <div class="settings-wrap" id="settings-wrap"><!-- filled by JS --></div>
+      </div>
+    </div>
+  </div>
+</div><!-- /main -->
+
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="/lib/nadc-state.js"></script>
+<script src="/lib/nadc-auth.js"></script>
+<script>
+// ─── State ────────────────────────────────────────────────────────────────────
+var _providers    = [];
+var _fleet        = [];
+var _claims       = [];
+var _selProvider  = null;
+var _invFilter    = 'ALL';
+var _crewByProv   = {};
+
+// ─── Crew seed (deterministic) ────────────────────────────────────────────────
+var _ROLES   = ['Paramedic','EMT-Advanced','EMT-Basic','Driver/EMT'];
+var _NAMES   = [
+  'Achieng Ouma','Baraka Mwangi','Ciku Kamau','Daud Hassan','Esther Ndung\'u',
+  'Farouk Otieno','Grace Wanjiku','Hassan Ali','Irene Mutua','John Kariuki',
+  'Kepha Omondi','Lilian Njeri','Moses Waweru','Nora Abubakar','Oscar Makori',
+  'Peris Wanjala','Quincy Ochieng','Ruth Kamande','Samuel Mutuku','Tabitha Korir',
+  'Umar Farah','Violet Akinyi','Wilson Njenga','Yvonne Chebet','Zacharia Oloo'
+];
+var _UNITS_COLORS = ['#00519B','#27AAE1','#50C020','#FF8C00','#9060E0','#FF3B30','#F0A020'];
+
+function _seedCrew(provIdx, count) {
+  var crew = [];
+  for (var i = 0; i < count; i++) {
+    var nameIdx = (provIdx * 4 + i) % _NAMES.length;
+    crew.push({
+      id:    'CR-' + ('000' + (provIdx * 50 + i + 1)).slice(-4),
+      name:  _NAMES[nameIdx],
+      role:  _ROLES[(provIdx + i) % _ROLES.length],
+      badge: 'KMPDC/' + (2020 + i % 5) + '/' + (10000 + provIdx * 100 + i),
+      phone: '+254 7' + ('00' + ((provIdx * 33 + i * 17) % 100)).slice(-2) + ' ' + ('000000' + (100000 + i * 12345) % 1000000).slice(-6),
+      onShift: i % 3 !== 2
+    });
+  }
+  return crew;
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function fmtKES(n) {
+  if (n >= 1000000) return 'KES ' + (n / 1000000).toFixed(1) + 'M';
+  if (n >= 1000)    return 'KES ' + n.toLocaleString();
+  return 'KES ' + n;
+}
+function fmtDate(ts) {
+  if (!ts) return '—';
+  var d = new Date(ts);
+  return d.getDate() + ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()];
+}
+function showToast(msg, type) {
+  var t  = document.getElementById('toast');
+  var cs = {success:'var(--g)',error:'var(--p1)',warning:'var(--amber)',info:'var(--b2)'};
+  t.style.borderColor = cs[type] || 'var(--line-2)';
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 3000);
+}
+function updateClock() {
+  document.getElementById('clock').textContent =
+    new Date().toLocaleTimeString('en-KE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+setInterval(updateClock, 1000); updateClock();
+
+// ─── Match fleet unit to provider ────────────────────────────────────────────
+function _unitBelongsTo(unit, providerId) {
+  return unit.providerId === providerId;
+}
+
+// ─── KPI render ───────────────────────────────────────────────────────────────
+function renderKPIs() {
+  var totalFleet = _fleet.length;
+  var totalSla = 0;
+  var totalMTD = 0;
+  for (var i = 0; i < _providers.length; i++) {
+    totalSla += _providers[i].slaCompliance;
+    totalMTD += _providers[i].totalPaidKES;
+  }
+  document.getElementById('kpi-providers').textContent = _providers.length;
+  document.getElementById('kpi-fleet').textContent     = totalFleet;
+  document.getElementById('kpi-sla').textContent       = _providers.length ? Math.round(totalSla / _providers.length) + '%' : '—';
+  document.getElementById('kpi-mtd').textContent       = fmtKES(totalMTD);
+}
+
+// ─── Provider list render ──────────────────────────────────────────────────────
+function renderProviderList(filter) {
+  var el   = document.getElementById('provider-list');
+  var list = filter
+    ? _providers.filter(function(p){ return p.name.toLowerCase().indexOf(filter.toLowerCase()) >= 0; })
+    : _providers;
+
+  if (!list.length) {
+    el.innerHTML = '<div style="text-align:center;color:var(--t3);padding:32px 0;font-size:12px">No providers found</div>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < list.length; i++) {
+    var p   = list[i];
+    var sel = _selProvider && _selProvider.id === p.id ? ' selected' : '';
+    var accClass = p.paymentMethod === 'mpesa' ? 'mpesa' : '';
+    html +=
+      '<div class="prov-card' + sel + '" onclick="selectProvider(\'' + p.id + '\')">' +
+        '<div class="pc-accent ' + accClass + '"></div>' +
+        '<div class="pc-body">' +
+          '<div class="pc-row1">' +
+            '<span class="pc-name">' + p.name + '</span>' +
+            '<span class="pc-badge active">ACTIVE</span>' +
+          '</div>' +
+          '<div class="pc-meta">' + p.county + ' · ' + p.contractNo + '</div>' +
+          '<div class="pc-stats">' +
+            '<div class="pc-stat"><span class="pc-stat-val">' + p.fleetCount + '</span><span class="pc-stat-lbl">Units</span></div>' +
+            '<div class="pc-stat"><span class="pc-stat-val">' + p.crewCount + '</span><span class="pc-stat-lbl">Crew</span></div>' +
+            '<div class="pc-stat"><span class="pc-stat-val">' + p.slaCompliance + '%</span><span class="pc-stat-lbl">SLA</span></div>' +
+            '<div class="pc-stat"><span class="pc-stat-val" style="color:var(--p3)">' + p.pendingClaims + '</span><span class="pc-stat-lbl">Pending</span></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+  }
+  el.innerHTML = html;
+}
+
+function filterProviders(q) {
+  renderProviderList(q);
+}
+
+// ─── Provider selection ────────────────────────────────────────────────────────
+function selectProvider(id) {
+  for (var i = 0; i < _providers.length; i++) {
+    if (_providers[i].id === id) { _selProvider = _providers[i]; break; }
+  }
+  if (!_selProvider) return;
+
+  renderProviderList(document.getElementById('prov-search').value);
+
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('prov-hdr').style.display    = 'block';
+  document.getElementById('tab-bar').style.display     = 'flex';
+
+  document.getElementById('ph-name').textContent  = _selProvider.name;
+  document.getElementById('ph-badge').textContent = _selProvider.contractStatus;
+  document.getElementById('ph-meta').textContent  =
+    _selProvider.county + ' County  ·  ' + _selProvider.contractNo +
+    '  ·  ' + ((_selProvider.paymentMethod === 'pesalink') ? 'PesaLink RTGS' : 'M-Pesa B2C');
+
+  // Render active tab
+  var activeTab = document.querySelector('.tb-tab.active');
+  if (activeTab) _renderTab(activeTab.dataset.tab);
+}
+
+// ─── Tab routing ──────────────────────────────────────────────────────────────
+document.getElementById('tab-bar').addEventListener('click', function(e) {
+  var tab = e.target.closest('.tb-tab');
+  if (!tab || !_selProvider) return;
+  var tabs = document.querySelectorAll('.tb-tab');
+  var contents = document.querySelectorAll('.tab-content');
+  for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
+  for (var i = 0; i < contents.length; i++) contents[i].classList.remove('active');
+  tab.classList.add('active');
+  var el = document.getElementById('tab-' + tab.dataset.tab);
+  if (el) el.classList.add('active');
+  _renderTab(tab.dataset.tab);
+});
+
+function _renderTab(name) {
+  if (!_selProvider) return;
+  var p = _selProvider;
+  var provIdx = 0;
+  for (var i = 0; i < _providers.length; i++) { if (_providers[i].id === p.id) { provIdx = i; break; } }
+  var provFleet = _fleet.filter(function(u){ return _unitBelongsTo(u, p.id); });
+  var provClaims = _claims.filter(function(c){ return c.providerId === p.id; });
+
+  if (name === 'dash')       _renderDash(p, provFleet, provClaims);
+  if (name === 'fleet')      _renderFleet(provFleet);
+  if (name === 'crew')       _renderCrew(provIdx, p.crewCount);
+  if (name === 'invoices')   _renderInvoices(provClaims);
+  if (name === 'onboarding') _renderOnboarding(p, provIdx);
+  if (name === 'sla')        _renderSLA(p, provClaims);
+  if (name === 'settings')   _renderSettings(p);
+}
+
+// ─── Dashboard Tab ────────────────────────────────────────────────────────────
+function _renderDash(p, fleet, claims) {
+  var avail = fleet.filter(function(u){ return u.status === 'available'; }).length;
+  var paid  = claims.filter(function(c){ return c.status === 'PAID'; });
+  var paidTotal = paid.reduce(function(s,c){ return s + (c.tariff - (c.deductions||0)); }, 0);
+  var pending   = claims.filter(function(c){ return c.status === 'QUEUED' || c.status === 'UNDER_REVIEW'; }).length;
+
+  var kpis = [
+    { label:'Fleet Available', val: avail + '/' + fleet.length, sub: fleet.length - avail + ' deployed', accent:'var(--g)' },
+    { label:'Open Claims',     val: pending,   sub:'Awaiting review',       accent:'var(--p3)' },
+    { label:'Total Paid MTD',  val: fmtKES(paidTotal), sub:paid.length + ' claims settled', accent:'var(--b2)' },
+    { label:'SLA Compliance',  val: p.slaCompliance + '%', sub:'8-min P1 target', accent: p.slaCompliance >= 90 ? 'var(--g)' : p.slaCompliance >= 80 ? 'var(--p3)' : 'var(--p1)' }
+  ];
+  var kHtml = '';
+  for (var k = 0; k < kpis.length; k++) {
+    kHtml += '<div class="dash-kpi" style="--accent:' + kpis[k].accent + '">' +
+      '<div class="dk-label">' + kpis[k].label + '</div>' +
+      '<div class="dk-val">' + kpis[k].val + '</div>' +
+      '<div class="dk-sub">' + kpis[k].sub + '</div>' +
+    '</div>';
+  }
+  document.getElementById('dash-kpi-grid').innerHTML = kHtml;
+
+  var activities = [
+    { dot:'var(--g)',  text: 'Unit A-' + (parseInt(fleet[0] && fleet[0].id.replace('A-','') || '001')) + ' cleared incident — claim auto-generated', age: '2m ago' },
+    { dot:'var(--b2)', text: 'Monthly SLA report submitted to SHA · ' + p.slaCompliance + '% compliance', age: '1h ago' },
+    { dot:'var(--p3)', text: 'Claim CLM-2026-88' + (12 + (parseInt(p.id.slice(-3))||1) % 10) + ' flagged for review by SHA', age: '3h ago' },
+    { dot:'var(--ok)', text: 'Payment batch received · ' + fmtKES(paidTotal > 0 ? paidTotal : 120000), age: '1d ago' },
+    { dot:'var(--t3)', text: 'Vehicle inspection certificates renewed — 6 units', age: '3d ago' }
+  ];
+  var aHtml = '';
+  for (var a = 0; a < activities.length; a++) {
+    var act = activities[a];
+    aHtml += '<div class="activity-row">' +
+      '<div class="ar-dot" style="background:' + act.dot + '"></div>' +
+      '<span style="flex:1">' + act.text + '</span>' +
+      '<span class="ar-time">' + act.age + '</span>' +
+    '</div>';
+  }
+  document.getElementById('dash-activity').innerHTML = aHtml;
+}
+
+// ─── Fleet Tab ────────────────────────────────────────────────────────────────
+function _renderFleet(units, filter) {
+  var list = filter
+    ? units.filter(function(u){ return u.id.toLowerCase().indexOf(filter.toLowerCase()) >= 0 || (u.zone||'').toLowerCase().indexOf(filter.toLowerCase()) >= 0; })
+    : units;
+  var html = '';
+  // Statuses the provider is allowed to set directly (incident-driven states
+  // like en_route / on_scene / transport are read-only here — dispatcher owns
+  // those). The engine rejects any attempt to override mid-incident.
+  var PROVIDER_STATUSES = [
+    { v:'available',   l:'Available' },
+    { v:'standby',     l:'Break'     },
+    { v:'maintenance', l:'Maintenance' },
+    { v:'off_duty',    l:'Off duty'  }
+  ];
+  function _dotFor(s){
+    if (s==='available') return 'available';
+    if (s==='off_duty' || s==='standby' || s==='maintenance') return 'off';
+    return 'dispatched';
+  }
+  for (var i = 0; i < list.length; i++) {
+    var u = list[i];
+    var typeClass = (u.type||'BLS').toLowerCase();
+    var dotClass  = _dotFor(u.status);
+    var midIncident = u.incidentId && ['dispatching','dispatched','en_route','on_scene','transport'].indexOf(u.status) !== -1;
+    var gps = u.lat ? u.lat.toFixed(4) + '°, ' + u.lng.toFixed(4) + '°' : '—';
+    var statusCellHtml;
+    if (midIncident) {
+      // Read-only — show the status as text since we can't change it mid-job
+      statusCellHtml =
+        '<span class="status-dot ' + dotClass + '"></span>' +
+        '<span style="text-transform:capitalize">' + (u.status||'').replace(/_/g,' ') + '</span>' +
+        '<span style="margin-left:6px;font-size:10px;color:var(--t4);">on job</span>';
+    } else {
+      // Dropdown — provider can set break/maintenance/etc.
+      var opts = '';
+      // If current status isn't in the provider-settable list, surface it as a disabled option
+      var inList = false;
+      for (var ps = 0; ps < PROVIDER_STATUSES.length; ps++) {
+        if (PROVIDER_STATUSES[ps].v === u.status) inList = true;
+      }
+      if (!inList && u.status) {
+        opts += '<option value="' + u.status + '" disabled selected>' +
+          (u.status.charAt(0).toUpperCase() + u.status.slice(1).replace(/_/g,' ')) + '</option>';
+      }
+      for (var ps2 = 0; ps2 < PROVIDER_STATUSES.length; ps2++) {
+        var s = PROVIDER_STATUSES[ps2];
+        var sel = (u.status === s.v) ? ' selected' : '';
+        opts += '<option value="' + s.v + '"' + sel + '>' + s.l + '</option>';
+      }
+      statusCellHtml =
+        '<span class="status-dot ' + dotClass + '"></span>' +
+        '<select class="status-sel" data-uid="' + u.id + '" onchange="changeUnitStatus(this)">' + opts + '</select>';
+    }
+    html += '<tr>' +
+      '<td>' + u.id + '</td>' +
+      '<td><span class="unit-type-badge ' + typeClass + '">' + (u.type||'BLS') + '</span></td>' +
+      '<td style="color:var(--t2)">' + (u.zone||'—') + '</td>' +
+      '<td class="status-cell">' + statusCellHtml + '</td>' +
+      '<td style="font-family:\'JetBrains Mono\',monospace;font-size:11px;color:var(--t3)">' + gps + '</td>' +
+      '<td style="color:var(--t3)">' + (u.incidentId ? u.incidentId : '—') + '</td>' +
+    '</tr>';
+  }
+  document.getElementById('fleet-tbody').innerHTML = html || '<tr><td colspan="6" style="text-align:center;color:var(--t3);padding:32px">No units found</td></tr>';
+}
+
+// Dropdown handler — called from each <select class="status-sel">
+function changeUnitStatus(sel) {
+  if (!sel) return;
+  var uid = sel.getAttribute('data-uid');
+  var newStatus = sel.value;
+  if (!uid || !newStatus) return;
+  if (!window.NACDState || !NACDState.fleet || !NACDState.fleet.setStatus) {
+    if (window.showToast) showToast('State engine unavailable', 'error');
+    return;
+  }
+  var ok = NACDState.fleet.setStatus(uid, newStatus);
+  if (!ok) {
+    if (window.showToast) showToast('Cannot change status while unit is on a job', 'warn');
+    // Re-render so the dropdown snaps back to the actual unit status
+    if (_selProvider) {
+      _fleet = NACDState.getFleet();
+      var provFleet = _fleet.filter(function(u){ return _unitBelongsTo(u, _selProvider.id); });
+      _renderFleet(provFleet);
+    }
+    return;
+  }
+  if (window.showToast) showToast(uid + ' → ' + newStatus.replace(/_/g,' '), 'success');
+  // Refresh local fleet snapshot so next render picks up the new value
+  _fleet = NACDState.getFleet();
+}
+
+function filterFleet(q) {
+  if (!_selProvider) return;
+  var provFleet = _fleet.filter(function(u){ return _unitBelongsTo(u, _selProvider.id); });
+  _renderFleet(provFleet, q);
+}
+
+// ─── Crew Tab ─────────────────────────────────────────────────────────────────
+function _renderCrew(provIdx, count) {
+  var displayCount = Math.min(count, 60);
+  if (!_crewByProv[provIdx]) _crewByProv[provIdx] = _seedCrew(provIdx, displayCount);
+  var crew = _crewByProv[provIdx];
+  var color = _UNITS_COLORS[provIdx % _UNITS_COLORS.length];
+  var html = '';
+  for (var i = 0; i < crew.length; i++) {
+    var c = crew[i];
+    var initials = c.name.split(' ').map(function(w){ return w[0] || ''; }).join('').slice(0,2).toUpperCase();
+    html += '<div class="crew-card">' +
+      '<div class="cc-avi" style="background:' + color + '">' + initials + '</div>' +
+      '<div class="cc-name">' + c.name + '</div>' +
+      '<div class="cc-role">' + c.role + '</div>' +
+      '<div class="cc-detail">' + c.badge + '</div>' +
+      '<div class="cc-detail">' + c.phone + '</div>' +
+      '<span class="cc-shift-badge ' + (c.onShift ? 'on' : 'off') + '">' + (c.onShift ? 'On Shift' : 'Off Shift') + '</span>' +
+    '</div>';
+  }
+  document.getElementById('crew-grid').innerHTML = html;
+}
+
+function filterCrew(q) {
+  if (!_selProvider) return;
+  var provIdx = 0;
+  for (var i = 0; i < _providers.length; i++) { if (_providers[i].id === _selProvider.id) { provIdx = i; break; } }
+  var displayCount = Math.min(_selProvider.crewCount, 60);
+  if (!_crewByProv[provIdx]) _crewByProv[provIdx] = _seedCrew(provIdx, displayCount);
+  var crew = _crewByProv[provIdx] || [];
+  var filtered = q ? crew.filter(function(c){ return c.name.toLowerCase().indexOf(q.toLowerCase()) >= 0 || c.role.toLowerCase().indexOf(q.toLowerCase()) >= 0; }) : crew;
+  var color = _UNITS_COLORS[provIdx % _UNITS_COLORS.length];
+  var html = '';
+  for (var i = 0; i < filtered.length; i++) {
+    var c = filtered[i];
+    var initials = c.name.split(' ').map(function(w){ return w[0] || ''; }).join('').slice(0,2).toUpperCase();
+    html += '<div class="crew-card">' +
+      '<div class="cc-avi" style="background:' + color + '">' + initials + '</div>' +
+      '<div class="cc-name">' + c.name + '</div>' +
+      '<div class="cc-role">' + c.role + '</div>' +
+      '<div class="cc-detail">' + c.badge + '</div>' +
+      '<div class="cc-detail">' + c.phone + '</div>' +
+      '<span class="cc-shift-badge ' + (c.onShift ? 'on' : 'off') + '">' + (c.onShift ? 'On Shift' : 'Off Shift') + '</span>' +
+    '</div>';
+  }
+  document.getElementById('crew-grid').innerHTML = html || '<div style="padding:32px;color:var(--t3);text-align:center">No crew found</div>';
+}
+
+// ─── Invoices Tab ─────────────────────────────────────────────────────────────
+document.getElementById('tab-invoices').addEventListener('click', function(e) {
+  var btn = e.target.closest('.inv-filter');
+  if (!btn) return;
+  document.querySelectorAll('.inv-filter').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  _invFilter = btn.dataset.inv;
+  if (_selProvider) {
+    var provClaims = _claims.filter(function(c){ return c.providerId === _selProvider.id; });
+    _renderInvoices(provClaims);
+  }
+});
+
+function _renderInvoices(claims) {
+  var list = _invFilter === 'ALL' ? claims : claims.filter(function(c){ return c.status === _invFilter; });
+  var html = '';
+  for (var i = 0; i < list.length; i++) {
+    var c = list[i];
+    html += '<tr>' +
+      '<td>' + c.id + '</td>' +
+      '<td style="color:var(--t2)">' + c.incidentId + '</td>' +
+      '<td style="color:var(--t2)">' + c.unitId + '</td>' +
+      '<td style="font-family:\'JetBrains Mono\',monospace">' + fmtKES(c.tariff) + '</td>' +
+      '<td style="color:var(--t3)">' + fmtDate(c.submittedAt) + '</td>' +
+      '<td><span class="inv-pill ' + c.status + '">' + c.status.replace('_',' ') + '</span></td>' +
+    '</tr>';
+  }
+  document.getElementById('inv-tbody').innerHTML = html ||
+    '<tr><td colspan="6" style="text-align:center;color:var(--t3);padding:32px">No claims in this filter</td></tr>';
+}
+
+// ─── Onboarding Tab ───────────────────────────────────────────────────────────
+var _OB_STEPS = [
+  { title:'Provider Registration', desc:'Provider details, legal entity, and SHA registration number submitted and verified.' },
+  { title:'Contract Signing',      desc:'SHA/EMS service agreement signed by both parties. SHIF tariff schedule attached as Schedule A.' },
+  { title:'Fleet Certification',   desc:'All vehicles submitted for NTSA inspection. Certificate of roadworthiness filed per vehicle.' },
+  { title:'Crew Verification',     desc:'KMPDC licences verified for all paramedics and EMTs. DBS checks completed.' },
+  { title:'System Integration',    desc:'SHA NADC system credentials issued. API keys provisioned. Test dispatch completed successfully.' },
+  { title:'Go-Live',               desc:'Provider activated in SHA NADC. First incident dispatched. Operational monitoring active.' }
+];
+var _OB_DATES = ['14 Jan 2026','21 Jan 2026','03 Feb 2026','14 Feb 2026','22 Feb 2026','01 Mar 2026'];
+
+function _renderOnboarding(p, provIdx) {
+  var stepsComplete = Math.min(6, 4 + (provIdx % 3));
+  document.getElementById('ob-headline').textContent = p.name + ' — Onboarding Status';
+  var html = '';
+  for (var i = 0; i < _OB_STEPS.length; i++) {
+    var done   = i < stepsComplete;
+    var active = i === stepsComplete;
+    var circleClass = done ? 'done' : active ? 'active' : '';
+    var circleContent = done
+      ? '<span class="mat">check</span>'
+      : (i + 1);
+    var stepClass = done ? 'ob-step done' : 'ob-step';
+    html += '<div class="' + stepClass + '">' +
+      '<div class="ob-step-left">' +
+        '<div class="ob-circle ' + circleClass + '">' + circleContent + '</div>' +
+      '</div>' +
+      '<div class="ob-body">' +
+        '<div class="ob-title">' + _OB_STEPS[i].title + '</div>' +
+        '<div class="ob-desc">' + _OB_STEPS[i].desc + '</div>' +
+        (done ? '<div class="ob-date">Completed ' + _OB_DATES[i] + '</div>' : '') +
+        (active ? '<button class="ob-action" onclick="showToast(\'' + _OB_STEPS[i].title + ' — documents pending SHA review\', \'info\')">View Documents ›</button>' : '') +
+      '</div>' +
+    '</div>';
+  }
+  document.getElementById('ob-stepper').innerHTML = html;
+}
+
+// ─── SLA Tab ──────────────────────────────────────────────────────────────────
+function _renderSLA(p, claims) {
+  var cleared = claims.filter(function(c){ return c.status === 'PAID' || c.status === 'APPROVED'; });
+  var p1Ct = 0, p1Sla = 0, p2Ct = 0, p2Sla = 0;
+  for (var i = 0; i < cleared.length; i++) {
+    var c = cleared[i];
+    if (c.priority === 1) { p1Ct++; if (c.tariff > 3000) p1Sla++; }
+    else { p2Ct++; if (c.tariff > 2000) p2Sla++; }
+  }
+  var p1Pct  = p1Ct ? Math.round(p1Sla / p1Ct * 100) : p.slaCompliance;
+  var p2Pct  = p2Ct ? Math.round(p2Sla / p2Ct * 100) : Math.min(99, p.slaCompliance + 5);
+  var overall = p.slaCompliance;
+  var slaColor = overall >= 90 ? 'var(--g)' : overall >= 80 ? 'var(--p3)' : 'var(--p1)';
+
+  var policies = [
+    { label:'P1 Response ≤ 8 min',      target:'≥ 90%', pct: p1Pct,  thresh: 90 },
+    { label:'P2 Response ≤ 15 min',     target:'≥ 85%', pct: p2Pct,  thresh: 85 },
+    { label:'ePCR Submission ≤ 30 min', target:'≥ 95%', pct: 93,      thresh: 95 },
+    { label:'Claim Submission ≤ 24h',   target:'≥ 98%', pct: 97,      thresh: 98 }
+  ];
+
+  var html =
+    '<div class="sla-card">' +
+      '<div class="sla-card-title">Overall SLA Compliance</div>' +
+      '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">' +
+        '<div style="font-family:\'JetBrains Mono\',monospace;font-size:36px;font-weight:500;color:' + slaColor + '">' + overall + '%</div>' +
+        '<div style="font-size:12px;color:var(--t3);line-height:1.6">Against SHA/SHIF<br>contractual target</div>' +
+      '</div>' +
+      '<div class="sla-bar-wrap"><div class="sla-bar-fill" style="width:' + overall + '%;background:' + slaColor + '"></div></div>' +
+      '<div class="sla-metric"><span class="sla-metric-label">Contract target</span><span class="sla-metric-val">≥ 90%</span></div>' +
+      '<div class="sla-metric"><span class="sla-metric-label">YTD average</span><span class="sla-metric-val">' + overall + '%</span></div>' +
+      '<div class="sla-metric"><span class="sla-metric-label">Penalty exposure</span><span class="sla-metric-val">' + (overall < 90 ? 'KES ' + ((90 - overall) * 5000).toLocaleString() : 'None') + '</span></div>' +
+    '</div>' +
+    '<div class="sla-card">' +
+      '<div class="sla-card-title">Policy Breakdown</div>';
+
+  for (var j = 0; j < policies.length; j++) {
+    var pl = policies[j];
+    var status = pl.pct >= pl.thresh ? 'ok' : pl.pct >= pl.thresh - 5 ? 'warn' : 'fail';
+    html +=
+      '<div class="sla-policy-row">' +
+        '<span class="sla-policy-label">' + pl.label + '</span>' +
+        '<span class="sla-policy-target">' + pl.target + '</span>' +
+        '<span class="sla-policy-status ' + status + '">' + pl.pct + '%</span>' +
+      '</div>';
+  }
+  html += '</div>';
+
+  document.getElementById('sla-grid').innerHTML = html;
+}
+
+// ─── Settings Tab ─────────────────────────────────────────────────────────────
+function _renderSettings(p) {
+  var websiteRow = p.website
+    ? '<div class="field-row"><div class="field-group"><div class="field-label">Website</div><div class="field-val"><a href="https://' + p.website + '" target="_blank" rel="noopener" style="color:var(--b2);text-decoration:none">' + p.website + '</a></div></div>' +
+      '<div class="field-group"><div class="field-label">Operation Scope</div><div class="field-val">' + p.county + '</div></div></div>'
+    : '';
+
+  var html =
+    '<div class="settings-section">' +
+      '<div class="ss-title"><span class="mat">badge</span>Provider Details</div>' +
+      '<div class="field-row">' +
+        '<div class="field-group"><div class="field-label">Legal Name</div><div class="field-val">' + p.name + '</div></div>' +
+        '<div class="field-group"><div class="field-label">Contract No.</div><div class="field-val mono">' + p.contractNo + '</div></div>' +
+      '</div>' +
+      (websiteRow || ('<div class="field-row">' +
+        '<div class="field-group"><div class="field-label">County</div><div class="field-val">' + p.county + '</div></div>' +
+        '<div class="field-group"><div class="field-label">Contract Status</div><div class="field-val">' + p.contractStatus + '</div></div>' +
+      '</div>')) +
+      '<div class="field-row">' +
+        '<div class="field-group"><div class="field-label">Email</div><div class="field-val">' + p.email + '</div></div>' +
+        '<div class="field-group"><div class="field-label">Phone</div><div class="field-val">' + p.phone + '</div></div>' +
+      '</div>' +
+      '<div class="field-row">' +
+        '<div class="field-group"><div class="field-label">Fleet (Phase 1)</div><div class="field-val mono" style="color:var(--g)">' + p.fleetCount + ' units assigned</div></div>' +
+        '<div class="field-group"><div class="field-label">Contract Status</div><div class="field-val">' + p.contractStatus + '</div></div>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="settings-section">' +
+      '<div class="ss-title"><span class="mat">payments</span>Payment Details</div>' +
+      '<div class="field-row">' +
+        '<div class="field-group"><div class="field-label">Payment Method</div><div class="field-val">' + (p.paymentMethod === 'pesalink' ? 'PesaLink RTGS' : 'M-Pesa B2C') + '</div></div>' +
+        '<div class="field-group"><div class="field-label">Routing Threshold</div><div class="field-val mono">KES 500,000</div></div>' +
+      '</div>' +
+      '<div class="field-row">' +
+        '<div class="field-group"><div class="field-label">IBAN / Paybill</div><div class="field-val mono">' + (p.paymentMethod === 'pesalink' ? 'KE-****-' + p.id.slice(-3) : '522533') + '</div></div>' +
+        '<div class="field-group"><div class="field-label">KRA PIN</div><div class="field-val mono">P0' + (5000 + parseInt(p.id.slice(-3))||100) + '****X</div></div>' +
+      '</div>' +
+      '<div style="display:flex;gap:8px;margin-top:4px">' +
+        '<button class="settings-btn save" onclick="showToast(\'Payment details saved (demo — no write)\', \'success\')">Save Changes</button>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="settings-section">' +
+      '<div class="ss-title"><span class="mat">warning</span>Contract Management</div>' +
+      '<div style="font-size:12px;color:var(--t3);margin-bottom:12px;line-height:1.6">Changes to contract status affect all dispatching and payment processing for this provider. Requires SHA/EMS contract team countersignature.</div>' +
+      '<div style="display:flex;gap:8px">' +
+        '<button class="settings-btn save" onclick="showToast(\'Contract renewal initiated — SHA Legal notified\', \'info\')">Renew Contract</button>' +
+        '<button class="settings-btn danger" onclick="showToast(\'Suspension requires SHA Director approval\', \'warning\')">Suspend Provider</button>' +
+      '</div>' +
+    '</div>';
+
+  document.getElementById('settings-wrap').innerHTML = html;
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+fetch('/api/config')
+  .then(function(r){ return r.json(); })
+  .catch(function(){ return {}; })
+  .then(function(cfg){
+    NACDState.init({supabaseUrl:cfg.supabaseUrl||'',supabaseKey:cfg.supabaseAnonKey||'',seedIncidents:12,autoStart:true});
+
+    window._onNACDAuthReady = function(auth) {
+      var ov = document.getElementById('nacd-auth-overlay');
+      if(ov){ ov.style.opacity='0'; setTimeout(function(){ ov.style.display='none'; }, 220); }
+      if(!auth.user) return;
+      var name = auth.user.fullName || auth.user.username || 'User';
+      var ini  = name.split(' ').map(function(w){ return w[0]||''; }).join('').slice(0,2).toUpperCase();
+      var av = document.getElementById('user-av'); var nm = document.getElementById('user-nm');
+      if(av) av.textContent = ini; if(nm) nm.textContent = name;
+    };
+    if(window.NACDAuth) NACDAuth.init({supabaseUrl:cfg.supabaseUrl,supabaseAnonKey:cfg.supabaseAnonKey,clerkPublishableKey:cfg.clerkPublishableKey},'providers');
+
+    NACDState.on('state:initialized', function() {
+      _fleet     = NACDState.getFleet();
+      _claims    = NACDState.getClaims();
+      _providers = NACDState.getProviders();
+      renderKPIs();
+      renderProviderList('');
+    });
+
+    NACDState.on('state:tick', function() {
+      _fleet     = NACDState.getFleet();
+      _claims    = NACDState.getClaims();
+      _providers = NACDState.getProviders();
+      renderKPIs();
+      if (_selProvider) {
+        var activeTab = document.querySelector('.tb-tab.active');
+        if (activeTab && (activeTab.dataset.tab === 'dash' || activeTab.dataset.tab === 'invoices')) {
+          _renderTab(activeTab.dataset.tab);
+        }
+      }
+    });
+
+    NACDState.on('claims:updated', function() {
+      _claims    = NACDState.getClaims();
+      _providers = NACDState.getProviders();
+      renderKPIs();
+      renderProviderList(document.getElementById('prov-search').value);
+      if (_selProvider) {
+        var activeTab = document.querySelector('.tb-tab.active');
+        if (activeTab) _renderTab(activeTab.dataset.tab);
+      }
+    });
+  });
+</script>
+
+<script>
+(function(){
+  function toggleAppSw(){
+    var p=document.getElementById('app-sw-panel');
+    var b=document.querySelector('.app-sw-btn');
+    if(!p) return;
+    var willOpen = !p.classList.contains('open');
+    p.classList.toggle('open');
+    if(b) b.classList.toggle('open', willOpen);
+  }
+  document.addEventListener('click',function(e){
+    var p=document.getElementById('app-sw-panel');
+    if(!p||!p.classList.contains('open')) return;
+    if(p.contains(e.target)) return;
+    if(e.target.closest && e.target.closest('.app-sw-btn')) return;
+    p.classList.remove('open');
+    var b=document.querySelector('.app-sw-btn');
+    if(b) b.classList.remove('open');
+  });
+  // Expose as global so inline onclick can call it
+  window.toggleAppSw = toggleAppSw;
+})();
+</script>
+
+</body>
+</html>

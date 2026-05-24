@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PSAP — SHA NADC Call Taker</title>
+<meta name="description" content="SHA National Ambulance Dispatch Centre — real-time emergency coordination platform for the Republic of Kenya.">
+<meta name="theme-color" content="#00519B">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SHA NADC">
+<meta property="og:title" content="SHA · National Ambulance Dispatch Centre">
+<meta property="og:description" content="Real-time emergency coordination · Republic of Kenya">
+<meta property="og:url" content="https://sha-nadc.silicongw.com/psap">
+<meta property="og:image" content="https://sha-nadc.silicongw.com/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="1200">
+<meta property="og:image:alt" content="SHA National Ambulance Dispatch Centre">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SHA · National Ambulance Dispatch Centre">
+<meta name="twitter:description" content="Real-time emergency coordination · Republic of Kenya">
+<meta name="twitter:image" content="https://sha-nadc.silicongw.com/assets/og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700&family=JetBrains+Mono:wght@400;700&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" rel="stylesheet">
+<style>
+:root{
+  --b:#00519B;--b2:#27AAE1;--g:#50C020;--g2:#3DA818;
+  --p1:#FF3B30;--p2:#FF8C00;--p3:#F5B100;--ok:#34C759;
+  --bg:#0B0F14;--surface:#11161D;--surface-2:#161C25;
+  --line:rgba(255,255,255,0.06);--line-2:rgba(255,255,255,0.10);
+  --t1:rgba(255,255,255,0.95);--t2:rgba(255,255,255,0.62);
+  --t3:rgba(255,255,255,0.40);--t4:rgba(255,255,255,0.25);
+  --fh:'Exo 2',system-ui,sans-serif;
+  --fm:'JetBrains Mono',ui-monospace,monospace;
+  --fb:'Barlow Condensed',sans-serif;
+  --r-sm:8px;--r-md:12px;--r-lg:16px;--r-pill:999px;
+  --shadow-1:0 2px 8px rgba(0,0,0,.45);
+  --shadow-2:0 4px 20px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--fh);overflow:hidden;}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:2px;}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.30);}
+.mat{font-family:'Material Symbols Outlined';font-size:16px;line-height:1;font-weight:400;font-style:normal;display:inline-flex;align-items:center;}
+
+/* ── Topbar nav ───────────────────────────────── */
+.pg-nav{display:flex;align-items:center;gap:1px;}
+.pn{display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:999px;text-decoration:none;font-family:var(--fh);font-size:11px;font-weight:500;color:var(--t2);white-space:nowrap;transition:background .15s,color .15s;}
+.pn:hover{background:rgba(255,255,255,.05);color:var(--t1);}
+.pn.on{background:rgba(39,170,225,.13);color:var(--b2);}
+.pn .mat{font-size:13px;}
+.pn .pm{font-family:var(--fb);font-size:8px;color:var(--t4);letter-spacing:.6px;text-transform:uppercase;margin-left:1px;}
+.pn.on .pm{color:rgba(39,170,225,.5);}
+
+/* ── Header ───────────────────────────────────── */
+header{
+  display:flex;align-items:center;gap:12px;
+  height:48px;padding:0 16px;
+  background:var(--surface);border-bottom:1px solid var(--line-2);
+  flex-shrink:0;
+}
+.h-logo{display:flex;align-items:center;gap:8px;font-family:var(--fb);font-weight:700;font-size:15px;letter-spacing:.04em;color:var(--t1);}
+.h-logo .h-sub{font-size:11px;color:var(--t3);font-weight:400;}
+.h-sep{width:1px;height:24px;background:var(--line-2);}
+.h-spacer{flex:1;}
+/* Call timer */
+.h-timer{display:flex;align-items:center;gap:6px;font-family:var(--fm);font-size:20px;font-weight:700;color:var(--g);}
+.h-timer.warn{color:var(--p2);}
+.h-timer.crit{color:var(--p1);animation:blink 1s step-start infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.4;}}
+.h-timer-lbl{font-family:var(--fb);font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--t3);text-transform:uppercase;}
+/* Determinant chip in header */
+.h-det{display:none;align-items:center;gap:6px;padding:4px 10px;border-radius:var(--r-pill);font-family:var(--fb);font-weight:700;font-size:13px;letter-spacing:.05em;}
+.h-det.E{background:rgba(255,59,48,.18);color:var(--p1);border:1px solid rgba(255,59,48,.3);display:flex;}
+.h-det.D{background:rgba(255,140,0,.18);color:var(--p2);border:1px solid rgba(255,140,0,.3);display:flex;}
+.h-det.C{background:rgba(245,177,0,.15);color:var(--p3);border:1px solid rgba(245,177,0,.28);display:flex;}
+.h-det.B{background:rgba(80,192,32,.14);color:var(--g);border:1px solid rgba(80,192,32,.25);display:flex;}
+.h-det.A{background:rgba(39,170,225,.14);color:var(--b2);border:1px solid rgba(39,170,225,.25);display:flex;}
+/* Hold / End */
+.h-btn{display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:var(--r-pill);border:1px solid var(--line-2);background:transparent;color:var(--t2);font-family:var(--fb);font-weight:600;font-size:12px;letter-spacing:.05em;cursor:pointer;transition:background .12s,color .12s;}
+.h-btn:hover{background:rgba(255,255,255,.06);color:var(--t1);}
+.h-btn.end{border-color:rgba(255,59,48,.3);color:var(--p1);}
+.h-btn.end:hover{background:rgba(255,59,48,.12);}
+
+/* ── Layout ───────────────────────────────────── */
+.workspace{display:flex;height:calc(100vh - 48px - 56px);overflow:hidden;}
+
+/* ── Left panel — session details ─────────────── */
+.panel-l{
+  width:280px;flex-shrink:0;
+  background:var(--surface);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.panel-l .p-head{
+  padding:10px 14px 8px;border-bottom:1px solid var(--line);
+  font-family:var(--fb);font-size:10px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--t3);
+}
+.panel-l .scroll{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:10px;}
+/* form groups */
+.fg{display:flex;flex-direction:column;gap:3px;}
+.fg label{font-family:var(--fb);font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--t3);text-transform:uppercase;}
+.fg input,.fg select,.fg textarea{
+  width:100%;background:var(--surface-2);border:1px solid var(--line-2);border-radius:var(--r-sm);
+  color:var(--t1);font-family:var(--fm);font-size:12px;padding:7px 9px;
+  outline:none;transition:border-color .12s;
+}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:rgba(39,170,225,.5);}
+.fg textarea{resize:none;height:52px;line-height:1.4;}
+.fg select{cursor:pointer;}
+.fg select option{background:var(--surface-2);}
+.sect-lbl{font-family:var(--fb);font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--b2);padding:4px 0 2px;border-top:1px solid var(--line);margin-top:4px;}
+.ani-row{display:flex;align-items:center;gap:6px;}
+.ani-badge{font-family:var(--fm);font-size:11px;color:var(--g);background:rgba(80,192,32,.1);border:1px solid rgba(80,192,32,.2);border-radius:var(--r-sm);padding:3px 7px;white-space:nowrap;flex-shrink:0;}
+
+/* ── Centre panel — triage flow ──────────────── */
+.panel-c{
+  flex:1;display:flex;flex-direction:column;overflow:hidden;
+  background:var(--bg);
+}
+
+/* Protocol search bar */
+.proto-search{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 16px;border-bottom:1px solid var(--line);
+  background:var(--surface);flex-shrink:0;
+}
+.proto-search .mat{color:var(--t3);}
+.proto-search input{
+  flex:1;background:transparent;border:none;outline:none;
+  font-family:var(--fh);font-size:14px;color:var(--t1);
+}
+.proto-search input::placeholder{color:var(--t4);}
+.cat-pills{display:flex;gap:5px;flex-wrap:wrap;padding:8px 16px 0;flex-shrink:0;}
+.cat-pill{
+  font-family:var(--fb);font-size:10px;font-weight:600;letter-spacing:.06em;
+  text-transform:uppercase;padding:3px 9px;border-radius:var(--r-pill);
+  border:1px solid var(--line-2);color:var(--t3);cursor:pointer;background:transparent;
+  transition:background .1s,color .1s,border-color .1s;
+}
+.cat-pill.on,.cat-pill:hover{background:rgba(39,170,225,.12);color:var(--b2);border-color:rgba(39,170,225,.3);}
+
+/* Protocol grid */
+.proto-grid{
+  display:flex;flex-wrap:wrap;gap:7px;
+  padding:10px 16px;overflow-y:auto;flex-shrink:0;max-height:210px;
+}
+.proto-card{
+  display:flex;align-items:center;gap:7px;
+  padding:7px 11px;border-radius:var(--r-md);
+  background:var(--surface);border:1px solid var(--line);
+  cursor:pointer;transition:background .1s,border-color .1s;
+  min-width:140px;
+}
+.proto-card:hover{background:var(--surface-2);border-color:var(--line-2);}
+.proto-card.sel{background:rgba(39,170,225,.1);border-color:rgba(39,170,225,.35);}
+.proto-card .pc-ico{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.proto-card .pc-txt b{font-family:var(--fh);font-size:12px;font-weight:600;color:var(--t1);display:block;line-height:1.2;}
+.proto-card .pc-txt span{font-family:var(--fb);font-size:9px;color:var(--t3);letter-spacing:.05em;text-transform:uppercase;}
+
+/* Question flow */
+.q-area{flex:1;overflow-y:auto;padding:14px 20px;display:flex;flex-direction:column;gap:12px;}
+.q-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:8px;color:var(--t4);font-family:var(--fb);font-size:13px;letter-spacing:.04em;}
+.q-empty .mat{font-size:40px;}
+.q-card{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+  padding:14px 16px;
+}
+.q-card.answered{border-color:rgba(80,192,32,.25);background:rgba(80,192,32,.04);}
+.q-card.echo{border-color:rgba(255,59,48,.4);background:rgba(255,59,48,.06);}
+.q-num{font-family:var(--fb);font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--t4);text-transform:uppercase;margin-bottom:4px;}
+.q-text{font-family:var(--fh);font-size:14px;font-weight:600;color:var(--t1);margin-bottom:10px;line-height:1.4;}
+.q-opts{display:flex;flex-wrap:wrap;gap:7px;}
+.q-opt{
+  padding:7px 14px;border-radius:var(--r-pill);border:1px solid var(--line-2);
+  font-family:var(--fb);font-weight:600;font-size:12px;letter-spacing:.04em;
+  color:var(--t2);cursor:pointer;background:transparent;transition:all .1s;
+}
+.q-opt:hover{background:rgba(255,255,255,.06);color:var(--t1);}
+.q-opt.sel-yes{background:rgba(80,192,32,.14);border-color:rgba(80,192,32,.4);color:var(--g);}
+.q-opt.sel-no{background:rgba(255,59,48,.12);border-color:rgba(255,59,48,.35);color:var(--p1);}
+.q-opt.sel-other{background:rgba(39,170,225,.12);border-color:rgba(39,170,225,.35);color:var(--b2);}
+.q-input{
+  width:100%;background:var(--surface-2);border:1px solid var(--line-2);border-radius:var(--r-sm);
+  color:var(--t1);font-family:var(--fm);font-size:13px;padding:7px 10px;outline:none;
+}
+.q-input:focus{border-color:rgba(39,170,225,.5);}
+
+/* Determinant card */
+.det-card{
+  border-radius:var(--r-lg);padding:16px 18px;
+  display:flex;align-items:flex-start;gap:14px;
+  border:2px solid;
+}
+.det-card.E{background:rgba(255,59,48,.08);border-color:rgba(255,59,48,.4);}
+.det-card.D{background:rgba(255,140,0,.08);border-color:rgba(255,140,0,.35);}
+.det-card.C{background:rgba(245,177,0,.07);border-color:rgba(245,177,0,.3);}
+.det-card.B{background:rgba(80,192,32,.07);border-color:rgba(80,192,32,.28);}
+.det-card.A{background:rgba(39,170,225,.07);border-color:rgba(39,170,225,.28);}
+.det-badge{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:22px;font-weight:700;flex-shrink:0;}
+.det-card.E .det-badge{background:rgba(255,59,48,.2);color:var(--p1);}
+.det-card.D .det-badge{background:rgba(255,140,0,.2);color:var(--p2);}
+.det-card.C .det-badge{background:rgba(245,177,0,.18);color:var(--p3);}
+.det-card.B .det-badge{background:rgba(80,192,32,.16);color:var(--g);}
+.det-card.A .det-badge{background:rgba(39,170,225,.16);color:var(--b2);}
+.det-info b{font-family:var(--fh);font-size:15px;font-weight:700;display:block;margin-bottom:3px;}
+.det-info .det-code{font-family:var(--fm);font-size:11px;color:var(--t3);margin-bottom:4px;}
+.det-info .det-label{font-size:13px;color:var(--t2);}
+.det-card.E .det-info b{color:var(--p1);}
+.det-card.D .det-info b{color:var(--p2);}
+.det-card.C .det-info b{color:var(--p3);}
+.det-card.B .det-info b{color:var(--g);}
+.det-card.A .det-info b{color:var(--b2);}
+
+/* Echo alert banner */
+.echo-banner{
+  display:none;background:rgba(255,59,48,.12);border:1px solid rgba(255,59,48,.4);
+  border-radius:var(--r-md);padding:10px 14px;
+  font-family:var(--fb);font-size:13px;font-weight:700;color:var(--p1);
+  letter-spacing:.04em;align-items:center;gap:8px;
+}
+.echo-banner.show{display:flex;}
+
+/* PAI steps */
+.pai-section{border-top:1px solid var(--line);padding-top:12px;margin-top:4px;}
+.pai-lbl{font-family:var(--fb);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--b2);margin-bottom:8px;}
+.pai-step{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--line);}
+.pai-step:last-child{border-bottom:none;}
+.pai-step-n{width:20px;height:20px;border-radius:50%;background:rgba(39,170,225,.16);color:var(--b2);font-family:var(--fm);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.pai-step-t{font-family:var(--fh);font-size:13px;color:var(--t1);line-height:1.45;}
+
+/* ── Right panel — resources ──────────────────── */
+.panel-r{
+  width:268px;flex-shrink:0;
+  background:var(--surface);border-left:1px solid var(--line);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.r-sect{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
+.r-head{
+  padding:8px 12px 6px;border-bottom:1px solid var(--line);
+  font-family:var(--fb);font-size:10px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--t3);display:flex;align-items:center;gap:6px;
+}
+.r-head .mat{font-size:13px;}
+.r-sub{flex-shrink:0;padding:6px 10px;overflow-y:auto;}
+.r-empty{padding:18px 12px;font-family:var(--fb);font-size:12px;color:var(--t4);text-align:center;letter-spacing:.04em;}
+
+/* Unit cards */
+.unit-card{
+  margin:4px 8px;padding:8px 10px;border-radius:var(--r-md);
+  background:var(--surface-2);border:1px solid var(--line);cursor:pointer;
+  transition:border-color .1s,background .1s;
+}
+.unit-card:hover{border-color:var(--line-2);}
+.unit-card.sel{border-color:rgba(39,170,225,.4);background:rgba(39,170,225,.07);}
+.uc-row{display:flex;align-items:center;gap:7px;}
+.uc-badge{width:28px;height:28px;border-radius:6px;background:rgba(80,192,32,.14);color:var(--g);border:1px solid rgba(80,192,32,.25);font-family:var(--fm);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;text-align:center;flex-shrink:0;line-height:1.1;}
+.uc-info{flex:1;}
+.uc-id{font-family:var(--fm);font-size:12px;font-weight:700;color:var(--t1);}
+.uc-sub{font-family:var(--fb);font-size:10px;color:var(--t3);}
+.uc-eta{font-family:var(--fm);font-size:11px;color:var(--b2);font-weight:700;white-space:nowrap;}
+.als-tag{font-family:var(--fm);font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;background:rgba(255,59,48,.14);color:var(--p1);}
+
+/* Hospital cards */
+.hosp-card{
+  margin:4px 8px;padding:8px 10px;border-radius:var(--r-md);
+  background:var(--surface-2);border:1px solid var(--line);cursor:pointer;
+  transition:border-color .1s;
+}
+.hosp-card:hover{border-color:var(--line-2);}
+.hosp-card.sel{border-color:rgba(39,170,225,.4);background:rgba(39,170,225,.07);}
+.hc-name{font-family:var(--fh);font-size:12px;font-weight:600;color:var(--t1);margin-bottom:2px;}
+.hc-tags{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:3px;}
+.hc-tag{font-family:var(--fb);font-size:9px;font-weight:600;padding:1px 5px;border-radius:3px;background:rgba(39,170,225,.1);color:var(--b2);letter-spacing:.04em;text-transform:uppercase;}
+.hc-meta{font-family:var(--fm);font-size:10px;color:var(--t3);}
+.cap-bar{height:3px;border-radius:2px;background:rgba(255,255,255,.08);margin-top:4px;overflow:hidden;}
+.cap-bar i{height:100%;display:block;border-radius:2px;}
+
+/* Pre-alert button */
+.pre-alert-btn{
+  margin:8px;padding:9px 12px;border-radius:var(--r-md);
+  background:rgba(39,170,225,.12);border:1px solid rgba(39,170,225,.28);
+  color:var(--b2);font-family:var(--fb);font-weight:700;font-size:12px;
+  letter-spacing:.05em;cursor:pointer;transition:background .12s;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.pre-alert-btn:hover{background:rgba(39,170,225,.2);}
+.pre-alert-btn.sent{background:rgba(80,192,32,.12);border-color:rgba(80,192,32,.28);color:var(--g);}
+
+/* ── Footer — action bar ──────────────────────── */
+footer{
+  height:56px;display:flex;align-items:center;gap:8px;
+  padding:0 16px;background:var(--surface);border-top:1px solid var(--line-2);
+  flex-shrink:0;
+}
+.act-btn{
+  display:flex;align-items:center;gap:6px;
+  padding:9px 16px;border-radius:var(--r-md);
+  font-family:var(--fb);font-weight:700;font-size:13px;letter-spacing:.04em;
+  cursor:pointer;transition:background .12s,border-color .12s;border:1px solid;
+}
+.act-btn.pri{background:var(--p1);border-color:transparent;color:#fff;}
+.act-btn.pri:hover{background:#e02d22;}
+.act-btn.sec{background:rgba(255,140,0,.14);border-color:rgba(255,140,0,.3);color:var(--p2);}
+.act-btn.sec:hover{background:rgba(255,140,0,.22);}
+.act-btn.ghost{background:transparent;border-color:var(--line-2);color:var(--t2);}
+.act-btn.ghost:hover{background:rgba(255,255,255,.05);color:var(--t1);}
+.act-btn.danger{background:transparent;border-color:rgba(255,59,48,.28);color:rgba(255,59,48,.6);}
+.act-btn.danger:hover{background:rgba(255,59,48,.08);color:var(--p1);}
+.act-btn:disabled{opacity:.38;cursor:not-allowed;}
+.act-spacer{flex:1;}
+.source-badge{
+  font-family:var(--fm);font-size:10px;color:var(--t4);
+  padding:4px 8px;border:1px solid var(--line);border-radius:var(--r-pill);
+}
+
+/* toast */
+.toast{position:fixed;bottom:72px;left:50%;transform:translateX(-50%);
+  background:rgba(22,28,37,.97);border:1px solid var(--line-2);border-radius:var(--r-pill);
+  padding:8px 18px;font-family:var(--fb);font-size:13px;letter-spacing:.04em;color:var(--t1);
+  box-shadow:var(--shadow-2);z-index:999;pointer-events:none;
+  opacity:0;transition:opacity .2s;white-space:nowrap;}
+.toast.show{opacity:1;}
+
+/* auth overlay */
+#nacd-auth-overlay{
+  position:fixed;inset:0;z-index:9000;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  transition:opacity .25s;
+}
+.ao-card{text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;}
+.ao-spin{width:36px;height:36px;border:3px solid var(--line-2);border-top-color:var(--b2);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── SHA brand logo + animation ─────────────────── */
+.sha-logo-pill{display:flex;align-items:center;flex-shrink:0;padding:0;background:transparent;}
+.sha-logo-pill img{height:28px;width:auto;display:block;filter:invert(1) hue-rotate(195deg) saturate(1.4);animation:brand-glow 4s ease-in-out infinite;}
+@keyframes brand-glow{0%,100%{opacity:.82;}50%{opacity:1;}}
+.sha-nadc{font-family:var(--fh);font-weight:700;font-size:13px;letter-spacing:.3px;background:linear-gradient(90deg,var(--b2) 0%,var(--g) 45%,var(--b2) 90%);background-size:200% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:nadc-sweep 9s linear infinite;line-height:1.1;display:block;}
+@keyframes nadc-sweep{0%{background-position:100% 0;}100%{background-position:-100% 0;}}
+
+/* ── App switcher (icon-forward) ─────────────────────────────────────── */
+.app-sw{position:relative;display:inline-flex;}
+.app-sw-btn{display:flex;align-items:center;gap:7px;padding:6px 12px 6px 10px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  border-radius:999px;color:rgba(255,255,255,.95);
+  font-family:'Exo 2',sans-serif;font-size:12.5px;font-weight:600;
+  cursor:pointer;transition:background .12s,border-color .12s;}
+.app-sw-btn:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.14);}
+.app-sw-btn.open{background:rgba(80,192,32,.12);border-color:rgba(80,192,32,.30);}
+.app-sw-btn .mat{font-size:18px;color:#50C020;}
+.app-sw-btn .asb-cur{letter-spacing:.2px;}
+.app-sw-btn .asb-arrow{font-size:14px !important;color:rgba(255,255,255,.4) !important;margin-left:1px;transition:transform .15s;}
+.app-sw-btn.open .asb-arrow{transform:rotate(180deg);}
+.app-sw-panel{display:none;position:absolute;top:calc(100% + 8px);left:0;
+  width:296px;background:rgba(14,22,32,.96);backdrop-filter:saturate(160%) blur(16px);
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:14px;box-shadow:0 18px 42px rgba(0,0,0,.7);
+  z-index:9000;overflow:hidden;padding:8px;}
+.app-sw-panel.open{display:block;animation:asPop .14s ease-out;}
+@keyframes asPop{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
+.asp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.asp-item{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:6px;padding:14px 6px 10px;background:transparent;color:rgba(255,255,255,.7);
+  text-decoration:none;text-align:center;border-radius:10px;
+  border:1px solid transparent;
+  transition:background .12s,color .12s,border-color .12s,transform .08s;}
+.asp-item:hover{background:rgba(255,255,255,.05);color:#fff;border-color:rgba(255,255,255,.08);}
+.asp-item:active{transform:scale(.96);}
+.asp-item.on{background:rgba(80,192,32,.10);color:#50C020;border-color:rgba(80,192,32,.25);}
+.asp-item .mat{font-size:30px;line-height:1;}
+.asp-item b{font-family:'Exo 2',sans-serif;font-weight:500;font-size:11px;display:block;letter-spacing:.1px;}
+
+</style>
+<link rel="stylesheet" href="/assets/tokens-v2.css">
+</head>
+<body>
+
+<!-- Auth overlay -->
+<div id="nacd-auth-overlay">
+  <div class="ao-card">
+    <div class="ao-spin"></div>
+    <div style="font-family:var(--fb);font-size:13px;color:var(--t3);letter-spacing:.06em;">LOADING PSAP</div>
+  </div>
+</div>
+
+<header>
+  <div class="h-logo">
+    <div class="sha-logo-pill" style="height:24px;padding:1px 5px;animation:brand-glow 6s ease-in-out infinite;"><img src="/sha-social-health-authority-logo.png" alt="SHA" loading="lazy" style="height:18px;"></div>
+    <span class="sha-nadc" style="font-size:12px;">PSAP</span>
+    <span class="h-sub">/ Call Taker Console</span>
+  </div>
+  <div class="h-sep"></div>
+  <div class="app-sw">
+  <button class="app-sw-btn" onclick="toggleAppSw()" aria-label="Switch app">
+    <span class="mat">apps</span>
+    <span class="asb-cur">PSAP</span>
+    <span class="mat asb-arrow">expand_more</span>
+  </button>
+  <div class="app-sw-panel" id="app-sw-panel">
+    <div class="asp-grid">
+      <a class="asp-item" href="/dashboard" title="Wall"><span class="mat">tv</span><b>Wall</b></a>
+      <a class="asp-item on" href="/psap" title="PSAP"><span class="mat">call</span><b>PSAP</b></a>
+      <a class="asp-item" href="/dispatch" title="Dispatch"><span class="mat">radar</span><b>Dispatch</b></a>
+      <a class="asp-item" href="/supervisor" title="Supervisor"><span class="mat">supervisor_account</span><b>Supervisor</b></a>
+      <a class="asp-item" href="/emt" title="EMT"><span class="mat">directions_car</span><b>EMT</b></a>
+      <a class="asp-item" href="/hospital" title="Hospital"><span class="mat">local_hospital</span><b>Hospital</b></a>
+      <a class="asp-item" href="/claims" title="Claims"><span class="mat">receipt_long</span><b>Claims</b></a>
+      <a class="asp-item" href="/providers" title="Providers"><span class="mat">business</span><b>Providers</b></a>
+      <a class="asp-item" href="/admin" title="Admin"><span class="mat">admin_panel_settings</span><b>Admin</b></a>
+    </div>
+  </div>
+</div>
+  <div class="h-sep"></div>
+  <div style="display:flex;flex-direction:column;">
+    <div class="h-timer-lbl">Session</div>
+    <div class="h-timer" id="h-timer">00:00</div>
+  </div>
+  <div class="h-det" id="h-det">
+    <span class="mat" style="font-size:14px;">warning</span>
+    <span id="h-det-txt">—</span>
+  </div>
+  <div class="h-spacer"></div>
+  <span class="source-badge" id="h-source">MANUAL ENTRY</span>
+  <button class="h-btn" onclick="holdCall()"><span class="mat">pause</span> Hold</button>
+  <button class="h-btn end" onclick="endSession()"><span class="mat">call_end</span> End Call</button>
+  <div class="h-sep"></div>
+  <div id="user-chip" style="display:none;align-items:center;gap:6px;font-family:var(--fb);font-size:11px;color:var(--t2);">
+    <div id="user-av" style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--b),var(--b2));display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;"></div>
+    <span id="user-nm"></span>
+  </div>
+</header>
+
+<div class="workspace">
+
+  <!-- LEFT: Session info -->
+  <div class="panel-l">
+    <div class="p-head">Session Details</div>
+    <div class="scroll">
+      <div class="sect-lbl" style="margin-top:0;border-top:none;">Caller</div>
+      <div class="fg">
+        <label>ANI / Phone</label>
+        <div class="ani-row">
+          <input id="f-caller-phone" type="tel" placeholder="+254…" oninput="onCallerPhoneInput()">
+          <span class="ani-badge" id="ani-status" style="display:none;">3CX</span>
+        </div>
+      </div>
+      <div class="fg">
+        <label>Caller Name</label>
+        <input id="f-caller-name" type="text" placeholder="Full name">
+      </div>
+      <div class="fg">
+        <label>Relationship to Patient</label>
+        <select id="f-relationship">
+          <option value="">— select —</option>
+          <option value="self">Self (patient is caller)</option>
+          <option value="family">Family member</option>
+          <option value="bystander">Bystander / witness</option>
+          <option value="colleague">Colleague / employer</option>
+          <option value="medical_staff">Medical staff</option>
+          <option value="police">Police / security</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <div class="sect-lbl">Patient</div>
+      <div class="fg">
+        <label>Patient Phone (if different)</label>
+        <input id="f-patient-phone" type="tel" placeholder="+254…">
+      </div>
+      <div style="display:flex;gap:6px;">
+        <div class="fg" style="flex:1;">
+          <label>Age</label>
+          <input id="f-age" type="number" placeholder="yrs" min="0" max="120">
+        </div>
+        <div class="fg" style="flex:1;">
+          <label>Sex</label>
+          <select id="f-sex">
+            <option value="">—</option>
+            <option value="M">Male</option>
+            <option value="F">Female</option>
+            <option value="U">Unknown</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="sect-lbl">Location</div>
+      <div class="fg" style="position:relative;">
+        <label>Address / Area</label>
+        <input id="f-address" type="text" placeholder="Street, estate, junction…" autocomplete="off" oninput="onLocationInput()">
+        <div id="f-address-suggest" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface-2);border:1px solid var(--line-2);border-radius:var(--r-sm);max-height:220px;overflow-y:auto;z-index:50;box-shadow:0 6px 18px rgba(0,0,0,.5);"></div>
+        <div id="f-geo-status" style="font-family:var(--fm);font-size:9.5px;color:var(--t3);margin-top:3px;min-height:11px;"></div>
+      </div>
+      <div class="fg">
+        <label>County</label>
+        <select id="f-county">
+          <option value="">— Auto-detect from address —</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label style="display:flex;justify-content:space-between;align-items:center;">
+          <span>Or have caller share their location</span>
+          <button id="locreq-btn" type="button" style="background:rgba(39,170,225,.15);color:var(--b2);border:1px solid rgba(39,170,225,.3);font-family:var(--fh);font-size:10px;font-weight:600;padding:3px 9px;border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:4px;">
+            <span class="mat" style="font-size:12px;">share_location</span>Generate link
+          </button>
+        </label>
+        <div id="locreq-panel" style="display:none;margin-top:6px;padding:8px 10px;background:var(--surface-2);border:1px solid var(--line-2);border-radius:var(--r-sm);">
+          <div id="locreq-link" style="font-family:var(--fm);font-size:11px;color:var(--b2);word-break:break-all;margin-bottom:6px;cursor:pointer;"></div>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <button id="locreq-copy"  type="button" style="background:rgba(255,255,255,.06);color:var(--t1);border:1px solid var(--line-2);font-family:var(--fh);font-size:10px;padding:4px 8px;border-radius:4px;cursor:pointer;">Copy</button>
+            <button id="locreq-wa"    type="button" style="background:rgba(80,192,32,.15);color:var(--g);border:1px solid rgba(80,192,32,.3);font-family:var(--fh);font-size:10px;padding:4px 8px;border-radius:4px;cursor:pointer;">WhatsApp</button>
+            <button id="locreq-sms"   type="button" style="background:rgba(245,177,0,.15);color:var(--p3);border:1px solid rgba(245,177,0,.3);font-family:var(--fh);font-size:10px;padding:4px 8px;border-radius:4px;cursor:pointer;">SMS</button>
+            <div id="locreq-status" style="margin-left:auto;font-family:var(--fm);font-size:10px;color:var(--t3);">waiting…</div>
+          </div>
+        </div>
+      </div>
+      <div class="fg">
+        <label>what3words</label>
+        <input id="f-w3w" type="text" placeholder="word.word.word">
+      </div>
+      <div class="fg">
+        <label>Landmark</label>
+        <input id="f-landmark" type="text" placeholder="Near …">
+      </div>
+      <div class="fg">
+        <label>Floor / Room / Gate</label>
+        <input id="f-floor" type="text" placeholder="2nd floor, Room 4A…">
+      </div>
+      <div class="fg">
+        <label>Additional Notes</label>
+        <textarea id="f-notes" placeholder="Scene safety, access route…"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTRE: Triage flow -->
+  <div class="panel-c">
+    <div class="proto-search">
+      <span class="mat">search</span>
+      <input id="proto-search-inp" placeholder="Search complaint — e.g. chest pain, seizure, burns…" oninput="filterProtocols(this.value)">
+    </div>
+
+    <div class="cat-pills" id="cat-pills"></div>
+
+    <div class="proto-grid" id="proto-grid"></div>
+
+    <div class="q-area" id="q-area">
+      <div class="q-empty" id="q-empty">
+        <span class="mat">touch_app</span>
+        Select a complaint protocol above to begin triage
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Resources -->
+  <div class="panel-r">
+    <div class="r-sect">
+      <div class="r-head"><span class="mat">local_shipping</span> Recommended Units</div>
+      <div id="unit-list"><div class="r-empty">Select protocol to load recommendations</div></div>
+
+      <div class="r-head" style="margin-top:4px;"><span class="mat">local_hospital</span> Hospitals</div>
+      <div id="hosp-list"><div class="r-empty">Awaiting determinant</div></div>
+
+      <div id="pre-alert-wrap" style="display:none;">
+        <button class="pre-alert-btn" id="pre-alert-btn" onclick="sendPreAlert()">
+          <span class="mat">notifications_active</span> Send Pre-Alert
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /workspace -->
+
+<footer>
+  <button class="act-btn pri" id="btn-create-p1" onclick="createIncident(1)" disabled>
+    <span class="mat">local_shipping</span> Create P1 Incident
+  </button>
+  <button class="act-btn sec" id="btn-create-p2" onclick="createIncident(2)" disabled>
+    <span class="mat">local_shipping</span> Create P2
+  </button>
+  <button class="act-btn ghost" id="btn-create-p3" onclick="createIncident(3)" disabled>
+    <span class="mat">local_shipping</span> Create P3
+  </button>
+  <div class="act-spacer"></div>
+  <button class="act-btn ghost" onclick="logDisposition('no_emergency')">
+    <span class="mat">check_circle</span> No Emergency
+  </button>
+  <button class="act-btn ghost" onclick="logDisposition('prank')">
+    <span class="mat">block</span> Prank
+  </button>
+  <button class="act-btn ghost" onclick="logDisposition('transferred')">
+    <span class="mat">swap_calls</span> Transfer
+  </button>
+  <button class="act-btn danger" onclick="logDisposition('abandoned')">
+    <span class="mat">call_missed</span> Abandoned
+  </button>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="/lib/nadc-protocols.js"></script>
+<script src="/lib/nadc-state.js"></script>
+<script>
+'use strict';
+
+/* ── Config ────────────────────────────────────── */
+var MAPBOX_TOKEN = '';
+var _sb = null;
+
+/* ── Session state ─────────────────────────────── */
+var _session = {
+  startMs: Date.now(),
+  callerPhone: '', callerName: '', relationship: '',
+  patientPhone: '', age: null, sex: '',
+  address: '', w3w: '', landmark: '', floor: '', notes: '',
+  protocolId: null, protocol: null,
+  answers: {},
+  determinant: null,
+  echoBypass: false,
+  chosenUnitId: null,
+  chosenHospitalId: null,
+  preAlertSent: false,
+  disposed: false
+};
+// NACDState.psap session ID for this call (for Supabase persistence)
+var _psapSid = null;
+
+/* ── Protocol store ────────────────────────────── */
+var _protocols = [];
+var _filteredProtocols = [];
+var _activeCat = 'ALL';
+
+/* Category display config */
+var CAT_META = {
+  CARDIAC:     {icon:'favorite',       color:'#FF3B30'},
+  RESPIRATORY: {icon:'air',            color:'#27AAE1'},
+  NEURO:       {icon:'neurology',      color:'#9B59B6'},
+  TRAUMA:      {icon:'emergency',      color:'#FF8C00'},
+  OB_GYN:      {icon:'pregnant_woman', color:'#E91E8C'},
+  PEDIATRIC:   {icon:'child_care',     color:'#27AAE1'},
+  METABOLIC:   {icon:'water_drop',     color:'#F5B100'},
+  ALLERGIC:    {icon:'coronavirus',    color:'#FF8C00'},
+  TOXICOLOGY:  {icon:'science',        color:'#50C020'},
+  ENVIRONMENTAL:{icon:'thermostat',    color:'#FF8C00'},
+  BURNS:       {icon:'local_fire_department',color:'#FF3B30'},
+  PSYCHIATRIC: {icon:'psychology',     color:'#9B59B6'},
+  GI:          {icon:'medical_services',color:'#50C020'},
+  GENERAL:     {icon:'person',         color:'#27AAE1'},
+  TRANSFER:    {icon:'sync_alt',       color:'#27AAE1'}
+};
+
+/* ── Utilities ─────────────────────────────────── */
+function ft(s){
+  if(isNaN(s)||s<0)return '--:--';
+  var m=Math.floor(s/60),x=Math.floor(s%60);
+  return String(m).padStart(2,'0')+':'+String(x).padStart(2,'0');
+}
+function setText(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
+function showToast(msg,dur){
+  var t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},dur||2200);
+}
+
+/* ── Call timer ────────────────────────────────── */
+setInterval(function(){
+  var sec=Math.floor((Date.now()-_session.startMs)/1000);
+  var el=document.getElementById('h-timer');
+  if(!el)return;
+  el.textContent=ft(sec);
+  if(sec>=180&&sec<300){el.className='h-timer warn';}
+  else if(sec>=300){el.className='h-timer crit';}
+  else{el.className='h-timer';}
+},1000);
+
+/* ── Protocol loading ──────────────────────────── */
+/* Protocol data lives in /lib/nadc-protocols.js (shared with admin) */
+var PROTO_FALLBACK=window.NACDProtocols||[];
+
+function loadProtocols(){
+  if(_sb){
+    _sb.from('complaint_protocols')
+      .select('id,display_name,short_name,category,ordinal,key_questions,determinant_rules,pai_steps,echo_triggers,als_required_levels')
+      .eq('active',true)
+      .eq('clinical_review_status','approved')
+      .order('ordinal')
+      .then(function(res){
+        if(res.data&&res.data.length){
+          _protocols=res.data;
+        } else {
+          _protocols=PROTO_FALLBACK;
+        }
+        NACDState.psap.loadProtocols(_protocols);
+        buildCatPills();
+        renderProtocolGrid();
+      })
+      .catch(function(){
+        _protocols=PROTO_FALLBACK;
+        NACDState.psap.loadProtocols(_protocols);
+        buildCatPills();
+        renderProtocolGrid();
+      });
+  } else {
+    _protocols=PROTO_FALLBACK;
+    NACDState.psap.loadProtocols(_protocols);
+    buildCatPills();
+    renderProtocolGrid();
+  }
+}
+
+/* ── Category pills ────────────────────────────── */
+function buildCatPills(){
+  var cats={};
+  _protocols.forEach(function(p){cats[p.category]=true;});
+  var container=document.getElementById('cat-pills');
+  var html='<button class="cat-pill on" onclick="setCat(\'ALL\')">All ('+_protocols.length+')</button>';
+  Object.keys(cats).sort().forEach(function(c){
+    var count=_protocols.filter(function(p){return p.category===c;}).length;
+    html+='<button class="cat-pill" onclick="setCat(\''+c+'\')">'+c.replace(/_/g,' ')+' ('+count+')</button>';
+  });
+  container.innerHTML=html;
+}
+function setCat(cat){
+  _activeCat=cat;
+  document.querySelectorAll('.cat-pill').forEach(function(b){b.classList.remove('on');});
+  var pills=document.querySelectorAll('.cat-pill');
+  for(var i=0;i<pills.length;i++){
+    if(pills[i].textContent.indexOf(cat==='ALL'?'All':cat.replace(/_/g,' '))===0){
+      pills[i].classList.add('on');break;
+    }
+  }
+  renderProtocolGrid();
+}
+
+/* ── Protocol grid ─────────────────────────────── */
+function renderProtocolGrid(query){
+  var q=(query||document.getElementById('proto-search-inp').value||'').toLowerCase().trim();
+  var list=_protocols.filter(function(p){
+    var catOk=_activeCat==='ALL'||p.category===_activeCat;
+    var qOk=!q||p.display_name.toLowerCase().indexOf(q)!==-1||p.short_name.toLowerCase().indexOf(q)!==-1||p.category.toLowerCase().indexOf(q)!==-1;
+    return catOk&&qOk;
+  });
+  var html='';
+  list.forEach(function(p){
+    var meta=CAT_META[p.category]||{icon:'medical_services',color:'#27AAE1'};
+    var sel=_session.protocolId===p.id?' sel':'';
+    html+='<div class="proto-card'+sel+'" onclick="selectProtocol(\''+p.id+'\')">'
+      +'<div class="pc-ico" style="background:'+meta.color+'22;"><span class="mat" style="color:'+meta.color+';font-size:15px;">'+meta.icon+'</span></div>'
+      +'<div class="pc-txt"><b>'+p.display_name+'</b><span>'+p.short_name+'</span></div>'
+      +'</div>';
+  });
+  if(!html)html='<div style="width:100%;padding:12px;font-family:var(--fb);font-size:12px;color:var(--t4);">No matching protocols</div>';
+  document.getElementById('proto-grid').innerHTML=html;
+}
+function filterProtocols(q){renderProtocolGrid(q);}
+
+/* ── Protocol selection ────────────────────────── */
+function selectProtocol(id){
+  var p=null;
+  for(var i=0;i<_protocols.length;i++){if(_protocols[i].id===id){p=_protocols[i];break;}}
+  if(!p)return;
+  _session.protocolId=id;
+  _session.protocol=p;
+  _session.answers={};
+  _session.determinant=null;
+  _session.echoBypass=false;
+  if(_psapSid)NACDState.psap.selectProtocol(_psapSid,id);
+  renderProtocolGrid();
+  renderQuestions();
+  updateHeader();
+  recommendUnits();
+}
+
+/* ── Determinant logic ─────────────────────────── */
+function evalCond(cond,answers){
+  var v=answers[cond.qid];
+  if(v===undefined||v===null)return false;
+  if(cond.op==='eq')return v===cond.val;
+  if(cond.op==='neq')return v!==cond.val;
+  if(cond.op==='in')return Array.isArray(cond.val)&&cond.val.indexOf(v)!==-1;
+  if(cond.op==='gt')return typeof v==='number'&&v>cond.val;
+  if(cond.op==='lt')return typeof v==='number'&&v<cond.val;
+  if(cond.op==='lte')return typeof v==='number'&&v<=cond.val;
+  if(cond.op==='gte')return typeof v==='number'&&v>=cond.val;
+  return false;
+}
+function computeDeterminant(protocol,answers){
+  if(!protocol||!protocol.determinant_rules)return null;
+  var rules=protocol.determinant_rules;
+  for(var i=0;i<rules.length;i++){
+    var r=rules[i];
+    if(!r.conditions||r.conditions.length===0){
+      /* Empty conditions = default fallback for this level */
+      return r;
+    }
+    var allMatch=true;
+    for(var j=0;j<r.conditions.length;j++){
+      if(!evalCond(r.conditions[j],answers)){allMatch=false;break;}
+    }
+    if(allMatch)return r;
+  }
+  return rules[rules.length-1];
+}
+function checkEchoTriggers(protocol,answers){
+  if(!protocol||!protocol.echo_triggers)return null;
+  /* Echo triggers fire if ANY critical boolean answered false */
+  var kqs=protocol.key_questions||[];
+  for(var i=0;i<kqs.length;i++){
+    var q=kqs[i];
+    if(q.critical&&q.type==='boolean'&&answers[q.id]===false){
+      return protocol.echo_triggers[0]||{id:'echo',label:'Critical finding — Echo response'};
+    }
+  }
+  return null;
+}
+
+/* ── Question rendering ────────────────────────── */
+var DET_NAMES={E:'Echo — Immediately Life-Threatening',D:'Delta — Life-Threatening',C:'Charlie — Potentially Life-Threatening',B:'Bravo — Potentially Serious',A:'Alpha — Not Life-Threatening'};
+var DET_COLS={E:'var(--p1)',D:'var(--p2)',C:'var(--p3)',B:'var(--g)',A:'var(--b2)'};
+
+function renderQuestions(){
+  var p=_session.protocol;
+  if(!p){document.getElementById('q-area').innerHTML='<div class="q-empty" id="q-empty"><span class="mat">touch_app</span>Select a complaint protocol above to begin triage</div>';return;}
+  var qs=p.key_questions.slice().sort(function(a,b){return a.order-b.order;});
+  var html='';
+
+  /* Echo banner */
+  var echoTrigger=checkEchoTriggers(p,_session.answers);
+  if(echoTrigger&&echoTrigger.label){
+    html+='<div class="echo-banner show"><span class="mat" style="font-size:18px;">warning</span>ECHO TRIGGER: '+echoTrigger.label+'</div>';
+  }
+
+  /* Questions */
+  qs.forEach(function(q,idx){
+    var answered=_session.answers[q.id]!==undefined&&_session.answers[q.id]!==null;
+    var cls='q-card'+(answered?' answered':'')+(q.critical&&_session.answers[q.id]===false?' echo':'');
+    html+='<div class="'+cls+'" id="qc-'+q.id+'">';
+    html+='<div class="q-num">Q'+(idx+1)+(q.critical?' · CRITICAL':'')+'</div>';
+    html+='<div class="q-text">'+q.text+'</div>';
+    html+='<div class="q-opts">';
+    if(q.type==='boolean'){
+      var ysel=_session.answers[q.id]===true?' sel-yes':'';
+      var nsel=_session.answers[q.id]===false?' sel-no':'';
+      html+='<button class="q-opt'+ysel+'" onclick="answerQ(\''+q.id+'\',true)">YES</button>';
+      html+='<button class="q-opt'+nsel+'" onclick="answerQ(\''+q.id+'\',false)">NO</button>';
+    } else if(q.type==='select'&&q.options){
+      q.options.forEach(function(opt){
+        var sel=_session.answers[q.id]===opt?' sel-other':'';
+        var lbl=opt.replace(/_/g,' ').replace(/pct/g,'%').toUpperCase();
+        html+='<button class="q-opt'+sel+'" onclick="answerQ(\''+q.id+'\',\''+opt+'\')">'+lbl+'</button>';
+      });
+    } else if(q.type==='numeric'){
+      var curVal=_session.answers[q.id]||'';
+      html+='<input class="q-input" type="number" value="'+curVal+'" placeholder="Enter value" onchange="answerQ(\''+q.id+'\',+this.value)" style="max-width:120px;">';
+    } else {
+      var curTxt=_session.answers[q.id]||'';
+      html+='<input class="q-input" type="text" value="'+curTxt+'" placeholder="Enter response" onchange="answerQ(\''+q.id+'\',this.value)" style="max-width:280px;">';
+    }
+    html+='</div></div>';
+  });
+
+  /* Determinant card */
+  var det=computeDeterminant(p,_session.answers);
+  if(det&&Object.keys(_session.answers).length>0){
+    _session.determinant=det;
+    html+='<div class="det-card '+det.level+'">';
+    html+='<div class="det-badge">'+det.level+'</div>';
+    html+='<div class="det-info"><b>'+DET_NAMES[det.level]+'</b><div class="det-code">'+det.code+'</div><div class="det-label">'+det.label+'</div></div>';
+    html+='</div>';
+    /* PAI */
+    var paiSteps=p.pai_steps||[];
+    var applicablePai=paiSteps.filter(function(s){
+      if(s.applies_when==='always')return true;
+      if(s.applies_when&&s.applies_when.qid){
+        return _session.answers[s.applies_when.qid]===s.applies_when.val;
+      }
+      return false;
+    });
+    if(applicablePai.length){
+      html+='<div class="pai-section"><div class="pai-lbl"><span class="mat" style="font-size:11px;vertical-align:middle;">headset_mic</span> Pre-Arrival Instructions</div>';
+      applicablePai.forEach(function(s,i){
+        html+='<div class="pai-step"><div class="pai-step-n">'+(i+1)+'</div><div class="pai-step-t">'+s.instruction+'</div></div>';
+      });
+      html+='</div>';
+    }
+    /* Enable action buttons */
+    enableActionButtons(det.level);
+  } else {
+    _session.determinant=null;
+    enableActionButtons(null);
+  }
+
+  document.getElementById('q-area').innerHTML=html;
+  updateHeader();
+  recommendHospitals();
+}
+
+function answerQ(qid,val){
+  _session.answers[qid]=val;
+  if(_psapSid)NACDState.psap.answerQuestion(_psapSid,qid,val);
+  renderQuestions();
+}
+
+function enableActionButtons(level){
+  var p1=document.getElementById('btn-create-p1');
+  var p2=document.getElementById('btn-create-p2');
+  var p3=document.getElementById('btn-create-p3');
+  var enabled=!!level;
+  if(p1)p1.disabled=!enabled;
+  if(p2)p2.disabled=!enabled;
+  if(p3)p3.disabled=!enabled;
+  /* Auto-highlight the appropriate priority button */
+  if(level==='E'||level==='D'){
+    if(p1){p1.style.outline='2px solid var(--p1)';}
+    if(p2){p2.style.outline='none';}
+    if(p3){p3.style.outline='none';}
+  } else if(level==='C'){
+    if(p1){p1.style.outline='none';}
+    if(p2){p2.style.outline='2px solid var(--p2)';}
+    if(p3){p3.style.outline='none';}
+  } else {
+    if(p1){p1.style.outline='none';}
+    if(p2){p2.style.outline='none';}
+    if(p3){p3.style.outline='2px solid var(--g)';}
+  }
+}
+
+/* ── Header determinant chip ───────────────────── */
+function updateHeader(){
+  var det=_session.determinant;
+  var chip=document.getElementById('h-det');
+  var txt=document.getElementById('h-det-txt');
+  if(det){
+    chip.className='h-det '+det.level;
+    txt.textContent=det.code+' — '+det.level+' · '+DET_NAMES[det.level].split(' — ')[0];
+  } else {
+    chip.className='h-det';
+  }
+}
+
+/* ── Unit recommendation ───────────────────────── */
+function haversineKm(lat1,lng1,lat2,lng2){
+  var R=6371,d2r=Math.PI/180;
+  var dLat=(lat2-lat1)*d2r,dLng=(lng2-lng1)*d2r;
+  var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*d2r)*Math.cos(lat2*d2r)*Math.sin(dLng/2)*Math.sin(dLng/2);
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+var _incLat=-1.2921,_incLng=36.8219; /* Default: Nairobi CBD — updated by geocoder */
+var _incCounty='';                    /* set by geocode or county-select override */
+var _geocodeOK=false;                 /* true only after a feature has been pinned */
+var _geocodeSource='';                /* 'google' | 'mapbox' | 'manual-pin' | '' */
+
+/* ── 47 Kenyan counties — populated into #f-county on load ─────────────────── */
+var KENYA_COUNTIES=['Baringo','Bomet','Bungoma','Busia','Elgeyo-Marakwet','Embu','Garissa','Homa Bay','Isiolo','Kajiado','Kakamega','Kericho','Kiambu','Kilifi','Kirinyaga','Kisii','Kisumu','Kitui','Kwale','Laikipia','Lamu','Machakos','Makueni','Mandera','Marsabit','Meru','Migori','Mombasa','Murang\'a','Nairobi','Nakuru','Nandi','Narok','Nyamira','Nyandarua','Nyeri','Samburu','Siaya','Taita-Taveta','Tana River','Tharaka-Nithi','Trans Nzoia','Turkana','Uasin Gishu','Vihiga','Wajir','West Pokot'];
+
+function _populateCounties(){
+  var sel=document.getElementById('f-county');
+  if(!sel||sel.options.length>1) return;
+  for(var i=0;i<KENYA_COUNTIES.length;i++){
+    var o=document.createElement('option');
+    o.value=o.textContent=KENYA_COUNTIES[i];
+    sel.appendChild(o);
+  }
+  sel.onchange=function(){_incCounty=sel.value;};
+}
+
+/* ── Forward-geocoder (debounced) ──────────────────────────────────────────
+   Calls /api/geocode which tries Google Geocoding (good Kenya coverage —
+   knows Upper Hill, Kileleshwa, Hurlingham, etc.) then Mapbox as failover.
+   Each result carries a `source` tag so the dispatcher sees which provider
+   resolved it. Pinning the first result auto-fills lat/lng/county. */
+var _geoDebounce=null;
+function onLocationInput(){
+  var q=(document.getElementById('f-address').value||'').trim();
+  var st=document.getElementById('f-geo-status');
+  var sg=document.getElementById('f-address-suggest');
+  /* Any edit clears the previous pin until a new one is confirmed */
+  _geocodeOK=false; _geocodeSource='';
+  if(q.length<3){
+    if(st) st.textContent='';
+    if(sg){sg.style.display='none';sg.innerHTML='';}
+    return;
+  }
+  if(st){st.textContent='searching…';st.style.color='var(--t3)';}
+  if(_geoDebounce) clearTimeout(_geoDebounce);
+  _geoDebounce=setTimeout(function(){runGeocode(q);},350);
+}
+
+function runGeocode(q){
+  fetch('/api/geocode?q='+encodeURIComponent(q))
+    .then(function(r){return r.json();})
+    .then(function(d){
+      var st=document.getElementById('f-geo-status');
+      var sg=document.getElementById('f-address-suggest');
+      if(!d.features||!d.features.length){
+        if(st){st.textContent='not found — try a landmark or send caller a location link';st.style.color='var(--p2)';}
+        if(sg){sg.style.display='none';sg.innerHTML='';}
+        return;
+      }
+      /* Auto-pin first result */
+      pickGeocodeResult(d.features[0],false);
+      /* Render suggestions list with source badges */
+      if(sg){
+        var html='';
+        for(var i=0;i<d.features.length;i++){
+          var f=d.features[i];
+          var src=f.source||'';
+          var badgeBg=src==='google'?'rgba(80,192,32,.18)':src==='mapbox'?'rgba(39,170,225,.18)':'rgba(255,255,255,.08)';
+          var badgeCol=src==='google'?'#50C020':src==='mapbox'?'#27AAE1':'var(--t3)';
+          var badge=src?'<span style="font-family:var(--fm);font-size:8.5px;letter-spacing:.6px;text-transform:uppercase;padding:1px 5px;border-radius:3px;background:'+badgeBg+';color:'+badgeCol+';margin-left:6px;">'+src+'</span>':'';
+          html+='<div class="geo-sug" data-idx="'+i+'" style="padding:7px 10px;border-bottom:1px solid var(--line);cursor:pointer;">'
+            +'<div style="font-family:var(--fh);font-size:12px;color:var(--t1);display:flex;align-items:center;">'+(f.text||'')+badge+'</div>'
+            +'<div style="font-family:var(--fm);font-size:10px;color:var(--t3);">'+(f.place_name||'')+(f.county?' \xb7 '+f.county:'')+'</div>'
+            +'</div>';
+        }
+        sg.innerHTML=html;
+        sg.style.display='block';
+        var rows=sg.querySelectorAll('.geo-sug');
+        for(var j=0;j<rows.length;j++){
+          (function(row,feat){
+            row.onmouseenter=function(){row.style.background='rgba(255,255,255,.05)';};
+            row.onmouseleave=function(){row.style.background='';};
+            row.onclick=function(){pickGeocodeResult(feat,true);sg.style.display='none';};
+          })(rows[j],d.features[j]);
+        }
+      }
+    })
+    .catch(function(e){
+      var st=document.getElementById('f-geo-status');
+      if(st){st.textContent='geocoder error — check connection';st.style.color='var(--p1)';}
+      console.warn('[PSAP] geocode failed',e);
+    });
+}
+
+/* ── Pin-drop URL (caller shares browser geolocation) ────────────────────
+   Generates a short-lived /l/<token> link. The dispatcher pastes the link
+   into WhatsApp/SMS; caller opens it; the public page sends GPS coords
+   back to /api/locreq-respond which UPDATEs the location_requests row.
+   Supabase Realtime broadcasts the update; we subscribe and auto-fill
+   the address/lat/lng/county fields on the form. */
+var _locreqToken=null, _locreqChannel=null, _locreqPhone='';
+
+function _locreqShortMsg(url){
+  return 'SHA Ambulance is locating you. Tap the link below to share your location: '+url;
+}
+
+function _locreqRecipientPhone(){
+  /* Use the caller phone if entered, strip + and non-digits */
+  var v=(document.getElementById('f-caller-phone').value||'').replace(/[^\d]/g,'');
+  /* Accept 254… or 07… (auto-prefix to international) */
+  if(v.indexOf('254')===0) return v;
+  if(v.indexOf('0')===0)   return '254'+v.slice(1);
+  return v;
+}
+
+function locreqCreate(){
+  var btn=document.getElementById('locreq-btn');
+  if(btn){btn.disabled=true;btn.style.opacity='.6';}
+  fetch('/api/locreq-create',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      psapSessionId:_psapSid||null,
+      callerPhone:document.getElementById('f-caller-phone').value||null
+    })
+  })
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if(!d||!d.url){showToast('Could not create link: '+(d&&d.error||'unknown'));return;}
+    _locreqToken=d.token;
+    var panel=document.getElementById('locreq-panel');
+    var link =document.getElementById('locreq-link');
+    link.textContent=d.url;
+    link.onclick=function(){
+      try{window.open(d.url,'_blank');}catch(_){}
+    };
+    panel.style.display='block';
+    _wireLocreqButtons(d.url);
+    _subscribeLocreq(d.token);
+    document.getElementById('locreq-status').textContent='waiting for caller…';
+    document.getElementById('locreq-status').style.color='var(--t3)';
+  })
+  .catch(function(e){showToast('Network error creating link');console.warn(e);})
+  .then(function(){
+    if(btn){btn.disabled=false;btn.style.opacity='';}
+  });
+}
+
+function _wireLocreqButtons(url){
+  var msg=_locreqShortMsg(url);
+  document.getElementById('locreq-copy').onclick=function(){
+    navigator.clipboard.writeText(msg).then(function(){showToast('Copied');},function(){showToast('Copy failed');});
+  };
+  document.getElementById('locreq-wa').onclick=function(){
+    var ph=_locreqRecipientPhone();
+    var u='https://wa.me/'+(ph||'')+'?text='+encodeURIComponent(msg);
+    window.open(u,'_blank');
+  };
+  document.getElementById('locreq-sms').onclick=function(){
+    var ph=_locreqRecipientPhone();
+    var u='sms:'+(ph?'+'+ph:'')+'?&body='+encodeURIComponent(msg);
+    window.location.href=u;
+  };
+}
+
+function _subscribeLocreq(token){
+  /* Use NACDState's Supabase client if available so we share auth/keys. */
+  var sb=NACDState.getSupabaseClient&&NACDState.getSupabaseClient();
+  if(!sb){
+    /* Fallback: poll every 4s */
+    var pollTimer=setInterval(function(){
+      fetch('/api/locreq-create',{method:'GET'}).catch(function(){});
+      /* simpler: read row via raw fetch — but easiest is just to poll the table via Realtime when present */
+      /* No-op fallback: rely on dispatcher refresh */
+    },4000);
+    setTimeout(function(){clearInterval(pollTimer);},30*60*1000);
+    return;
+  }
+  if(_locreqChannel) try{sb.removeChannel(_locreqChannel);}catch(_){}
+  _locreqChannel=sb.channel('locreq-'+token)
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'location_requests',filter:'token=eq.'+token},
+      function(payload){
+        var row=payload.new;
+        if(!row||row.status!=='received') return;
+        _onLocreqResponse(row);
+      })
+    .subscribe();
+}
+
+function _onLocreqResponse(row){
+  var status=document.getElementById('locreq-status');
+  if(status){status.textContent='✓ received '+(row.accuracy_m?'±'+Math.round(row.accuracy_m)+'m':'');status.style.color='var(--g)';}
+  /* Update location fields */
+  _incLat=row.lat; _incLng=row.lng; _geocodeOK=true; _geocodeSource='pin-drop';
+  var st=document.getElementById('f-geo-status');
+  if(st){
+    st.style.color='var(--g)';
+    st.textContent='✓ pinned (pin-drop) · '+row.lat.toFixed(5)+', '+row.lng.toFixed(5);
+  }
+  showToast('Caller location received — auto-filled',3000);
+  /* Reverse-geocode for the address line */
+  fetch('https://api.mapbox.com/geocoding/v5/mapbox.places/'+row.lng+','+row.lat+'.json?country=ke&types=address,poi,neighborhood,locality,place&limit=1&access_token=')
+    .then(function(r){return r.json();}).then(function(d){
+      if(d.features&&d.features[0]){
+        var f=d.features[0];
+        var inp=document.getElementById('f-address');
+        if(inp&&!inp.value.trim()) inp.value=f.place_name||f.text||'';
+        var county=_revGeoCounty(f);
+        if(county){
+          var sel=document.getElementById('f-county');
+          if(sel&&!sel.value) _incCounty=county;
+        }
+      }
+    }).catch(function(){});
+}
+
+function _revGeoCounty(f){
+  if(!f||!f.context) return '';
+  for(var i=0;i<f.context.length;i++){
+    var c=f.context[i];
+    if(c.id&&c.id.indexOf('region')===0&&c.text){
+      return c.text.replace(/\s*County\s*$/i,'').trim();
+    }
+  }
+  return '';
+}
+
+function pickGeocodeResult(f,replaceInput){
+  if(!f||!f.center) return;
+  _incLng=f.center[0]; _incLat=f.center[1];
+  _geocodeOK=true;
+  _geocodeSource=f.source||'mapbox';
+  if(f.county){
+    var sel=document.getElementById('f-county');
+    if(sel&&!sel.value){ _incCounty=f.county; }
+    else if(sel) _incCounty=sel.value||f.county;
+    else _incCounty=f.county;
+  }
+  var st=document.getElementById('f-geo-status');
+  if(st){
+    st.style.color='var(--g)';
+    var lbl='✓ pinned ('+_geocodeSource+') · '+_incLat.toFixed(4)+', '+_incLng.toFixed(4);
+    if(_incCounty) lbl+=' \xb7 '+_incCounty;
+    st.textContent=lbl;
+  }
+  if(replaceInput){
+    var inp=document.getElementById('f-address');
+    if(inp) inp.value=f.place_name||f.text||inp.value;
+  }
+}
+
+function recommendUnits(){
+  var fleet=NACDState.getFleet();
+  var det=_session.determinant;
+  var needsALS=(det&&(det.level==='E'||det.level==='D'));
+  var available=fleet.filter(function(u){return u.status==='available';});
+  available.sort(function(a,b){
+    return haversineKm(_incLat,_incLng,a.lat,a.lng)-haversineKm(_incLat,_incLng,b.lat,b.lng);
+  });
+  /* Prefer ALS for D/E */
+  if(needsALS){
+    var als=available.filter(function(u){return u.type==='ALS';});
+    var bls=available.filter(function(u){return u.type!=='ALS';});
+    available=als.concat(bls);
+  }
+  var top=available.slice(0,5);
+  if(!top.length){document.getElementById('unit-list').innerHTML='<div class="r-empty">No available units</div>';return;}
+  var html='';
+  top.forEach(function(u){
+    var km=haversineKm(_incLat,_incLng,u.lat,u.lng);
+    var etaMin=Math.round(km/40*60);
+    var sel=_session.chosenUnitId===u.id?' sel':'';
+    var typeTag=u.type==='ALS'?'<span class="als-tag">ALS</span>':'';
+    html+='<div class="unit-card'+sel+'" onclick="pickUnit(\''+u.id+'\')">'
+      +'<div class="uc-row">'
+      +'<div class="uc-badge">'+u.id.replace('A-','')+'</div>'
+      +'<div class="uc-info"><div class="uc-id">'+u.id+' '+typeTag+'</div><div class="uc-sub">'+(u.county||'Nairobi')+' · Available</div></div>'
+      +'<div class="uc-eta">'+etaMin+'m</div>'
+      +'</div></div>';
+  });
+  document.getElementById('unit-list').innerHTML=html;
+}
+
+function pickUnit(id){
+  _session.chosenUnitId=id;
+  if(_psapSid)NACDState.psap.chooseUnit(_psapSid,id);
+  recommendUnits();
+}
+
+/* ── Hospital recommendation ───────────────────── */
+function getProtocolHospTags(){
+  var p=_session.protocol;
+  if(!p)return[];
+  var tagMap={
+    CARDIAC:['cardiac','icu'],RESPIRATORY:['icu','general'],NEURO:['neuro','stroke_unit','icu'],
+    TRAUMA:['trauma','icu','ortho'],OB_GYN:['maternity','obstetrics','neonatal'],
+    PEDIATRIC:['paeds','neonatal'],METABOLIC:['icu','general'],ALLERGIC:['icu','general'],
+    TOXICOLOGY:['toxicology','icu','general'],ENVIRONMENTAL:['icu','burns','general'],
+    BURNS:['burns','icu'],PSYCHIATRIC:['psychiatry'],GI:['general','icu'],
+    GENERAL:['general'],TRANSFER:['general','icu']
+  };
+  return tagMap[p.category]||['general'];
+}
+function recommendHospitals(){
+  if(!_session.determinant){document.getElementById('hosp-list').innerHTML='<div class="r-empty">Awaiting determinant</div>';document.getElementById('pre-alert-wrap').style.display='none';return;}
+  var hospitals=NACDState.getHospitals();
+  var wantTags=getProtocolHospTags();
+  /* Score hospitals by tag match + distance */
+  var scored=[];
+  hospitals.forEach(function(h){
+    if(h.divert_status==='bypass')return;
+    var tags=h.specialty_tags||h.specialties||[];
+    var matchScore=0;
+    wantTags.forEach(function(t){if(tags.indexOf(t)!==-1)matchScore++;});
+    var km=haversineKm(_incLat,_incLng,h.lat,h.lng);
+    scored.push({h:h,score:matchScore,km:km});
+  });
+  scored.sort(function(a,b){
+    if(b.score!==a.score)return b.score-a.score;
+    return a.km-b.km;
+  });
+  var top=scored.slice(0,5);
+  var html='';
+  top.forEach(function(s){
+    var h=s.h;
+    var tags=h.specialty_tags||h.specialties||[];
+    var relevantTags=tags.filter(function(t){return wantTags.indexOf(t)!==-1;}).slice(0,3);
+    var allTags=relevantTags.length?relevantTags:tags.slice(0,3);
+    var cap=h.capacity_pct||h.ed_capacity_pct||50;
+    var capColor=cap>=85?'var(--p1)':cap>=70?'var(--p2)':'var(--g)';
+    var etaMin=Math.round(s.km/40*60);
+    var sel=_session.chosenHospitalId===h.id?' sel':'';
+    var tagHtml=allTags.map(function(t){return'<span class="hc-tag">'+t+'</span>';}).join('');
+    html+='<div class="hosp-card'+sel+'" onclick="pickHospital(\''+h.id+'\')">'
+      +'<div class="hc-name">'+(h.name||h.full_name||h.ext_id||'Hospital')+'</div>'
+      +'<div class="hc-tags">'+tagHtml+'</div>'
+      +'<div class="hc-meta">'+(s.km<1?'<1 km':s.km.toFixed(1)+' km')+' · ETA ~'+etaMin+'m · ED: '+cap+'%</div>'
+      +'<div class="cap-bar"><i style="width:'+cap+'%;background:'+capColor+'"></i></div>'
+      +'</div>';
+  });
+  document.getElementById('hosp-list').innerHTML=html||'<div class="r-empty">No matching hospitals</div>';
+  document.getElementById('pre-alert-wrap').style.display='block';
+}
+
+function pickHospital(id){
+  _session.chosenHospitalId=id;
+  if(_psapSid)NACDState.psap.chooseHospital(_psapSid,id);
+  recommendHospitals();
+}
+
+function sendPreAlert(){
+  if(!_session.chosenHospitalId){showToast('Select a hospital first');return;}
+  _session.preAlertSent=true;
+  if(_psapSid)NACDState.psap.sendPreAlert(_psapSid);
+  var btn=document.getElementById('pre-alert-btn');
+  if(btn){btn.className='pre-alert-btn sent';btn.innerHTML='<span class="mat">check_circle</span> Pre-Alert Sent';}
+  showToast('Hospital pre-alert sent — ED notified',2400);
+}
+
+/* ── Incident creation ─────────────────────────── */
+function createIncident(priority){
+  if(!_session.protocol){showToast('Select a protocol first');return;}
+  var addr=document.getElementById('f-address').value;
+  if(!addr.trim()){showToast('Enter a location / address');return;}
+  /* Block-on-fail: don't dispatch with the silent Nairobi-CBD default.
+     Either pick a geocoder suggestion, override via county dropdown,
+     or (Phase 2) send the caller a location link. */
+  if(!_geocodeOK){
+    showToast('Location not resolved — pick a suggestion, change the address, or override county',4500);
+    var inp=document.getElementById('f-address');
+    if(inp){inp.focus();inp.style.outline='2px solid var(--p2)';setTimeout(function(){inp.style.outline='';},2500);}
+    return;
+  }
+
+  var _inc=null;
+  if(_psapSid){
+    // Sync form fields into NACDState.psap session before creating
+    var _selCounty=document.getElementById('f-county').value||_incCounty||'';
+    NACDState.psap.updateSession(_psapSid,{
+      callerPhone:   document.getElementById('f-caller-phone').value||'',
+      callerName:    document.getElementById('f-caller-name').value||'',
+      callerRelation:document.getElementById('f-relationship').value||'',
+      patientPhone:  document.getElementById('f-patient-phone').value||'',
+      patientAge:    parseInt(document.getElementById('f-age').value)||null,
+      patientSex:    document.getElementById('f-sex').value||'',
+      locationAddress:addr,
+      locationW3w:   document.getElementById('f-w3w').value||'',
+      locationLandmark:document.getElementById('f-landmark').value||'',
+      locationFloor: document.getElementById('f-floor').value||'',
+      locationNotes: document.getElementById('f-notes').value||'',
+      locationLat:   _incLat,
+      locationLng:   _incLng,
+      locationCounty:_selCounty
+    });
+    _inc=NACDState.psap.createIncident(_psapSid,priority);
+  } else {
+    // Fallback: direct dispatch (offline, NACDState not ready)
+    _inc=NACDState.dispatch.createIncident({
+      complaint:_session.protocol.display_name,
+      address:addr,
+      w3w:document.getElementById('f-w3w').value||'',
+      priority:priority,
+      lat:_incLat,lng:_incLng,
+      county:(document.getElementById('f-county').value||_incCounty||''),
+      determinantCode:_session.determinant?_session.determinant.code:null,
+      source:'psap'
+    });
+  }
+  // Broadcast to dispatch console (cross-iframe sync via BroadcastChannel)
+  if(_inc){
+    try{
+      var _psapPayload={
+        priority:_inc.priority,
+        complaint:_inc.complaint,
+        icd11:_inc.icd11||'',
+        address:_inc.address||addr,
+        lat:_inc.lat,lng:_inc.lng,
+        w3w:_inc.w3w||'',
+        county:_inc.county||'',
+        zone:_inc.zone||'',
+        requiresALS:!!_inc.requiresALS,
+        notes:_inc.notes||'',
+        source:'psap',
+        psapNumber:_inc.number||''
+      };
+      var _bc=new BroadcastChannel('nadc-incident-sync');
+      _bc.postMessage({type:'psap:incident:created',incident:_psapPayload});
+      _bc.close();
+      // Also persist to localStorage so dispatch can pick it up even if not loaded yet
+      try{
+        var _q=JSON.parse(localStorage.getItem('nadc_psap_queue')||'[]');
+        _q.push({_ts:Date.now(),incident:_psapPayload});
+        localStorage.setItem('nadc_psap_queue',JSON.stringify(_q));
+      }catch(_le){}
+    }catch(e){}
+  }
+  showToast('Incident created — P'+priority+' · '+_session.protocol.display_name,2800);
+  setTimeout(function(){resetSession();},500);
+}
+
+/* ── Dispositions ──────────────────────────────── */
+function logDisposition(type){
+  var labels={no_emergency:'No Emergency — logged',prank:'Prank call — logged',transferred:'Call transferred',abandoned:'Abandoned call — logged'};
+  showToast(labels[type]||'Logged',2200);
+  _session.disposed=true;
+  if(_psapSid)NACDState.psap.logDisposition(_psapSid,type);
+  setTimeout(function(){resetSession();},800);
+}
+
+function resetSession(){
+  _session={startMs:Date.now(),callerPhone:'',callerName:'',relationship:'',patientPhone:'',age:null,sex:'',address:'',w3w:'',landmark:'',floor:'',notes:'',protocolId:null,protocol:null,answers:{},determinant:null,echoBypass:false,chosenUnitId:null,chosenHospitalId:null,preAlertSent:false,disposed:false};
+  _psapSid=NACDState.psap.startSession({source:'manual_entry'}).id;
+  document.getElementById('q-area').innerHTML='<div class="q-empty"><span class="mat">touch_app</span>Select a complaint protocol above to begin triage</div>';
+  document.getElementById('h-det').className='h-det';
+  document.getElementById('unit-list').innerHTML='<div class="r-empty">Select protocol to load recommendations</div>';
+  document.getElementById('hosp-list').innerHTML='<div class="r-empty">Awaiting determinant</div>';
+  document.getElementById('pre-alert-wrap').style.display='none';
+  document.querySelectorAll('.fg input,.fg select,.fg textarea').forEach(function(el){el.value='';});
+  enableActionButtons(null);
+  renderProtocolGrid();
+  showToast('New session started',1800);
+}
+
+function endSession(){
+  if(!_session.disposed){logDisposition('abandoned');}
+  else{resetSession();}
+}
+function holdCall(){showToast('Call on hold — 30 second reminder set',2000);}
+
+function onCallerPhoneInput(){
+  var v=document.getElementById('f-caller-phone').value;
+  if(v.length>=10){document.getElementById('ani-status').style.display='inline';}
+  else{document.getElementById('ani-status').style.display='none';}
+}
+
+/* ── Init ──────────────────────────────────────── */
+fetch('/api/config').then(function(r){return r.json();}).catch(function(){return{};})
+.then(function(cfg){
+  if(cfg.supabaseUrl&&cfg.supabaseAnonKey&&window.supabase){
+    _sb=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseAnonKey);
+  }
+  NACDState.init({supabaseUrl:cfg.supabaseUrl||'',supabaseKey:cfg.supabaseAnonKey||'',seedIncidents:12,autoStart:true});
+  _psapSid=NACDState.psap.startSession({source:'manual_entry'}).id;
+
+  window._onNACDAuthReady=function(auth){
+    var ov=document.getElementById('nacd-auth-overlay');
+    if(ov){ov.style.opacity='0';setTimeout(function(){ov.style.display='none';},220);}
+    if(auth&&auth.user){
+      var nm=auth.user.fullName||auth.user.username||'Call Taker';
+      var ini=nm.split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase();
+      var uc=document.getElementById('user-chip');
+      if(uc)uc.style.display='flex';
+      var av=document.getElementById('user-av');if(av)av.textContent=ini;
+      var unm=document.getElementById('user-nm');if(unm)unm.textContent=nm.split(' ')[0];
+    } else {
+      var ov2=document.getElementById('nacd-auth-overlay');
+      if(ov2){ov2.style.opacity='0';setTimeout(function(){ov2.style.display='none';},220);}
+    }
+  };
+  /* Offline fallback — remove overlay after 1.5s */
+  setTimeout(function(){
+    var ov=document.getElementById('nacd-auth-overlay');
+    if(ov&&ov.style.display!=='none'){ov.style.opacity='0';setTimeout(function(){ov.style.display='none';},220);}
+  },1500);
+
+  NACDState.on('state:tick',function(){recommendUnits();});
+  loadProtocols();
+  _populateCounties();
+
+  // Pin-drop "Generate link" button
+  var lrBtn=document.getElementById('locreq-btn');
+  if(lrBtn) lrBtn.onclick=locreqCreate;
+
+  // Hide address-suggest dropdown on outside click
+  document.addEventListener('click',function(e){
+    var sg=document.getElementById('f-address-suggest');
+    var inp=document.getElementById('f-address');
+    if(!sg||sg.style.display==='none') return;
+    if(e.target===inp||sg.contains(e.target)) return;
+    sg.style.display='none';
+  });
+});
+</script>
+
+<script>
+(function(){
+  function toggleAppSw(){
+    var p=document.getElementById('app-sw-panel');
+    var b=document.querySelector('.app-sw-btn');
+    if(!p) return;
+    var willOpen = !p.classList.contains('open');
+    p.classList.toggle('open');
+    if(b) b.classList.toggle('open', willOpen);
+  }
+  document.addEventListener('click',function(e){
+    var p=document.getElementById('app-sw-panel');
+    if(!p||!p.classList.contains('open')) return;
+    if(p.contains(e.target)) return;
+    if(e.target.closest && e.target.closest('.app-sw-btn')) return;
+    p.classList.remove('open');
+    var b=document.querySelector('.app-sw-btn');
+    if(b) b.classList.remove('open');
+  });
+  // Expose as global so inline onclick can call it
+  window.toggleAppSw = toggleAppSw;
+})();
+</script>
+
+</body>
+</html>

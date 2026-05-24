@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SHA · NADC — Admin Console</title>
+<meta name="description" content="SHA National Ambulance Dispatch Centre — real-time emergency coordination platform for the Republic of Kenya.">
+<meta name="theme-color" content="#00519B">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SHA NADC">
+<meta property="og:title" content="SHA · National Ambulance Dispatch Centre">
+<meta property="og:description" content="Real-time emergency coordination · Republic of Kenya">
+<meta property="og:url" content="https://sha-nadc.silicongw.com/admin">
+<meta property="og:image" content="https://sha-nadc.silicongw.com/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="1200">
+<meta property="og:image:alt" content="SHA National Ambulance Dispatch Centre">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SHA · National Ambulance Dispatch Centre">
+<meta name="twitter:description" content="Real-time emergency coordination · Republic of Kenya">
+<meta name="twitter:image" content="https://sha-nadc.silicongw.com/assets/og-image.png">
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Barlow+Condensed:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined" rel="stylesheet">
+<style>
+:root{
+  --b:#00519B;  --b2:#27AAE1;
+  --g:#50C020;  --g2:#3DA818;
+  --p1:#FF3B30; --p2:#FF8C00; --p3:#F5B100;
+  --ok:#34C759;
+  --bg:#0B0F14;
+  --surface:#11161D;
+  --surface-2:#161C25;
+  --line:rgba(255,255,255,0.06);
+  --line-2:rgba(255,255,255,0.10);
+  --t1:rgba(255,255,255,0.95);
+  --t2:rgba(255,255,255,0.62);
+  --t3:rgba(255,255,255,0.40);
+  --t4:rgba(255,255,255,0.25);
+  --fh:"Exo 2",system-ui,sans-serif;
+  --fm:"JetBrains Mono",ui-monospace,monospace;
+  --fc:"Barlow Condensed",sans-serif;
+  --r-sm:8px; --r-md:12px; --r-lg:16px; --r-pill:999px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;background:var(--bg);color:var(--t1);font-family:var(--fh);font-feature-settings:"ss01","tnum";overflow:hidden;-webkit-font-smoothing:antialiased;}
+button{font-family:inherit;cursor:pointer;}
+.mat{font-family:"Material Symbols Outlined";font-weight:400;font-size:20px;line-height:1;}
+.tab{font-variant-numeric:tabular-nums;}
+
+.shell{display:grid;grid-template-rows:60px 1fr;height:100vh;}
+
+/* Top bar */
+.topbar{
+  display:flex;align-items:center;gap:14px;padding:0 18px;
+  background:rgba(11,15,20,0.92);backdrop-filter:saturate(160%) blur(14px);
+  border-bottom:1px solid var(--line);position:relative;z-index:50;
+}
+.brand{display:flex;align-items:center;gap:10px;padding-right:14px;border-right:1px solid var(--line);height:32px;}
+.brand-mark{
+  width:28px;height:28px;border-radius:7px;
+  background:linear-gradient(135deg,#00519B 0%,#27AAE1 100%);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:11px;color:#fff;
+}
+.brand-text b{font-family:var(--fh);font-weight:600;font-size:13px;display:block;line-height:1.1;}
+.brand-text span{font-family:var(--fm);font-size:9.5px;letter-spacing:1.2px;color:var(--t3);text-transform:uppercase;}
+.h-rule{width:1px;height:26px;background:var(--line);margin:0 6px;flex-shrink:0;}
+.pg-nav{display:flex;align-items:center;gap:2px;}
+.pn{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:var(--r-pill);text-decoration:none;font-family:var(--fh);font-size:11.5px;font-weight:500;color:var(--t2);transition:background .15s,color .15s;white-space:nowrap;}
+.pn:hover{background:rgba(255,255,255,.05);color:var(--t1);}
+.pn.on{background:rgba(80,192,32,.13);color:var(--g);}
+.pn .mat{font-size:14px;}
+.pn .pm{font-family:var(--fm);font-size:8px;color:var(--t4);letter-spacing:.6px;text-transform:uppercase;margin-left:1px;}
+.pn.on .pm{color:rgba(80,192,32,.5);}
+.spacer{flex:1;}
+.user{display:flex;align-items:center;gap:9px;padding:4px 10px 4px 4px;border-radius:var(--r-pill);background:rgba(255,255,255,0.04);border:1px solid var(--line);}
+.user-av{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#00519B,#27AAE1);display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-weight:600;font-size:11px;color:#fff;}
+.user-text b{font-family:var(--fh);font-size:12px;font-weight:600;display:block;}
+.user-text span{font-family:var(--fm);font-size:9px;letter-spacing:.4px;color:var(--t3);}
+
+/* Main */
+.main{display:flex;flex-direction:column;min-height:0;overflow:hidden;}
+
+/* Tab bar */
+.tab-bar{
+  display:flex;align-items:center;gap:2px;padding:10px 24px;
+  border-bottom:1px solid var(--line);flex-shrink:0;
+}
+.tb{
+  display:flex;align-items:center;gap:7px;padding:8px 16px;
+  border-radius:var(--r-pill);font-family:var(--fh);font-size:13px;font-weight:500;
+  color:var(--t2);background:transparent;border:none;
+  transition:background .15s,color .15s;
+}
+.tb:hover{background:rgba(255,255,255,0.04);color:var(--t1);}
+.tb.on{background:rgba(80,192,32,.12);color:var(--g);}
+.tb .mat{font-size:17px;}
+.tb-badge{
+  margin-left:2px;font-family:var(--fm);font-size:10px;
+  padding:1px 6px;border-radius:var(--r-pill);
+  background:rgba(255,255,255,0.06);color:var(--t3);
+}
+.tb.on .tb-badge{background:rgba(80,192,32,0.15);color:var(--g);}
+.tab-spacer{flex:1;}
+.last-sync{font-family:var(--fm);font-size:10.5px;color:var(--t3);}
+
+/* Content area */
+.content{flex:1;overflow:auto;padding:24px 28px;}
+.content::-webkit-scrollbar{width:4px;}
+.content::-webkit-scrollbar-track{background:rgba(255,255,255,.04);}
+.content::-webkit-scrollbar-thumb{background:rgba(80,192,32,.4);border-radius:2px;}
+.content::-webkit-scrollbar-thumb:hover{background:rgba(80,192,32,.7);}
+
+/* Access denied banner */
+#access-denied-banner{display:none;position:fixed;inset:0;z-index:8000;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;gap:18px;}
+.ad-icon{width:64px;height:64px;border-radius:var(--r-lg);background:rgba(255,59,48,0.12);border:1px solid rgba(255,59,48,0.2);display:flex;align-items:center;justify-content:center;}
+.ad-icon .mat{font-size:32px;color:var(--p1);}
+.ad-title{font-family:var(--fh);font-weight:700;font-size:20px;color:var(--t1);}
+.ad-sub{font-family:var(--fm);font-size:12px;color:var(--t3);text-align:center;line-height:1.7;max-width:380px;}
+.ad-role-chip{display:inline-flex;padding:3px 12px;border-radius:var(--r-pill);background:rgba(255,255,255,0.06);font-family:var(--fc);font-size:11px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--t2);}
+
+/* Approvals tab */
+.pend-list{display:flex;flex-direction:column;gap:10px;}
+.pend-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:16px 18px;display:flex;align-items:flex-start;gap:14px;}
+.pend-card.executed{opacity:.55;border-color:rgba(80,192,32,.2);}
+.pend-card.rejected{opacity:.55;border-color:rgba(255,59,48,.15);}
+.pend-type{min-width:10px;flex-shrink:0;margin-top:2px;}
+.pend-type .mat{font-size:18px;color:var(--t2);}
+.pend-body{flex:1;min-width:0;}
+.pend-action{font-family:var(--fh);font-weight:600;font-size:13px;color:var(--t1);margin-bottom:3px;}
+.pend-detail{font-family:var(--fm);font-size:11px;color:var(--t3);line-height:1.6;}
+.pend-meta{font-family:var(--fm);font-size:10px;color:var(--t4);margin-top:5px;}
+.pend-status{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:var(--r-pill);font-family:var(--fm);font-size:10px;font-weight:500;}
+.pend-status.pending{background:rgba(245,177,0,.12);color:var(--p3);}
+.pend-status.executed{background:rgba(80,192,32,.12);color:var(--g);}
+.pend-status.rejected{background:rgba(255,59,48,.12);color:var(--p1);}
+.pend-btns{display:flex;gap:6px;flex-shrink:0;}
+.btn-approve{display:flex;align-items:center;gap:4px;padding:6px 12px;border-radius:var(--r-pill);background:rgba(80,192,32,.14);border:1px solid rgba(80,192,32,.3);color:var(--g);font-family:var(--fh);font-size:12px;cursor:pointer;}
+.btn-approve:hover{background:rgba(80,192,32,.22);}
+.btn-reject{display:flex;align-items:center;gap:4px;padding:6px 12px;border-radius:var(--r-pill);background:rgba(255,59,48,.08);border:1px solid rgba(255,59,48,.2);color:var(--p1);font-family:var(--fh);font-size:12px;cursor:pointer;}
+.btn-reject:hover{background:rgba(255,59,48,.14);}
+
+/* Add User modal */
+.modal-mask{display:none;position:fixed;inset:0;z-index:6000;background:rgba(3,12,23,.85);align-items:center;justify-content:center;}
+.modal-mask.open{display:flex;}
+.modal-box{background:var(--surface);border:1px solid var(--line-2);border-radius:var(--r-lg);padding:28px 32px;width:460px;max-width:95vw;position:relative;}
+.modal-title{font-family:var(--fh);font-weight:700;font-size:16px;color:var(--t1);margin-bottom:4px;}
+.modal-sub{font-family:var(--fm);font-size:11px;color:var(--t3);margin-bottom:22px;}
+.modal-close{position:absolute;top:16px;right:16px;width:28px;height:28px;border-radius:var(--r-pill);background:rgba(255,255,255,.04);border:none;color:var(--t3);cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.form-row{margin-bottom:16px;}
+.form-label{font-family:var(--fc);font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--t3);display:block;margin-bottom:6px;}
+.form-input,.form-select{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:var(--r-md);padding:9px 12px;font-family:var(--fh);font-size:13px;color:var(--t1);outline:none;transition:border-color .15s;}
+.form-input:focus,.form-select:focus{border-color:rgba(80,192,32,.4);}
+.form-select option{background:var(--surface);}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.btn-primary{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:11px;border-radius:var(--r-md);background:var(--g);border:none;color:#0B0F14;font-family:var(--fh);font-size:13px;font-weight:700;cursor:pointer;margin-top:4px;}
+.btn-primary:hover{background:var(--g2);}
+.maker-note{font-family:var(--fm);font-size:10.5px;color:var(--p3);text-align:center;margin-top:8px;}
+
+/* Tab panels */
+.tabpanel{display:none;}
+.tabpanel.active{display:block;}
+
+/* Section header */
+.sec-head{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.sec-title{font-family:var(--fh);font-weight:600;font-size:16px;color:var(--t1);}
+.sec-sub{font-family:var(--fm);font-size:11.5px;color:var(--t3);}
+.sec-spacer{flex:1;}
+
+/* Search */
+.search-pill{
+  display:flex;align-items:center;gap:8px;height:34px;padding:0 12px;
+  background:rgba(255,255,255,0.04);border:1px solid var(--line);
+  border-radius:var(--r-pill);transition:border-color .15s;
+}
+.search-pill:focus-within{border-color:rgba(80,192,32,.3);}
+.search-pill .mat{color:var(--t3);font-size:16px;}
+.search-pill input{background:none;border:none;outline:none;font-family:var(--fh);font-size:12.5px;color:var(--t1);width:180px;}
+.search-pill input::placeholder{color:var(--t3);}
+
+/* Table */
+.tbl-wrap{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;}
+table{width:100%;border-collapse:collapse;}
+thead tr{background:rgba(255,255,255,0.025);border-bottom:1px solid var(--line);}
+th{
+  font-family:var(--fc);font-size:11px;font-weight:600;letter-spacing:1.4px;
+  text-transform:uppercase;color:var(--t3);
+  padding:11px 16px;text-align:left;white-space:nowrap;
+}
+th.right{text-align:right;}
+tbody tr{border-bottom:1px solid var(--line);transition:background .1s;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:rgba(255,255,255,0.025);}
+td{padding:13px 16px;font-family:var(--fh);font-size:13px;color:var(--t1);}
+td.mono{font-family:var(--fm);font-size:12px;}
+td.right{text-align:right;}
+td.muted{color:var(--t3);}
+
+/* Agent avatar */
+.ag-av{
+  width:32px;height:32px;border-radius:50%;
+  background:linear-gradient(135deg,#1f3b6b,#27AAE1);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--fh);font-weight:600;font-size:11px;color:#fff;flex-shrink:0;
+}
+.ag-cell{display:flex;align-items:center;gap:10px;}
+.ag-cell-name{font-family:var(--fh);font-weight:500;font-size:13px;color:var(--t1);}
+.ag-cell-ext{font-family:var(--fm);font-size:10.5px;color:var(--t3);margin-top:1px;}
+
+/* Status badges */
+.badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 9px;border-radius:var(--r-pill);
+  font-family:var(--fm);font-size:10.5px;font-weight:500;letter-spacing:.3px;
+}
+.badge .d{width:5px;height:5px;border-radius:50%;background:currentColor;}
+.badge.on_call{background:rgba(255,140,0,0.13);color:var(--p2);}
+.badge.ready  {background:rgba(80,192,32,0.13);color:var(--g);}
+.badge.break  {background:rgba(255,255,255,0.06);color:var(--t2);}
+.badge.offline{background:rgba(255,255,255,0.04);color:var(--t3);}
+.badge.critical{background:rgba(255,59,48,0.13);color:var(--p1);}
+/* Role badges */
+.role{
+  display:inline-flex;padding:2px 8px;border-radius:var(--r-sm);
+  font-family:var(--fc);font-size:11px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;
+}
+.role.supervisor       {background:rgba(0,81,155,0.18);color:var(--b2);}
+.role.senior_dispatcher{background:rgba(245,177,0,0.13);color:var(--p3);}
+.role.dispatcher       {background:rgba(80,192,32,0.10);color:var(--g);}
+.role.call_taker       {background:rgba(39,170,225,0.10);color:var(--b2);}
+.role.admin            {background:rgba(255,59,48,0.10);color:var(--p1);}
+
+/* Active toggle chip */
+.active-chip{
+  display:inline-flex;align-items:center;gap:4px;padding:2px 8px;
+  border-radius:var(--r-pill);font-family:var(--fm);font-size:10px;
+}
+.active-chip.yes{background:rgba(80,192,32,0.10);color:var(--g);}
+.active-chip.no {background:rgba(255,255,255,0.04);color:var(--t3);}
+
+/* SLA table rows */
+.sla-row{display:flex;align-items:center;gap:0;padding:16px 20px;border-bottom:1px solid var(--line);}
+.sla-row:last-child{border-bottom:none;}
+.sla-pri{
+  width:40px;height:40px;border-radius:var(--r-md);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--fh);font-weight:700;font-size:14px;flex-shrink:0;margin-right:16px;
+}
+.sla-pri.p1{background:rgba(255,59,48,0.15);color:var(--p1);}
+.sla-pri.p2{background:rgba(255,140,0,0.13);color:var(--p2);}
+.sla-pri.p3{background:rgba(245,177,0,0.13);color:var(--p3);}
+.sla-pri.p4{background:rgba(80,192,32,0.13);color:var(--g);}
+.sla-body{flex:1;}
+.sla-label{font-family:var(--fh);font-weight:500;font-size:13px;color:var(--t1);}
+.sla-sub{font-family:var(--fm);font-size:11px;color:var(--t3);margin-top:2px;}
+.sla-bars{display:flex;align-items:center;gap:8px;margin-left:24px;}
+.sla-val{
+  display:flex;flex-direction:column;align-items:center;gap:3px;min-width:64px;
+  padding:8px 14px;background:rgba(255,255,255,0.025);border:1px solid var(--line);
+  border-radius:var(--r-md);
+}
+.sla-val-n{font-family:var(--fc);font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--t3);}
+.sla-val-v{font-family:var(--fh);font-weight:600;font-size:18px;color:var(--t1);line-height:1;}
+.sla-val-v small{font-family:var(--fm);font-size:10px;color:var(--t3);font-weight:400;margin-left:2px;}
+.sla-val.ok .sla-val-v{color:var(--g);}
+.sla-val.warn .sla-val-v{color:var(--p2);}
+.sla-val.crit .sla-val-v{color:var(--p1);}
+.sla-active{display:flex;align-items:center;gap:5px;margin-left:20px;font-family:var(--fm);font-size:11px;color:var(--g);}
+.sla-active .d{width:6px;height:6px;border-radius:50%;background:currentColor;}
+
+/* Empty state */
+.empty{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;padding:48px 24px;text-align:center;
+}
+.empty .mat{font-size:36px;color:var(--t4);}
+.empty-title{font-family:var(--fh);font-weight:500;font-size:14px;color:var(--t2);}
+.empty-sub{font-family:var(--fm);font-size:11.5px;color:var(--t3);line-height:1.6;max-width:360px;}
+
+/* Assignment cards */
+.assign-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;}
+.assign-card{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);
+  padding:14px 16px;
+}
+.assign-card-r1{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.assign-inc{font-family:var(--fm);font-size:11px;color:var(--t3);}
+.assign-type{
+  margin-left:auto;font-family:var(--fc);font-size:10px;font-weight:600;
+  letter-spacing:.8px;text-transform:uppercase;color:var(--b2);
+}
+.assign-complaint{font-family:var(--fh);font-weight:500;font-size:14px;color:var(--t1);line-height:1.3;margin-bottom:8px;}
+.assign-meta{display:flex;align-items:center;gap:10px;font-family:var(--fm);font-size:11px;color:var(--t3);}
+.assign-unit{
+  display:inline-flex;align-items:center;gap:5px;padding:2px 8px;
+  background:rgba(39,170,225,0.10);border-radius:var(--r-pill);
+  font-family:var(--fm);font-size:11px;color:var(--b2);
+}
+.assign-status{
+  display:inline-flex;align-items:center;gap:4px;padding:2px 7px;
+  border-radius:var(--r-pill);font-family:var(--fm);font-size:10px;
+}
+.assign-status.dispatched,.assign-status.dispatching{background:rgba(255,59,48,0.12);color:var(--p1);}
+.assign-status.en_route{background:rgba(255,140,0,0.12);color:var(--p2);}
+.assign-status.on_scene{background:rgba(39,170,225,0.12);color:var(--b2);}
+.assign-status.transport{background:rgba(80,192,32,0.12);color:var(--g);}
+
+/* Shifts empty calendar hint */
+.shift-hint{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+  padding:32px 28px;display:flex;flex-direction:column;gap:16px;
+}
+.shift-hint-code{
+  background:rgba(11,15,20,0.8);border:1px solid var(--line);border-radius:var(--r-md);
+  padding:14px 18px;font-family:var(--fm);font-size:12px;color:var(--g);
+  white-space:pre;overflow:auto;line-height:1.8;
+}
+@keyframes nacd-spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+
+/* System health */
+.sh-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px;margin-bottom:24px;}
+.sh-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px 20px;}
+.sh-card-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.sh-icon{width:32px;height:32px;border-radius:var(--r-md);background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sh-icon .mat{font-size:18px;color:var(--t2);}
+.sh-card-name{font-family:var(--fh);font-weight:600;font-size:13px;color:var(--t1);}
+.sh-card-url{font-family:var(--fm);font-size:10px;color:var(--t3);margin-top:2px;}
+.sh-status{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:var(--r-pill);font-family:var(--fm);font-size:10.5px;}
+.sh-status.ok{background:rgba(80,192,32,0.13);color:var(--g);}
+.sh-status.warn{background:rgba(255,140,0,0.13);color:var(--p2);}
+.sh-status.err{background:rgba(255,59,48,0.13);color:var(--p1);}
+.sh-status.pending{background:rgba(255,255,255,0.06);color:var(--t3);}
+.sh-status-d{width:5px;height:5px;border-radius:50%;background:currentColor;}
+.sh-latency{font-family:var(--fm);font-size:10.5px;color:var(--t3);margin-top:6px;}
+.sh-detail{font-family:var(--fm);font-size:10.5px;color:var(--t2);margin-top:4px;line-height:1.5;word-break:break-all;}
+.sh-stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px;}
+.sh-stat-cell{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:14px 16px;}
+.sh-stat-label{font-family:var(--fc);font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--t3);margin-bottom:6px;}
+.sh-stat-value{font-family:var(--fh);font-weight:700;font-size:22px;color:var(--t1);line-height:1;}
+.sh-stat-sub{font-family:var(--fm);font-size:10px;color:var(--t3);margin-top:4px;}
+.sh-stat-cell.ok .sh-stat-value{color:var(--g);}
+.sh-stat-cell.warn .sh-stat-value{color:var(--p2);}
+.sh-stat-cell.err .sh-stat-value{color:var(--p1);}
+
+/* Protocols */
+.proto-cat{display:inline-flex;padding:2px 8px;border-radius:var(--r-sm);font-family:var(--fc);font-size:10px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;}
+.proto-cat.CARDIAC,.proto-cat.TRAUMA{background:rgba(255,59,48,0.10);color:var(--p1);}
+.proto-cat.NEURO,.proto-cat.PSYCHIATRIC{background:rgba(39,170,225,0.10);color:var(--b2);}
+.proto-cat.RESPIRATORY,.proto-cat.BURNS{background:rgba(255,140,0,0.10);color:var(--p2);}
+.proto-cat.MATERNITY,.proto-cat.PAEDS,.proto-cat.OBSTETRIC{background:rgba(80,192,32,0.10);color:var(--g);}
+.proto-cat.TOXICOLOGY,.proto-cat.DIABETIC{background:rgba(245,177,0,0.10);color:var(--p3);}
+.proto-cat{background:rgba(255,255,255,0.06);color:var(--t2);}
+.proto-rev{display:inline-flex;padding:2px 8px;border-radius:var(--r-pill);font-family:var(--fm);font-size:10px;}
+.proto-rev.approved{background:rgba(80,192,32,0.12);color:var(--g);}
+.proto-rev.draft{background:rgba(245,177,0,0.12);color:var(--p3);}
+.proto-rev.under_review{background:rgba(39,170,225,0.12);color:var(--b2);}
+
+/* ── SHA brand logo + animation ─────────────────── */
+.sha-logo-pill{display:flex;align-items:center;flex-shrink:0;padding:0;background:transparent;}
+.sha-logo-pill img{height:28px;width:auto;display:block;filter:invert(1) hue-rotate(195deg) saturate(1.4);animation:brand-glow 4s ease-in-out infinite;}
+@keyframes brand-glow{0%,100%{opacity:.82;}50%{opacity:1;}}
+.sha-nadc{font-family:var(--fh);font-weight:700;font-size:13px;letter-spacing:.3px;background:linear-gradient(90deg,var(--b2) 0%,var(--g) 45%,var(--b2) 90%);background-size:200% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:nadc-sweep 9s linear infinite;line-height:1.1;display:block;}
+@keyframes nadc-sweep{0%{background-position:100% 0;}100%{background-position:-100% 0;}}
+
+/* ── App switcher (icon-forward) ─────────────────────────────────────── */
+.app-sw{position:relative;display:inline-flex;}
+.app-sw-btn{display:flex;align-items:center;gap:7px;padding:6px 12px 6px 10px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  border-radius:999px;color:rgba(255,255,255,.95);
+  font-family:'Exo 2',sans-serif;font-size:12.5px;font-weight:600;
+  cursor:pointer;transition:background .12s,border-color .12s;}
+.app-sw-btn:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.14);}
+.app-sw-btn.open{background:rgba(80,192,32,.12);border-color:rgba(80,192,32,.30);}
+.app-sw-btn .mat{font-size:18px;color:#50C020;}
+.app-sw-btn .asb-cur{letter-spacing:.2px;}
+.app-sw-btn .asb-arrow{font-size:14px !important;color:rgba(255,255,255,.4) !important;margin-left:1px;transition:transform .15s;}
+.app-sw-btn.open .asb-arrow{transform:rotate(180deg);}
+.app-sw-panel{display:none;position:absolute;top:calc(100% + 8px);left:0;
+  width:296px;background:rgba(14,22,32,.96);backdrop-filter:saturate(160%) blur(16px);
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:14px;box-shadow:0 18px 42px rgba(0,0,0,.7);
+  z-index:9000;overflow:hidden;padding:8px;}
+.app-sw-panel.open{display:block;animation:asPop .14s ease-out;}
+@keyframes asPop{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
+.asp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.asp-item{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:6px;padding:14px 6px 10px;background:transparent;color:rgba(255,255,255,.7);
+  text-decoration:none;text-align:center;border-radius:10px;
+  border:1px solid transparent;
+  transition:background .12s,color .12s,border-color .12s,transform .08s;}
+.asp-item:hover{background:rgba(255,255,255,.05);color:#fff;border-color:rgba(255,255,255,.08);}
+.asp-item:active{transform:scale(.96);}
+.asp-item.on{background:rgba(80,192,32,.10);color:#50C020;border-color:rgba(80,192,32,.25);}
+.asp-item .mat{font-size:30px;line-height:1;}
+.asp-item b{font-family:'Exo 2',sans-serif;font-weight:500;font-size:11px;display:block;letter-spacing:.1px;}
+
+</style>
+<link rel="stylesheet" href="/assets/tokens-v2.css">
+</head>
+<body>
+<div id="nacd-auth-overlay" style="position:fixed;inset:0;z-index:9000;background:rgba(3,12,23,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .2s;"><div style="font-family:'Exo 2',system-ui,sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,.35);text-transform:uppercase;">SHA · NADC</div><div style="width:26px;height:26px;border:2px solid rgba(80,192,32,.25);border-top-color:#50C020;border-radius:50%;animation:nacd-spin .8s linear infinite;"></div><div style="font-family:'Exo 2',system-ui,sans-serif;font-size:10px;color:rgba(255,255,255,.25);">Authenticating…</div></div>
+
+<!-- Access denied -->
+<div id="access-denied-banner">
+  <div class="ad-icon"><span class="mat">lock</span></div>
+  <div class="ad-title">Access Restricted</div>
+  <div class="ad-sub">Admin Console is reserved for ICT system administrators.<br>Your current role does not have access.</div>
+  <div class="ad-role-chip" id="ad-role-display">—</div>
+  <div class="ad-sub" style="margin-top:4px;">Contact your system administrator to request access.</div>
+</div>
+
+<!-- Add User modal -->
+<div class="modal-mask" id="add-user-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="document.getElementById('add-user-modal').classList.remove('open')"><span class="mat">close</span></button>
+    <div class="modal-title">Add new agent</div>
+    <div class="modal-sub">This action will be routed to the approvals queue before taking effect.</div>
+    <div class="form-row-2">
+      <div class="form-row">
+        <label class="form-label">First name</label>
+        <input class="form-input" id="nu-fname" placeholder="e.g. Aisha">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Last name</label>
+        <input class="form-input" id="nu-lname" placeholder="e.g. Wanjiku">
+      </div>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Email address</label>
+      <input class="form-input" id="nu-email" type="email" placeholder="agent@sha.go.ke">
+    </div>
+    <div class="form-row-2">
+      <div class="form-row">
+        <label class="form-label">Role</label>
+        <select class="form-select" id="nu-role">
+          <option value="dispatcher">Dispatcher</option>
+          <option value="senior_dispatcher">Senior Dispatcher</option>
+          <option value="call_taker">Call-Taker</option>
+          <option value="supervisor">Supervisor</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label class="form-label">Extension</label>
+        <input class="form-input" id="nu-ext" placeholder="e.g. 213" maxlength="4">
+      </div>
+    </div>
+    <button class="btn-primary" onclick="submitAddUser()"><span class="mat">send</span>Submit for approval</button>
+    <div class="maker-note">A second admin must approve before this user is activated.</div>
+  </div>
+</div>
+
+<div class="shell">
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="sha-logo-pill"><img src="/sha-social-health-authority-logo.png" alt="SHA" loading="lazy"></div>
+      <div class="brand-text"><b class="sha-nadc">NADC</b><span style="font-family:var(--fm);font-size:9.5px;letter-spacing:1.2px;color:var(--t3);text-transform:uppercase;">Admin Console</span></div>
+    </div>
+    <div class="h-rule"></div>
+    <div class="app-sw">
+  <button class="app-sw-btn" onclick="toggleAppSw()" aria-label="Switch app">
+    <span class="mat">apps</span>
+    <span class="asb-cur">Admin</span>
+    <span class="mat asb-arrow">expand_more</span>
+  </button>
+  <div class="app-sw-panel" id="app-sw-panel">
+    <div class="asp-grid">
+      <a class="asp-item" href="/dashboard" title="Wall"><span class="mat">tv</span><b>Wall</b></a>
+      <a class="asp-item" href="/psap" title="PSAP"><span class="mat">call</span><b>PSAP</b></a>
+      <a class="asp-item" href="/dispatch" title="Dispatch"><span class="mat">radar</span><b>Dispatch</b></a>
+      <a class="asp-item" href="/supervisor" title="Supervisor"><span class="mat">supervisor_account</span><b>Supervisor</b></a>
+      <a class="asp-item" href="/emt" title="EMT"><span class="mat">directions_car</span><b>EMT</b></a>
+      <a class="asp-item" href="/hospital" title="Hospital"><span class="mat">local_hospital</span><b>Hospital</b></a>
+      <a class="asp-item" href="/claims" title="Claims"><span class="mat">receipt_long</span><b>Claims</b></a>
+      <a class="asp-item" href="/providers" title="Providers"><span class="mat">business</span><b>Providers</b></a>
+      <a class="asp-item on" href="/admin" title="Admin"><span class="mat">admin_panel_settings</span><b>Admin</b></a>
+    </div>
+  </div>
+</div>
+    <div class="spacer"></div>
+    <div class="user">
+      <div class="user-av" id="user-av">JO</div>
+      <div class="user-text"><b id="user-nm">J. Otieno</b><span id="user-role">Supervisor · 2001</span></div>
+    </div>
+    <button title="Sign out" onclick="if(window.Clerk)window.Clerk.signOut().then(function(){location.reload();})" style="display:flex;align-items:center;padding:5px 7px;border-radius:999px;background:transparent;border:none;color:var(--t3);cursor:pointer;"><span class="mat" style="font-size:16px;">logout</span></button>
+  </header>
+
+  <div class="main">
+
+    <div class="tab-bar">
+      <button class="tb on" data-tab="agents">
+        <span class="mat">badge</span>Agents
+        <span class="tb-badge" id="badge-agents">—</span>
+      </button>
+      <button class="tb" data-tab="sla">
+        <span class="mat">timer</span>SLA Policies
+        <span class="tb-badge">4</span>
+      </button>
+      <button class="tb" data-tab="system">
+        <span class="mat">monitor_heart</span>System
+      </button>
+      <button class="tb" data-tab="protocols">
+        <span class="mat">medical_services</span>Protocols
+        <span class="tb-badge" id="badge-protocols">—</span>
+      </button>
+      <button class="tb" data-tab="approvals">
+        <span class="mat">pending_actions</span>Approvals
+        <span class="tb-badge" id="badge-approvals">0</span>
+      </button>
+      <div class="tab-spacer"></div>
+      <span class="last-sync" id="last-sync">syncing&#8230;</span>
+    </div>
+
+    <div class="content">
+
+      <!-- ── AGENTS ─────────────────────────────────────────── -->
+      <div class="tabpanel active" id="tab-agents">
+        <div class="sec-head">
+          <div>
+            <div class="sec-title">Floor agents</div>
+            <div class="sec-sub">Dispatchers, supervisors and call-takers</div>
+          </div>
+          <div class="sec-spacer"></div>
+          <div class="search-pill">
+            <span class="mat">search</span>
+            <input id="agent-search" placeholder="Filter by name or role…">
+          </div>
+          <button onclick="document.getElementById('add-user-modal').classList.add('open')" style="display:flex;align-items:center;gap:5px;padding:7px 14px;border-radius:var(--r-pill);background:rgba(80,192,32,.14);border:1px solid rgba(80,192,32,.3);color:var(--g);font-family:var(--fh);font-size:12px;font-weight:600;cursor:pointer;margin-left:8px;"><span class="mat" style="font-size:15px;">person_add</span>Add agent</button>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Agent</th>
+                <th>Role</th>
+                <th>Extension</th>
+                <th>Status</th>
+                <th class="right">Active</th>
+              </tr>
+            </thead>
+            <tbody id="agents-tbody">
+              <tr><td colspan="5"><div class="empty"><span class="mat">hourglass_top</span><div class="empty-title">Loading agents…</div></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── APPROVALS ──────────────────────────────────────── -->
+      <div class="tabpanel" id="tab-approvals">
+        <div class="sec-head">
+          <div>
+            <div class="sec-title">Pending approvals</div>
+            <div class="sec-sub">All CRUD actions require a second admin to approve before execution</div>
+          </div>
+          <div class="sec-spacer"></div>
+          <button onclick="renderApprovals()" style="display:flex;align-items:center;gap:5px;padding:6px 14px;border-radius:var(--r-pill);background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--t2);font-family:var(--fh);font-size:12px;cursor:pointer;"><span class="mat" style="font-size:14px;">refresh</span>Refresh</button>
+        </div>
+        <div id="approvals-list" class="pend-list"></div>
+      </div>
+
+      <!-- ── SLA POLICIES ───────────────────────────────────── -->
+      <div class="tabpanel" id="tab-sla">
+        <div class="sec-head">
+          <div>
+            <div class="sec-title">SLA policies</div>
+            <div class="sec-sub">Response time thresholds · seeded in Supabase, managed in SQL</div>
+          </div>
+        </div>
+        <div class="tbl-wrap" id="sla-content"></div>
+      </div>
+
+      <!-- ── SYSTEM HEALTH ──────────────────────────────────── -->
+      <div class="tabpanel" id="tab-system">
+        <div class="sec-head">
+          <div>
+            <div class="sec-title">System health</div>
+            <div class="sec-sub">API endpoints · NACDState engine · Supabase connectivity</div>
+          </div>
+          <div class="sec-spacer"></div>
+          <button onclick="fetchSystemHealth()" style="display:flex;align-items:center;gap:5px;padding:6px 14px;border-radius:var(--r-pill);background:rgba(255,255,255,0.05);border:1px solid var(--line);color:var(--t2);font-family:var(--fh);font-size:12px;cursor:pointer;"><span class="mat" style="font-size:14px;">refresh</span>Refresh</button>
+        </div>
+        <div class="sh-grid" id="sh-grid"></div>
+        <div class="sec-head" style="margin-top:4px;margin-bottom:12px;">
+          <div class="sec-title" style="font-size:14px;">NACDState engine</div>
+        </div>
+        <div class="sh-stat-grid" id="sh-stat-grid"></div>
+      </div>
+
+      <!-- ── PROTOCOLS ──────────────────────────────────────── -->
+      <div class="tabpanel" id="tab-protocols">
+        <div class="sec-head">
+          <div>
+            <div class="sec-title">PSAP triage protocols</div>
+            <div class="sec-sub" id="proto-sub">Loading protocols from NACDState…</div>
+          </div>
+          <div class="sec-spacer"></div>
+          <div class="search-pill">
+            <span class="mat">search</span>
+            <input id="proto-search" placeholder="Filter by name or category…">
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Protocol ID</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Review status</th>
+                <th class="right">Ver</th>
+                <th class="right">Questions</th>
+                <th class="right">Det. rules</th>
+              </tr>
+            </thead>
+            <tbody id="proto-tbody">
+              <tr><td colspan="7"><div class="empty"><span class="mat">hourglass_top</span><div class="empty-title">Loading protocols…</div></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- .content -->
+  </div><!-- .main -->
+</div><!-- .shell -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="/lib/nadc-protocols.js"></script>
+<script src="/lib/nadc-state.js"></script>
+<script src="/lib/nadc-realtime.js"></script>
+<script src="/lib/nadc-auth.js"></script>
+<script>
+'use strict';
+
+function setText(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
+function pad(n){return String(n).padStart(2,'0');}
+function initials(name){return(name||'').split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase();}
+
+/* ── Tab switching ──────────────────────────────────────────────────────── */
+var _activeTab='agents';
+(function(){
+  var tabs=document.querySelectorAll('.tb');
+  tabs.forEach(function(btn){
+    btn.onclick=function(){
+      var id=btn.getAttribute('data-tab');
+      tabs.forEach(function(b){b.classList.remove('on');});
+      document.querySelectorAll('.tabpanel').forEach(function(p){p.classList.remove('active');});
+      btn.classList.add('on');
+      var panel=document.getElementById('tab-'+id);
+      if(panel) panel.classList.add('active');
+      _activeTab=id;
+    };
+  });
+})();
+
+/* ── Agents tab ─────────────────────────────────────────────────────────── */
+var _agentFilter='';
+document.getElementById('agent-search').oninput=function(){
+  _agentFilter=this.value.toLowerCase();
+  renderAgents(NACDState.getAgentRecords());
+};
+
+function renderAgents(recs){
+  var filtered=recs.filter(function(r){
+    if(!_agentFilter) return true;
+    return (r.displayName||'').toLowerCase().indexOf(_agentFilter)!==-1||
+           (r.role||'').toLowerCase().indexOf(_agentFilter)!==-1;
+  });
+  setText('badge-agents',filtered.length+'/'+recs.length);
+  if(!filtered.length){
+    document.getElementById('agents-tbody').innerHTML=
+      '<tr><td colspan="5"><div class="empty"><span class="mat">person_off</span>'+
+      '<div class="empty-title">No agents match your filter</div></div></td></tr>';
+    return;
+  }
+  document.getElementById('agents-tbody').innerHTML=filtered.map(function(r){
+    var ini=initials(r.displayName||'??');
+    var st=(r.status||'offline').toLowerCase().replace(/-/g,'_');
+    var stLabel=({on_call:'On call',ready:'Ready',break:'Break',offline:'Offline',critical:'Critical'})[st]||st;
+    var roleLabel=(r.role||'').replace(/_/g,' ');
+    return '<tr>'+
+      '<td><div class="ag-cell">'+
+        '<div class="ag-av">'+ini+'</div>'+
+        '<div><div class="ag-cell-name">'+(r.displayName||'—')+'</div>'+
+        '<div class="ag-cell-ext">ext '+r.extension+'</div></div>'+
+      '</div></td>'+
+      '<td><span class="role '+(r.role||'')+'">'+roleLabel+'</span></td>'+
+      '<td class="mono">'+(r.extension||'—')+'</td>'+
+      '<td><span class="badge '+st+'"><span class="d"></span>'+stLabel+'</span></td>'+
+      '<td class="right"><span class="active-chip '+(r.isActive!==false?'yes':'no')+'">'+
+        (r.isActive!==false?'Active':'Inactive')+'</span></td>'+
+    '</tr>';
+  }).join('');
+}
+
+/* ── Maker / checker ────────────────────────────────────────────────────── */
+var _pendingActions=[];
+var _actionIdSeq=1;
+var _currentAdminName='Admin';
+
+function submitAction(type,label,detail,icon,executeFn){
+  var id=_actionIdSeq++;
+  _pendingActions.unshift({
+    id:id,type:type,label:label,detail:detail,icon:icon||'pending_actions',
+    by:_currentAdminName,at:Date.now(),status:'pending',executeFn:executeFn
+  });
+  renderApprovals();
+  if(_activeTab==='approvals'){return;}
+  document.querySelectorAll('.tb').forEach(function(b){if(b.getAttribute('data-tab')==='approvals'){b.click();}});
+}
+
+function approveAction(id){
+  var act=_pendingActions.filter(function(a){return a.id===id;})[0];
+  if(!act||act.status!=='pending') return;
+  try{if(act.executeFn)act.executeFn();}catch(e){}
+  act.status='executed';
+  renderApprovals();
+}
+
+function rejectAction(id){
+  var reason=prompt('Reason for rejection (optional):');
+  var act=_pendingActions.filter(function(a){return a.id===id;})[0];
+  if(!act||act.status!=='pending') return;
+  act.status='rejected';act.rejectReason=reason||'No reason given';
+  renderApprovals();
+}
+
+function renderApprovals(){
+  var pending=_pendingActions.filter(function(a){return a.status==='pending';}).length;
+  setText('badge-approvals',pending||'0');
+  var el=document.getElementById('approvals-list');
+  if(!el) return;
+  if(!_pendingActions.length){
+    el.innerHTML='<div class="empty"><span class="mat">task_alt</span>'+
+      '<div class="empty-title">No pending approvals</div>'+
+      '<div class="empty-sub">All CRUD actions submitted through this console will appear here for a second admin to review.</div></div>';
+    return;
+  }
+  el.innerHTML=_pendingActions.map(function(a){
+    var ts=new Date(a.at);
+    var tStr=pad(ts.getHours())+':'+pad(ts.getMinutes())+' · '+ts.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+    var btns=a.status==='pending'?
+      '<div class="pend-btns">'+
+        '<button class="btn-approve" onclick="approveAction('+a.id+')"><span class="mat" style="font-size:15px;">check_circle</span>Approve</button>'+
+        '<button class="btn-reject" onclick="rejectAction('+a.id+')"><span class="mat" style="font-size:15px;">cancel</span>Reject</button>'+
+      '</div>':'';
+    var statusChip='<span class="pend-status '+a.status+'">'+
+      ({pending:'Pending review',executed:'Approved & executed',rejected:'Rejected'})[a.status]+'</span>';
+    var extra=a.status==='rejected'?'<div class="pend-meta" style="color:var(--p1)">Rejected · '+a.rejectReason+'</div>':'';
+    return '<div class="pend-card '+a.status+'">'+
+      '<div class="pend-type"><span class="mat">'+a.icon+'</span></div>'+
+      '<div class="pend-body">'+
+        '<div class="pend-action">'+a.label+'</div>'+
+        '<div class="pend-detail">'+a.detail+'</div>'+
+        '<div class="pend-meta">Submitted by '+a.by+' · '+tStr+'</div>'+
+        extra+
+      '</div>'+
+      '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">'+statusChip+btns+'</div>'+
+    '</div>';
+  }).join('');
+}
+
+function submitAddUser(){
+  var fn=(document.getElementById('nu-fname').value||'').trim();
+  var ln=(document.getElementById('nu-lname').value||'').trim();
+  var email=(document.getElementById('nu-email').value||'').trim();
+  var role=document.getElementById('nu-role').value;
+  var ext=(document.getElementById('nu-ext').value||'').trim();
+  if(!fn||!ln||!email){alert('Name and email are required.');return;}
+  var fullName=fn+' '+ln;
+  document.getElementById('add-user-modal').classList.remove('open');
+  ['nu-fname','nu-lname','nu-email','nu-ext'].forEach(function(id){document.getElementById(id).value='';});
+  submitAction(
+    'create_user',
+    'Add agent: '+fullName,
+    'Email: '+email+' · Role: '+role.replace(/_/g,' ')+' · Ext: '+(ext||'TBD'),
+    'person_add',
+    function(){
+      // On approval: NACDState does not have createAgent — notify only
+      alert('User "'+fullName+'" approved. Provision in Clerk dashboard with role: '+role+'.');
+    }
+  );
+}
+
+/* ── SLA Policies tab ───────────────────────────────────────────────────── */
+var SLA_POLICIES=[
+  {p:1,label:'Priority 1 — Life threatening',sub:'Cardiac arrest · major trauma · stroke',target:8,warning:8,critical:12},
+  {p:2,label:'Priority 2 — Urgent',           sub:'Fractures · unconscious · severe pain', target:12,warning:12,critical:20},
+  {p:3,label:'Priority 3 — Semi-urgent',       sub:'Minor injuries · GP referrals',         target:25,warning:25,critical:40},
+  {p:4,label:'Priority 4 — Non-urgent',        sub:'Scheduled transport · inter-facility',  target:60,warning:60,critical:90}
+];
+
+function renderSLA(){
+  var el=document.getElementById('sla-content');
+  el.innerHTML=SLA_POLICIES.map(function(s){
+    return '<div class="sla-row">'+
+      '<div class="sla-pri p'+s.p+'">P'+s.p+'</div>'+
+      '<div class="sla-body">'+
+        '<div class="sla-label">'+s.label+'</div>'+
+        '<div class="sla-sub">'+s.sub+'</div>'+
+      '</div>'+
+      '<div class="sla-bars">'+
+        '<div class="sla-val ok">'+
+          '<span class="sla-val-n">Target</span>'+
+          '<span class="sla-val-v">'+s.target+'<small>min</small></span>'+
+        '</div>'+
+        '<div class="sla-val warn">'+
+          '<span class="sla-val-n">Warning</span>'+
+          '<span class="sla-val-v">'+s.warning+'<small>min</small></span>'+
+        '</div>'+
+        '<div class="sla-val crit">'+
+          '<span class="sla-val-n">Critical</span>'+
+          '<span class="sla-val-v">'+s.critical+'<small>min</small></span>'+
+        '</div>'+
+      '</div>'+
+      '<div class="sla-active"><span class="d"></span>Active</div>'+
+    '</div>';
+  }).join('');
+}
+
+/* ── System Health tab ──────────────────────────────────────────────────── */
+var _shChecks=[
+  {id:'config', label:'Config API',        url:'/api/config',                method:'GET', icon:'settings'},
+  {id:'psap',   label:'PSAP Sessions API', url:'/api/psap-sessions?since=1h',method:'GET', icon:'call'},
+  {id:'mpesa',  label:'M-Pesa Init API',   url:'/api/mpesa-init',            method:'POST',icon:'payments',body:{amount:0}}
+];
+var _shResults={};
+
+function fetchSystemHealth(){
+  _shChecks.forEach(function(ck){
+    _shResults[ck.id]={status:'pending',label:'Checking…',latency:null};
+    renderShGrid();
+    var t0=Date.now();
+    var opts={method:ck.method,headers:{'Content-Type':'application/json'}};
+    if(ck.method==='POST') opts.body=JSON.stringify(ck.body||{});
+    fetch(ck.url,opts)
+      .then(function(r){
+        var ms=Date.now()-t0;
+        if(r.ok||r.status<500){
+          _shResults[ck.id]={status:'ok',label:'Online',latency:ms,httpCode:r.status};
+        } else {
+          _shResults[ck.id]={status:'warn',label:'Degraded',latency:ms,httpCode:r.status};
+        }
+        renderShGrid();
+      })
+      .catch(function(e){
+        _shResults[ck.id]={status:'err',label:'Unreachable',latency:null,detail:e.message};
+        renderShGrid();
+      });
+  });
+  renderSystemStats();
+}
+
+function renderShGrid(){
+  var grid=document.getElementById('sh-grid');
+  if(!grid) return;
+  grid.innerHTML=_shChecks.map(function(ck){
+    var r=_shResults[ck.id]||{status:'pending',label:'—'};
+    var latStr=r.latency!=null?r.latency+'ms':'';
+    var codeStr=r.httpCode?' · HTTP '+r.httpCode:'';
+    return '<div class="sh-card">'+
+      '<div class="sh-card-head">'+
+        '<div class="sh-icon"><span class="mat">'+ck.icon+'</span></div>'+
+        '<div><div class="sh-card-name">'+ck.label+'</div>'+
+        '<div class="sh-card-url">'+ck.method+' '+ck.url+'</div></div>'+
+      '</div>'+
+      '<span class="sh-status '+r.status+'"><span class="sh-status-d"></span>'+r.label+'</span>'+
+      (latStr?'<div class="sh-latency">'+latStr+codeStr+'</div>':'')+
+      (r.detail?'<div class="sh-detail">'+r.detail+'</div>':'')+
+    '</div>';
+  }).join('');
+}
+
+function renderSystemStats(){
+  var el=document.getElementById('sh-stat-grid');
+  if(!el) return;
+  var state=NACDState.getState?NACDState.getState():{};
+  var kpis =NACDState.getKPIs ?NACDState.getKPIs() :{};
+  var fleet=(state.fleet    ||[]).length;
+  var hosps=(state.hospitals||[]).length;
+  var incs =(state.incidents||[]).length;
+  var sla  =kpis.slaCompliancePct!=null?kpis.slaCompliancePct:null;
+  var slaCls=sla==null?'':(sla>=90?'ok':sla>=70?'warn':'err');
+  var protos=[];
+  if(NACDState.psap&&NACDState.psap.getProtocols) protos=NACDState.psap.getProtocols();
+  var cells=[
+    {label:'Engine state',   value:state.initialized?'Running':'Initializing',  sub:'NACDState IIFE',           cls:state.initialized?'ok':'warn'},
+    {label:'Incidents',      value:incs,                                         sub:'active in simulation',     cls:''},
+    {label:'Fleet units',    value:fleet,                                        sub:'A-001 to A-150',           cls:''},
+    {label:'Hospitals',      value:hosps,                                        sub:'registered facilities',    cls:''},
+    {label:'SLA compliance', value:sla!=null?sla+'%':'—',                       sub:'vs 8/12/25/60min targets', cls:slaCls},
+    {label:'Protocols',      value:protos.length,                                sub:'PSAP triage loaded',       cls:protos.length>0?'ok':'warn'}
+  ];
+  el.innerHTML=cells.map(function(c){
+    return '<div class="sh-stat-cell '+(c.cls||'')+'">'+
+      '<div class="sh-stat-label">'+c.label+'</div>'+
+      '<div class="sh-stat-value">'+c.value+'</div>'+
+      '<div class="sh-stat-sub">'+c.sub+'</div>'+
+    '</div>';
+  }).join('');
+}
+
+/* ── Protocols tab ──────────────────────────────────────────────────────── */
+var _protoFilter='';
+document.getElementById('proto-search').oninput=function(){
+  _protoFilter=this.value.toLowerCase();
+  renderProtocols();
+};
+
+function renderProtocols(){
+  var tbody=document.getElementById('proto-tbody');
+  if(!tbody) return;
+  var protos=[];
+  if(NACDState.psap&&NACDState.psap.getProtocols) protos=NACDState.psap.getProtocols();
+  setText('badge-protocols',protos.length);
+  setText('proto-sub',protos.length+' protocols loaded · NACDState.psap');
+  if(!protos.length){
+    tbody.innerHTML='<tr><td colspan="7"><div class="empty"><span class="mat">policy</span>'+
+      '<div class="empty-title">No protocols loaded yet</div>'+
+      '<div class="empty-sub">Protocols should load from /lib/nadc-protocols.js on init. If empty, NACDState may still be initialising — wait a moment and refresh.</div>'+
+    '</div></td></tr>';
+    return;
+  }
+  var filtered=protos.filter(function(p){
+    if(!_protoFilter) return true;
+    return (p.display_name||p.id||'').toLowerCase().indexOf(_protoFilter)!==-1||
+           (p.category||'').toLowerCase().indexOf(_protoFilter)!==-1;
+  });
+  if(!filtered.length){
+    tbody.innerHTML='<tr><td colspan="7"><div class="empty"><span class="mat">search_off</span>'+
+      '<div class="empty-title">No protocols match "'+_protoFilter+'"</div></div></td></tr>';
+    return;
+  }
+  var revLabel={approved:'Approved',draft:'Draft',under_review:'In review'};
+  tbody.innerHTML=filtered.map(function(p){
+    var nq =(p.key_questions    ||[]).length;
+    var ndr=(p.determinant_rules||[]).length;
+    var rev=p.clinical_review_status||'draft';
+    var cat=p.category||'—';
+    return '<tr>'+
+      '<td class="mono">'+p.id+'</td>'+
+      '<td>'+(p.display_name||p.id)+'</td>'+
+      '<td><span class="proto-cat '+cat+'">'+cat+'</span></td>'+
+      '<td><span class="proto-rev '+(rev.replace(/\s/g,'_'))+'">'+
+        (revLabel[rev]||rev)+'</span></td>'+
+      '<td class="mono right">'+(p.version||'1.0')+'</td>'+
+      '<td class="mono right">'+nq+'</td>'+
+      '<td class="mono right">'+ndr+'</td>'+
+    '</tr>';
+  }).join('');
+}
+
+/* ── State tick ─────────────────────────────────────────────────────────── */
+function onTick(state){
+  renderAgents(NACDState.getAgentRecords());
+  renderSLA();
+  if(_activeTab==='system')    renderSystemStats();
+  if(_activeTab==='protocols') renderProtocols();
+  if(_activeTab==='approvals') renderApprovals();
+  setText('last-sync','synced '+new Date().toISOString().substr(11,8));
+}
+
+/* ── Init ───────────────────────────────────────────────────────────────── */
+renderSLA();
+
+fetch('/api/config').then(function(r){return r.json();}).catch(function(){return{};})
+.then(function(cfg){
+  // Register BEFORE init — state:initialized fires synchronously inside init()
+  // so any listener registered after init() never catches it.
+  NACDState.on('state:initialized',function(state){
+    onTick(state);
+    fetchSystemHealth();
+    setInterval(fetchSystemHealth,60000);
+  });
+  NACDState.on('state:tick',function(state){onTick(state);});
+
+  NACDState.init({supabaseUrl:cfg.supabaseUrl||'',supabaseKey:cfg.supabaseAnonKey||'',seedIncidents:12,autoStart:true});
+
+  // Load protocols immediately after init (synchronous — no event needed)
+  if(window.NACDProtocols&&window.NACDProtocols.length&&NACDState.psap&&NACDState.psap.loadProtocols){
+    NACDState.psap.loadProtocols(window.NACDProtocols);
+  }
+  renderProtocols();
+
+  window._onNACDAuthReady=function(auth){
+    var ov=document.getElementById('nacd-auth-overlay');
+    if(ov){ov.style.opacity='0';setTimeout(function(){ov.style.display='none';},220);}
+    if(!auth.user)return;
+    var name=auth.user.fullName||auth.user.username||'User';
+    var role=(auth.user.publicMetadata&&auth.user.publicMetadata.role)||'';
+    var ini=name.split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase();
+    var avEl=document.getElementById('user-av');var nmEl=document.getElementById('user-nm');var rlEl=document.getElementById('user-role');
+    if(avEl)avEl.textContent=ini;if(nmEl)nmEl.textContent=name;if(rlEl)rlEl.textContent=role.replace(/_/g,' ');
+    _currentAdminName=name;
+    // MVP demo: all authenticated users can access admin.
+    // In production, restrict to: ['admin', 'senior_dispatcher', 'supervisor']
+    var _ADMIN_ROLES=['admin','supervisor','senior_dispatcher','dispatcher','call_taker'];
+    if(role&&_ADMIN_ROLES.indexOf(role)===-1){
+      var banner=document.getElementById('access-denied-banner');
+      if(banner){
+        var rc=document.getElementById('ad-role-display');
+        if(rc)rc.textContent=role?role.replace(/_/g,' '):'No role assigned';
+        banner.style.display='flex';
+      }
+      document.querySelector('.main').style.display='none';
+    }
+  };
+  if(window.NACDAuth) NACDAuth.init({supabaseUrl:cfg.supabaseUrl,supabaseAnonKey:cfg.supabaseAnonKey,clerkPublishableKey:cfg.clerkPublishableKey},'admin');
+});
+</script>
+
+<script>
+(function(){
+  function toggleAppSw(){
+    var p=document.getElementById('app-sw-panel');
+    var b=document.querySelector('.app-sw-btn');
+    if(!p) return;
+    var willOpen = !p.classList.contains('open');
+    p.classList.toggle('open');
+    if(b) b.classList.toggle('open', willOpen);
+  }
+  document.addEventListener('click',function(e){
+    var p=document.getElementById('app-sw-panel');
+    if(!p||!p.classList.contains('open')) return;
+    if(p.contains(e.target)) return;
+    if(e.target.closest && e.target.closest('.app-sw-btn')) return;
+    p.classList.remove('open');
+    var b=document.querySelector('.app-sw-btn');
+    if(b) b.classList.remove('open');
+  });
+  // Expose as global so inline onclick can call it
+  window.toggleAppSw = toggleAppSw;
+})();
+</script>
+
+</body>
+</html>

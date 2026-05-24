@@ -1,0 +1,1697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SHA · NADC — Operations Wall</title>
+<meta name="description" content="SHA National Ambulance Dispatch Centre — real-time emergency coordination platform for the Republic of Kenya.">
+<meta name="theme-color" content="#00519B">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SHA NADC">
+<meta property="og:title" content="SHA · National Ambulance Dispatch Centre">
+<meta property="og:description" content="Real-time emergency coordination · Republic of Kenya">
+<meta property="og:url" content="https://sha-nadc.silicongw.com/">
+<meta property="og:image" content="https://sha-nadc.silicongw.com/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="1200">
+<meta property="og:image:alt" content="SHA National Ambulance Dispatch Centre">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SHA · National Ambulance Dispatch Centre">
+<meta name="twitter:description" content="Real-time emergency coordination · Republic of Kenya">
+<meta name="twitter:image" content="https://sha-nadc.silicongw.com/assets/og-image.png">
+
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Barlow+Condensed:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined" rel="stylesheet">
+
+<style>
+:root{
+  --b:#00519B;  --b2:#27AAE1;
+  --g:#50C020;  --g2:#3DA818;
+  --p1:#FF3B30; --p2:#FF8C00; --p3:#F5B100;
+  --ok:#34C759;
+  --bg:#0B0F14;
+  --surface:#11161D;
+  --surface-2:#161C25;
+  --line:rgba(255,255,255,0.06);
+  --line-2:rgba(255,255,255,0.10);
+  --t1:rgba(255,255,255,0.95);
+  --t2:rgba(255,255,255,0.62);
+  --t3:rgba(255,255,255,0.40);
+  --t4:rgba(255,255,255,0.25);
+  --fh:"Exo 2", system-ui, sans-serif;
+  --fm:"JetBrains Mono", ui-monospace, monospace;
+  --fc:"Barlow Condensed", sans-serif;
+  --r-md:12px; --r-lg:16px; --r-pill:999px;
+  --shadow-2:0 8px 24px rgba(0,0,0,.3);
+  --shadow-3:0 16px 48px rgba(0,0,0,.5);
+  --pane-w:clamp(260px,22vw,400px);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;background:var(--bg);color:var(--t1);font-family:var(--fh);font-feature-settings:"ss01","tnum";overflow:hidden;-webkit-font-smoothing:antialiased;}
+.mat{font-family:"Material Symbols Outlined";font-weight:400;font-size:20px;line-height:1;}
+.tab{font-variant-numeric:tabular-nums;}
+
+/* Wall grid — topbar / canvas / cc-row / footer */
+.wall{display:grid;grid-template-rows:64px 1fr 80px 44px;height:100vh;}
+
+/* ── Top bar ─────────────────────────────────────────── */
+.topbar{
+  display:flex;align-items:center;gap:16px;padding:0 22px;
+  background:rgba(11,15,20,0.94);backdrop-filter:saturate(160%) blur(14px);
+  border-bottom:1px solid var(--line);position:relative;z-index:50;
+}
+.brand{display:flex;align-items:center;gap:12px;}
+.brand-mark{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,#00519B 0%,#27AAE1 100%);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;letter-spacing:.5px;color:#fff;}
+.brand-text b{font-family:var(--fh);font-weight:600;font-size:15px;color:var(--t1);letter-spacing:.3px;display:block;line-height:1.1;}
+.brand-text span{font-family:var(--fm);font-size:10.5px;letter-spacing:1.4px;color:var(--t3);text-transform:uppercase;}
+.divider{width:1px;height:32px;background:var(--line);}
+.live{display:flex;align-items:center;gap:7px;padding:5px 12px;border-radius:var(--r-pill);background:rgba(255,59,48,0.10);border:1px solid rgba(255,59,48,0.3);}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--p1);animation:livepulse 1.6s ease infinite;}
+@keyframes livepulse{0%,100%{opacity:1;}50%{opacity:.45;}}
+.live-l{font-family:var(--fh);font-size:11.5px;font-weight:600;color:var(--p1);letter-spacing:1.4px;text-transform:uppercase;}
+.sys-row{display:flex;align-items:center;gap:14px;font-family:var(--fm);font-size:11px;color:var(--t3);}
+.sys-i{display:flex;align-items:center;gap:5px;}
+.sys-i .gd{width:6px;height:6px;border-radius:50%;background:var(--g);}
+.spacer{flex:1;}
+.clock-wrap{display:flex;align-items:center;gap:14px;}
+/* Cross-page nav */
+.pg-nav{display:flex;align-items:center;gap:2px;}
+.pn{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:var(--r-pill);text-decoration:none;font-family:var(--fh);font-size:11.5px;font-weight:500;color:var(--t2);transition:background .15s,color .15s;white-space:nowrap;}
+.pn:hover{background:rgba(255,255,255,.05);color:var(--t1);}
+.pn.on{background:rgba(80,192,32,.13);color:var(--g);}
+.pn .mat{font-size:14px;}
+.pn .pm{font-family:var(--fm);font-size:8px;color:var(--t4);letter-spacing:.6px;text-transform:uppercase;margin-left:1px;}
+.pn.on .pm{color:rgba(80,192,32,.5);}
+.h-rule{width:1px;height:26px;background:var(--line);margin:0 6px;flex-shrink:0;}
+.clock{font-family:var(--fm);font-size:clamp(15px,1.5vw,22px);font-weight:500;color:var(--t1);letter-spacing:1.5px;line-height:1;}
+.date-wrap{line-height:1.2;}
+.date-wrap b{font-family:var(--fc);font-size:12px;letter-spacing:1.5px;color:var(--t2);text-transform:uppercase;display:block;}
+.date-wrap span{font-family:var(--fm);font-size:10px;color:var(--t3);}
+
+/* ── Main canvas (map area) ────────────────────────── */
+.canvas{position:relative;overflow:hidden;}
+#map{position:absolute;inset:0;}
+.canvas::before{content:"";position:absolute;top:0;left:0;right:0;height:160px;background:linear-gradient(180deg,rgba(11,15,20,0.7) 0%,transparent 100%);pointer-events:none;z-index:5;}
+.canvas::after{content:"";position:absolute;bottom:0;left:0;right:0;height:120px;background:linear-gradient(0deg,rgba(11,15,20,0.55) 0%,transparent 100%);pointer-events:none;z-index:5;}
+
+/* ── Hero KPI rail (8-cell) ────────────────────────── */
+.hero-rail{
+  position:absolute;top:18px;
+  left:calc(var(--pane-w) + 36px);
+  right:calc(var(--pane-w) + 36px);
+  display:flex;align-items:stretch;justify-content:stretch;
+  background:rgba(17,22,29,0.94);backdrop-filter:saturate(160%) blur(18px);
+  border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-2);
+  z-index:10;overflow:hidden;
+}
+/* 8 cells share the available space evenly — no horizontal scroll, just compresses */
+.h-cell{
+  flex:1 1 0;min-width:0;
+  padding:clamp(7px,.7vw,12px) clamp(8px,1vw,20px);
+  display:flex;flex-direction:column;gap:3px;position:relative;overflow:hidden;
+}
+.h-cell+.h-cell{border-left:1px solid var(--line);}
+.h-l{font-family:var(--fc);font-size:clamp(9px,.7vw,11px);font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.h-v{font-family:var(--fh);font-weight:600;font-size:clamp(18px,1.9vw,32px);line-height:1;color:var(--t1);white-space:nowrap;}
+.h-sub,.h-d{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.h-cell.crit .h-v{color:var(--p1);}
+.h-cell.warn .h-v{color:var(--p2);}
+.h-cell.p34c .h-v{color:var(--p3);}
+.h-cell.ok   .h-v{color:var(--g);}
+.h-cell.info .h-v{color:var(--b2);}
+.h-sub{font-family:var(--fm);font-size:clamp(8px,.7vw,10px);color:var(--t3);}
+.h-d{font-family:var(--fm);font-size:11px;color:var(--t3);display:flex;align-items:center;gap:4px;}
+.h-d .mat{font-size:12px;}
+.h-d.up{color:var(--p1);} .h-d.dn{color:var(--g);}
+
+/* ── LEFT pane: hot incidents ─────────────────────── */
+.pane{
+  position:absolute;top:200px;bottom:80px;width:var(--pane-w);
+  background:rgba(17,22,29,0.96);backdrop-filter:saturate(160%) blur(14px);
+  border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-2);
+  z-index:10;display:flex;flex-direction:column;overflow:hidden;
+}
+.lpane{left:18px;} .rpane{right:18px;}
+.p-head{padding:16px 18px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;}
+.p-title{font-family:var(--fh);font-weight:600;font-size:clamp(12px,1vw,15px);color:var(--t1);}
+.p-count{margin-left:auto;font-family:var(--fm);font-size:11.5px;color:var(--t3);padding:3px 10px;background:rgba(255,255,255,0.05);border-radius:var(--r-pill);}
+.hot-list{flex:1;overflow:auto;padding:10px;}
+.hot-list::-webkit-scrollbar{width:4px;height:4px;}
+.hot-list::-webkit-scrollbar-track{background:rgba(255,255,255,.04);}
+.hot-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:2px;}
+.hot-list::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.30);}
+.hot-list{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.18) rgba(255,255,255,.04);}
+/* Right pane glance-first. Sections compress to fit, but if the viewport
+   really can't accommodate them all, we fall back to a themed scrollbar
+   rather than hiding content. */
+.rp-scroll{flex:1;display:flex;flex-direction:column;overflow-y:auto;}
+.rp-scroll::-webkit-scrollbar{width:4px;}
+.rp-scroll::-webkit-scrollbar-track{background:transparent;}
+.rp-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:2px;}
+.rp-scroll{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.18) transparent;}
+.hot{display:flex;flex-direction:column;gap:7px;padding:14px;margin-bottom:8px;background:rgba(255,255,255,0.025);border:1px solid var(--line);border-radius:var(--r-md);cursor:pointer;transition:background .12s,border-color .12s,transform .12s;}
+.hot:hover{background:rgba(255,255,255,0.05);border-color:var(--line-2);transform:translateY(-1px);}
+.hot.crit{border-color:rgba(255,59,48,0.30);background:rgba(255,59,48,0.04);}
+.hot-r1{display:flex;align-items:center;gap:8px;}
+.pri-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:var(--r-pill);font-family:var(--fm);font-weight:600;font-size:10.5px;letter-spacing:.5px;}
+.pri-chip.p1{background:rgba(255,59,48,0.15);color:var(--p1);}
+.pri-chip.p2{background:rgba(255,140,0,0.13);color:var(--p2);}
+.pri-chip.p3{background:rgba(245,177,0,0.13);color:var(--p3);}
+.pri-chip .dot{width:5px;height:5px;border-radius:50%;background:currentColor;}
+.pri-chip.p1 .dot{animation:dotPulse 1.6s ease infinite;}
+@keyframes dotPulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.hot-id{font-family:var(--fm);font-size:12px;color:var(--t2);}
+.hot-code{font-family:var(--fm);font-size:11px;color:var(--t3);}
+.hot-sla{margin-left:auto;display:flex;align-items:center;gap:7px;}
+.hot-time{font-family:var(--fm);font-size:14px;color:var(--t1);font-weight:500;}
+.hot.crit .hot-time{color:var(--p1);}
+.sla-ring{position:relative;width:22px;height:22px;flex-shrink:0;}
+.sla-ring svg{position:absolute;inset:0;transform:rotate(-90deg);}
+.sla-ring circle{fill:none;stroke-width:2.5;}
+.sla-ring .bg{stroke:rgba(255,255,255,0.07);}
+.sla-ring .fg{stroke:var(--p1);stroke-linecap:round;transition:stroke-dashoffset .8s;}
+.hot.p2 .sla-ring .fg{stroke:var(--p2);}
+.hot-type{font-family:var(--fh);font-weight:500;font-size:clamp(12px,1.1vw,16px);color:var(--t1);line-height:1.25;}
+.hot-meta{display:flex;align-items:center;gap:8px;font-family:var(--fm);font-size:11px;color:var(--t3);}
+.hot-meta .mat{font-size:13px;}
+.hot-meta .sep{width:3px;height:3px;border-radius:50%;background:var(--t4);}
+.hot-meta .unit{color:var(--b2);}
+.hot-stage{margin-left:auto;display:inline-flex;align-items:center;gap:5px;font-family:var(--fm);font-size:10.5px;color:var(--t2);padding:2px 8px;background:rgba(255,255,255,0.04);border-radius:var(--r-pill);}
+.hot-stage .dot{width:5px;height:5px;border-radius:50%;}
+.hot-stage.d .dot,.hot-stage.dispatching .dot,.hot-stage.dispatched .dot{background:var(--p1);}
+.hot-stage.e .dot,.hot-stage.en_route .dot{background:var(--p2);}
+.hot-stage.s .dot,.hot-stage.on_scene .dot{background:var(--b2);}
+.hot-stage.t .dot,.hot-stage.transport .dot{background:var(--g);}
+
+/* ── RIGHT pane: hospitals + zones ─────────────────── */
+.rp-sec{padding:12px 16px 12px;border-bottom:1px solid var(--line);flex-shrink:0;}
+.rp-sec.rp-flex{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;}
+.rp-sec:last-child{border-bottom:none;}
+.rp-sec h4{font-family:var(--fc);font-size:11.5px;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;color:var(--t3);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
+.rp-sec h4 span{font-family:var(--fm);font-size:11px;text-transform:none;letter-spacing:0;color:var(--t3);}
+.hosp-list{display:flex;flex-direction:column;gap:8px;}
+.hosp-row{display:flex;align-items:center;gap:10px;padding:9px 12px;background:rgba(255,255,255,0.025);border:1px solid var(--line);border-radius:var(--r-md);}
+.hosp-n{font-family:var(--fh);font-weight:500;font-size:clamp(10px,.9vw,13px);color:var(--t1);min-width:80px;}
+.hosp-l6{font-family:var(--fm);font-size:9.5px;letter-spacing:.5px;background:rgba(245,177,0,0.14);color:var(--p3);padding:2px 6px;border-radius:3px;}
+.hosp-bar{flex:1;height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;min-width:70px;}
+.hosp-bar i{height:100%;display:block;border-radius:2px;}
+.hosp-pct{font-family:var(--fm);font-size:12px;min-width:38px;text-align:right;}
+.hosp-status{font-family:var(--fm);font-size:9.5px;letter-spacing:.5px;padding:2px 7px;border-radius:var(--r-pill);}
+.hosp-row.ok .hosp-bar i{background:var(--g);} .hosp-row.ok .hosp-pct{color:var(--g);} .hosp-row.ok .hosp-status{background:rgba(80,192,32,0.12);color:var(--g);}
+.hosp-row.warn .hosp-bar i{background:var(--p2);} .hosp-row.warn .hosp-pct{color:var(--p2);} .hosp-row.warn .hosp-status{background:rgba(255,140,0,0.12);color:var(--p2);}
+.hosp-row.crit .hosp-bar i{background:var(--p1);} .hosp-row.crit .hosp-pct{color:var(--p1);} .hosp-row.crit .hosp-status{background:rgba(255,59,48,0.12);color:var(--p1);}
+.zone-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.zone-c{display:flex;align-items:center;gap:9px;padding:8px 12px;background:rgba(255,255,255,0.025);border:1px solid var(--line);border-radius:var(--r-md);}
+.zone-n{flex:1;font-family:var(--fh);font-size:12.5px;font-weight:500;color:var(--t1);}
+.zone-t{font-family:var(--fm);font-size:13px;font-weight:600;}
+.zone-c.ok .zone-t{color:var(--g);} .zone-c.warn .zone-t{color:var(--p2);} .zone-c.crit .zone-t{color:var(--p1);}
+
+/* ── Filter button + panel ───────────────────────────── */
+.filter-wrap{position:absolute;left:calc(var(--pane-w) + 36px);right:calc(var(--pane-w) + 36px);z-index:9;display:flex;flex-direction:column;align-items:center;pointer-events:none;}
+.filter-wrap > *{pointer-events:auto;}
+.filter-btn{display:flex;align-items:center;gap:7px;height:36px;padding:0 16px;background:rgba(17,22,29,0.97);border:1px solid var(--line);border-radius:var(--r-pill);font-family:var(--fh);font-size:13px;font-weight:500;color:var(--t2);cursor:pointer;transition:background .12s,color .12s,border-color .12s;box-shadow:0 1px 8px rgba(0,0,0,.4);}
+.filter-btn:hover{color:var(--t1);border-color:var(--line-2);}
+.filter-btn.active{color:var(--g);background:rgba(80,192,32,.10);border-color:rgba(80,192,32,.30);}
+.filter-btn .mat{font-size:17px;}
+.filter-count{background:var(--g);color:#0B0F14;font-family:var(--fm);font-size:10px;font-weight:700;padding:1px 6px;border-radius:var(--r-pill);min-width:18px;text-align:center;display:none;}
+.filter-count.show{display:inline-block;}
+.filter-panel{display:none;position:absolute;top:calc(100% + 8px);z-index:20;background:rgba(17,22,29,0.98);backdrop-filter:saturate(160%) blur(18px);border:1px solid var(--line-2);border-radius:var(--r-lg);box-shadow:0 12px 40px rgba(0,0,0,.7);padding:18px 20px;width:310px;}
+.filter-panel.open{display:block;}
+.fp-head{display:flex;align-items:center;gap:8px;margin-bottom:16px;}
+.fp-title{font-family:var(--fc);font-size:10px;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;color:var(--t3);flex:1;}
+.fp-close{width:24px;height:24px;border-radius:var(--r-pill);background:rgba(255,255,255,.04);border:none;color:var(--t3);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.fp-close .mat{font-size:14px;}
+.fp-section{margin-bottom:14px;}
+.fp-section:last-child{margin-bottom:0;}
+.fp-lbl{font-family:var(--fc);font-size:9.5px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--t4);display:block;margin-bottom:7px;}
+.fp-row{display:flex;flex-wrap:wrap;gap:5px;}
+.fp-pill{display:flex;align-items:center;height:28px;padding:0 11px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:var(--r-pill);font-family:var(--fh);font-size:11.5px;color:var(--t2);cursor:pointer;transition:all .12s;}
+.fp-pill:hover{background:rgba(255,255,255,.07);color:var(--t1);}
+.fp-pill.on{background:rgba(80,192,32,.14);color:var(--g);border-color:rgba(80,192,32,.3);}
+.fp-pill.on.p1{background:rgba(255,59,48,.12);color:var(--p1);border-color:rgba(255,59,48,.3);}
+.fp-pill.on.p2{background:rgba(255,140,0,.12);color:var(--p2);border-color:rgba(255,140,0,.3);}
+.fp-pill.on.p3{background:rgba(245,177,0,.12);color:var(--p3);border-color:rgba(245,177,0,.3);}
+.fp-sel{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:var(--r-md);padding:7px 10px;font-family:var(--fh);font-size:12px;color:var(--t1);outline:none;cursor:pointer;}
+.fp-sel option{background:#11161D;}
+.fp-reset{width:100%;margin-top:14px;padding:8px;border-radius:var(--r-md);background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--t3);font-family:var(--fh);font-size:12px;cursor:pointer;transition:background .12s,color .12s;}
+.fp-reset:hover{background:rgba(255,255,255,.07);color:var(--t1);}
+.anom-badge{background:var(--p1);color:#fff;font-family:var(--fm);font-size:10px;font-weight:600;padding:1px 6px;border-radius:var(--r-pill);min-width:18px;text-align:center;}
+
+/* ── HUD overlays ────────────────────────────────────── */
+/* shared HUD base */
+.hud-panel{
+  position:absolute;z-index:9;
+  background:rgba(17,22,29,0.95);backdrop-filter:saturate(160%) blur(14px);
+  border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--shadow-2);
+  font-family:var(--fm);font-size:11px;
+}
+/* HUD-ETA — bottom-center anchored between panes */
+.hud-eta{
+  bottom:96px;
+  left:calc(var(--pane-w) + 36px);
+  right:calc(var(--pane-w) + 36px);
+  margin:0 auto;width:fit-content;max-width:100%;
+  display:flex;align-items:center;justify-content:center;gap:16px;padding:14px 22px;
+  border-radius:var(--r-pill);
+}
+.hud-ic{width:36px;height:36px;border-radius:50%;background:rgba(80,192,32,0.14);color:var(--g);display:flex;align-items:center;justify-content:center;}
+.hud-text b{font-family:var(--fh);font-weight:600;font-size:15px;color:var(--t1);display:block;}
+.hud-text span{font-family:var(--fm);font-size:11.5px;color:var(--t3);}
+.hud-sep{width:1px;height:28px;background:var(--line);}
+.hud-eta-v{font-family:var(--fh);font-weight:600;font-size:22px;color:var(--g);}
+/* HUD-Stats — top-right */
+.hud-stats{top:84px;right:22px;padding:10px 14px;display:flex;flex-direction:column;gap:6px;min-width:148px;}
+.hud-stats .hs-row{display:flex;justify-content:space-between;align-items:center;gap:16px;}
+.hud-stats .hs-lbl{color:var(--t3);font-size:10px;letter-spacing:.8px;text-transform:uppercase;}
+.hud-stats .hs-val{color:var(--t1);font-size:12px;font-weight:600;}
+/* Compact legend — slots into the gap below the right pane and above the
+   call-centre row, aligned with rpane horizontally so it reads as part of
+   the right column rather than floating over the map. */
+.hud-legend-compact{
+  bottom:12px;
+  right:18px;
+  width:var(--pane-w);
+  padding:8px 12px;
+  display:flex;flex-direction:column;gap:4px;
+}
+.lc-row{display:flex;align-items:center;gap:10px;}
+.lc-ttl{
+  font-family:var(--fc);font-size:9px;font-weight:700;letter-spacing:1.2px;
+  text-transform:uppercase;color:var(--t3);min-width:48px;
+}
+.lc-i{
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:var(--fm);font-size:10px;color:var(--t2);
+  white-space:nowrap;
+}
+.lc-i i{width:8px;height:8px;border-radius:50%;flex-shrink:0;display:inline-block;}
+.lc-i i.sq{border-radius:2px;}
+
+/* ── Call Centre row ─────────────────────────────────── */
+.cc-row{
+  display:grid;
+  /* Cell weight roughly matches cell count per zone: 3 / 4 / 4 */
+  grid-template-columns:minmax(0,3fr) minmax(0,4fr) minmax(0,4fr);
+  align-items:stretch;
+  background:rgba(11,15,20,0.97);border-top:1px solid var(--line);
+  overflow:hidden;
+}
+.cc-zone{
+  display:flex;flex-direction:column;
+  border-right:1px solid var(--line);
+  min-width:0;
+}
+.cc-zone:last-child{border-right:none;}
+.cc-zone-h{
+  padding:6px 14px 4px;
+  font-family:var(--fc);font-size:9.5px;font-weight:700;letter-spacing:1.6px;
+  text-transform:uppercase;color:var(--t4);
+  border-bottom:1px solid var(--line);
+}
+.cc-zone-cells{
+  display:grid;grid-auto-flow:column;grid-auto-columns:1fr;
+  flex:1;align-items:stretch;
+}
+.cc-card{
+  display:flex;flex-direction:column;justify-content:center;
+  padding:6px 14px;border-right:1px solid var(--line);gap:2px;
+  min-width:0;
+}
+.cc-zone-cells .cc-card:last-child{border-right:none;}
+.cc-card-tap{cursor:pointer;transition:background .12s;}
+.cc-card-tap:hover{background:rgba(255,255,255,.04);}
+.cc-lbl{font-family:var(--fc);font-size:9.5px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cc-val{font-family:var(--fh);font-weight:600;font-size:clamp(16px,1.6vw,24px);line-height:1;color:var(--t1);white-space:nowrap;}
+.cc-val.ok{color:var(--g);} .cc-val.warn{color:var(--p2);} .cc-val.crit{color:var(--p1);}
+.cc-sub{font-family:var(--fm);font-size:9.5px;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* Agent status — fits inside .cc-zone now, no own header needed */
+.ag-summary{display:none;}
+.ag-stats{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:8px;align-items:stretch;padding:6px 14px;flex:1;}
+.ag-stat{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  padding:5px 4px;background:rgba(255,255,255,0.03);border:1px solid var(--line);
+  border-radius:8px;cursor:pointer;transition:background .12s;
+}
+.ag-stat:hover{background:rgba(255,255,255,0.07);}
+.ag-stat.tot{cursor:default;}
+.ag-count{font-family:var(--fh);font-weight:600;font-size:18px;line-height:1;color:var(--t1);}
+.ag-stat.on .ag-count{color:var(--p1);}
+.ag-stat.av .ag-count{color:var(--g);}
+.ag-stat.br .ag-count{color:var(--p2);}
+.ag-lbl{font-family:var(--fm);font-size:8.5px;letter-spacing:.8px;color:var(--t3);margin-top:2px;}
+/* Agent modal */
+.ag-modal{
+  position:fixed;bottom:130px;right:24px;z-index:200;
+  background:rgba(17,22,29,0.98);border:1px solid var(--line-2);
+  border-radius:var(--r-lg);box-shadow:var(--shadow-3);
+  width:280px;max-height:340px;overflow:auto;padding:14px 0;
+}
+.ag-modal-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px 10px;border-bottom:1px solid var(--line);margin-bottom:6px;
+}
+.ag-modal-head span:first-child{font-family:var(--fh);font-weight:600;font-size:13px;color:var(--t1);}
+.ag-modal-close{cursor:pointer;color:var(--t3);font-size:16px;transition:color .12s;}
+.ag-modal-close:hover{color:var(--t1);}
+.ag-modal-row{
+  display:flex;align-items:center;gap:10px;
+  padding:7px 16px;border-bottom:1px solid var(--line);
+}
+.ag-modal-row:last-child{border-bottom:none;}
+.ag-av-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.ag-av-name{font-family:var(--fh);font-size:13px;font-weight:500;color:var(--t1);}
+.ag-av-role{font-family:var(--fm);font-size:10px;color:var(--t3);margin-left:auto;}
+.ag-av-ext{font-family:var(--fm);font-size:10px;color:var(--t3);}
+
+/* ── Footer ──────────────────────────────────────────── */
+.footer{
+  display:flex;align-items:center;gap:14px;padding:0 22px;
+  background:rgba(11,15,20,0.94);border-top:1px solid var(--line);
+  overflow:hidden;
+}
+.f-pill{display:flex;align-items:center;gap:7px;padding:5px 12px;border-radius:var(--r-pill);background:rgba(255,255,255,0.04);border:1px solid var(--line);font-family:var(--fm);font-size:11px;color:var(--t2);}
+.f-pill .gd{width:6px;height:6px;border-radius:50%;background:var(--g);}
+/* ECG waveform */
+.ecg-wrap{width:80px;height:28px;flex-shrink:0;overflow:hidden;position:relative;}
+.ecg-svg{width:200%;height:100%;animation:ecg-scroll 2.4s linear infinite;}
+@keyframes ecg-scroll{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+/* Ticker */
+.ticker{flex:1;overflow:hidden;position:relative;height:24px;}
+.ticker-track{position:absolute;display:flex;gap:42px;font-family:var(--fm);font-size:12px;color:var(--t2);white-space:nowrap;top:50%;transform:translateY(-50%);animation:trun 80s linear infinite;}
+@keyframes trun{0%{left:100%}100%{left:-700%}}
+.ticker-evt .t{color:var(--t3);margin-right:6px;}
+.ticker-evt .tag{font-family:var(--fm);font-size:10px;padding:1px 6px;border-radius:var(--r-pill);margin-right:6px;letter-spacing:.4px;}
+.ticker-evt .tag.d{background:rgba(255,59,48,0.13);color:var(--p1);}
+.ticker-evt .tag.s{background:rgba(80,192,32,0.12);color:var(--g);}
+
+/* Narrow viewport warning — shown below 1100px, hidden above */
+#narrow-warn{display:none;position:fixed;inset:0;z-index:9999;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:40px;}
+#narrow-warn .nw-icon{width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,#00519B 0%,#27AAE1 100%);display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-weight:700;font-size:15px;color:#fff;}
+#narrow-warn .nw-title{font-family:var(--fh);font-weight:600;font-size:22px;color:var(--t1);}
+#narrow-warn .nw-body{font-family:var(--fm);font-size:13px;color:var(--t3);max-width:360px;line-height:1.8;}
+#narrow-warn .nw-sub{font-family:var(--fm);font-size:10.5px;color:var(--t4);letter-spacing:.8px;text-transform:uppercase;}
+@media(max-width:1099px){#narrow-warn{display:flex;}}
+
+/* Mapbox */
+.mapboxgl-ctrl-attrib,.mapboxgl-ctrl-bottom-left,.mapboxgl-ctrl-bottom-right{display:none !important;}
+.mapboxgl-popup-content{background:rgba(17,22,29,.98) !important;border:1px solid var(--line) !important;border-radius:var(--r-md) !important;padding:0 !important;box-shadow:var(--shadow-3) !important;color:var(--t1) !important;font-family:var(--fh);}
+.mapboxgl-popup-tip{display:none !important;}
+.mapboxgl-popup-close-button{color:var(--t3) !important;font-size:18px !important;right:6px !important;top:4px !important;background:transparent !important;}
+.pop{padding:14px 16px;min-width:240px;}
+.pop-head{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.pop-pri{width:32px;height:32px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-weight:700;font-size:12px;}
+.pop-pri.p1{background:rgba(255,59,48,0.15);color:var(--p1);}
+.pop-pri.p2{background:rgba(255,140,0,0.13);color:var(--p2);}
+.pop-pri.p3{background:rgba(245,177,0,0.13);color:var(--p3);}
+.pop-pri.p4{background:rgba(80,192,32,0.13);color:var(--g);}
+.pop-h-t b{font-family:var(--fh);font-weight:600;font-size:13px;color:var(--t1);display:block;line-height:1.15;}
+.pop-h-t span{font-family:var(--fm);font-size:10.5px;color:var(--t3);}
+.pop-r{display:flex;justify-content:space-between;gap:12px;font-family:var(--fm);font-size:11.5px;margin-top:5px;}
+.pop-r .l{color:var(--t3);} .pop-r .v{color:var(--t1);}
+/* Operations feed */
+.feed-list{display:flex;flex-direction:column;gap:0;}
+.feed-row{display:flex;align-items:flex-start;gap:7px;padding:5px 0;border-bottom:1px solid var(--line);}
+.feed-row:last-child{border-bottom:none;}
+.feed-chip{display:inline-flex;padding:1px 5px;border-radius:3px;font-family:var(--fm);font-size:9px;font-weight:600;letter-spacing:.4px;flex-shrink:0;margin-top:2px;}
+.feed-chip.sup{background:rgba(245,177,0,0.14);color:var(--p3);}
+.feed-chip.disp{background:rgba(39,170,225,0.12);color:var(--b2);}
+.feed-chip.sys{background:rgba(255,255,255,0.06);color:var(--t3);}
+.feed-body{flex:1;min-width:0;}
+.feed-evt{font-family:var(--fh);font-size:11.5px;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.feed-meta{font-family:var(--fm);font-size:10px;color:var(--t3);margin-top:1px;}
+.feed-time{font-family:var(--fm);font-size:9.5px;color:var(--t3);white-space:nowrap;margin-top:3px;}
+@keyframes nacd-spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+
+/* ── Fleet status cells ──────────────────────────── */
+.fleet-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;}
+.fleet-cell{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 8px;background:rgba(255,255,255,0.025);border:1px solid var(--line);border-radius:var(--r-md);}
+.fleet-cell-n{font-family:var(--fh);font-weight:600;font-size:18px;line-height:1;color:var(--t1);}
+.fleet-cell-l{font-family:var(--fm);font-size:9px;letter-spacing:.5px;text-transform:uppercase;color:var(--t3);}
+.fleet-cell.avl .fleet-cell-n{color:var(--g);} .fleet-cell.dsp .fleet-cell-n{color:var(--p1);} .fleet-cell.enr .fleet-cell-n{color:var(--p2);} .fleet-cell.scn .fleet-cell-n{color:var(--b2);} .fleet-cell.trn .fleet-cell-n{color:var(--g);}
+
+/* ── SHA brand logo + animation ─────────────────── */
+.sha-logo-pill{display:flex;align-items:center;flex-shrink:0;padding:0;background:transparent;}
+.sha-logo-pill img{height:28px;width:auto;display:block;filter:invert(1) hue-rotate(195deg) saturate(1.4);animation:brand-glow 4s ease-in-out infinite;}
+@keyframes brand-glow{0%,100%{opacity:.82;}50%{opacity:1;}}
+.sha-nadc{font-family:var(--fh);font-weight:700;font-size:13px;letter-spacing:.3px;background:linear-gradient(90deg,var(--b2) 0%,var(--g) 45%,var(--b2) 90%);background-size:200% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:nadc-sweep 9s linear infinite;line-height:1.1;display:block;}
+@keyframes nadc-sweep{0%{background-position:100% 0;}100%{background-position:-100% 0;}}
+
+/* ── App switcher (icon-forward) ─────────────────────────────────────── */
+.app-sw{position:relative;display:inline-flex;}
+.app-sw-btn{display:flex;align-items:center;gap:7px;padding:6px 12px 6px 10px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  border-radius:999px;color:rgba(255,255,255,.95);
+  font-family:'Exo 2',sans-serif;font-size:12.5px;font-weight:600;
+  cursor:pointer;transition:background .12s,border-color .12s;}
+.app-sw-btn:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.14);}
+.app-sw-btn.open{background:rgba(80,192,32,.12);border-color:rgba(80,192,32,.30);}
+.app-sw-btn .mat{font-size:18px;color:#50C020;}
+.app-sw-btn .asb-cur{letter-spacing:.2px;}
+.app-sw-btn .asb-arrow{font-size:14px !important;color:rgba(255,255,255,.4) !important;margin-left:1px;transition:transform .15s;}
+.app-sw-btn.open .asb-arrow{transform:rotate(180deg);}
+.app-sw-panel{display:none;position:absolute;top:calc(100% + 8px);left:0;
+  width:296px;background:rgba(14,22,32,.96);backdrop-filter:saturate(160%) blur(16px);
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:14px;box-shadow:0 18px 42px rgba(0,0,0,.7);
+  z-index:9000;overflow:hidden;padding:8px;}
+.app-sw-panel.open{display:block;animation:asPop .14s ease-out;}
+@keyframes asPop{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
+.asp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.asp-item{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:6px;padding:14px 6px 10px;background:transparent;color:rgba(255,255,255,.7);
+  text-decoration:none;text-align:center;border-radius:10px;
+  border:1px solid transparent;
+  transition:background .12s,color .12s,border-color .12s,transform .08s;}
+.asp-item:hover{background:rgba(255,255,255,.05);color:#fff;border-color:rgba(255,255,255,.08);}
+.asp-item:active{transform:scale(.96);}
+.asp-item.on{background:rgba(80,192,32,.10);color:#50C020;border-color:rgba(80,192,32,.25);}
+.asp-item .mat{font-size:30px;line-height:1;}
+.asp-item b{font-family:'Exo 2',sans-serif;font-weight:500;font-size:11px;display:block;letter-spacing:.1px;}
+
+</style>
+<link rel="stylesheet" href="/assets/tokens-v2.css">
+</head>
+<body>
+<div id="narrow-warn">
+  <div class="nw-icon">SHA</div>
+  <div class="nw-title">Optimised for monitor displays</div>
+  <div class="nw-body">This dashboard is designed for screens 1100 px and wider.<br>Expand your browser window or reduce zoom to continue.</div>
+  <div class="nw-sub">SHA · NADC · LED Operations Wall</div>
+</div>
+<div id="nacd-auth-overlay" style="position:fixed;inset:0;z-index:9000;background:rgba(3,12,23,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .2s;"><div style="font-family:'Exo 2',system-ui,sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,.35);text-transform:uppercase;">SHA · NADC</div><div style="width:26px;height:26px;border:2px solid rgba(80,192,32,.25);border-top-color:#50C020;border-radius:50%;animation:nacd-spin .8s linear infinite;"></div><div style="font-family:'Exo 2',system-ui,sans-serif;font-size:10px;color:rgba(255,255,255,.25);">Authenticating…</div></div>
+<div class="wall">
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="sha-logo-pill"><img src="/sha-social-health-authority-logo.png" alt="SHA" loading="lazy"></div>
+      <div class="brand-text"><b class="sha-nadc">NADC</b><span style="font-family:var(--fm);font-size:9.5px;letter-spacing:1.2px;color:var(--t3);text-transform:uppercase;">National Ambulance Dispatch Centre</span></div>
+    </div>
+    <div class="divider"></div>
+    <div class="app-sw">
+  <button class="app-sw-btn" onclick="toggleAppSw()" aria-label="Switch app">
+    <span class="mat">apps</span>
+    <span class="asb-cur">Wall</span>
+    <span class="mat asb-arrow">expand_more</span>
+  </button>
+  <div class="app-sw-panel" id="app-sw-panel">
+    <div class="asp-grid">
+      <a class="asp-item on" href="/dashboard" title="Wall"><span class="mat">tv</span><b>Wall</b></a>
+      <a class="asp-item" href="/psap" title="PSAP"><span class="mat">call</span><b>PSAP</b></a>
+      <a class="asp-item" href="/dispatch" title="Dispatch"><span class="mat">radar</span><b>Dispatch</b></a>
+      <a class="asp-item" href="/supervisor" title="Supervisor"><span class="mat">supervisor_account</span><b>Supervisor</b></a>
+      <a class="asp-item" href="/emt" title="EMT"><span class="mat">directions_car</span><b>EMT</b></a>
+      <a class="asp-item" href="/hospital" title="Hospital"><span class="mat">local_hospital</span><b>Hospital</b></a>
+      <a class="asp-item" href="/claims" title="Claims"><span class="mat">receipt_long</span><b>Claims</b></a>
+      <a class="asp-item" href="/providers" title="Providers"><span class="mat">business</span><b>Providers</b></a>
+      <a class="asp-item" href="/admin" title="Admin"><span class="mat">admin_panel_settings</span><b>Admin</b></a>
+    </div>
+  </div>
+</div>
+    <div class="h-rule"></div>
+    <div class="live"><div class="live-dot"></div><div class="live-l">Live operations</div></div>
+    <div class="sys-row">
+      <div class="sys-i"><span class="gd"></span>CAD 4.2.1</div>
+      <div class="sys-i"><span class="gd"></span>GPS · <span id="sys-fleet-cnt">—</span> units</div>
+      <div class="sys-i"><span class="gd"></span>3CX · 7 seats</div>
+      <div class="sys-i"><span class="gd"></span>AfyaLink</div>
+    </div>
+    <div class="spacer"></div>
+    <div class="clock-wrap">
+      <div class="date-wrap"><b id="cdate">MON 19 MAY 2026</b><span id="cshift">Day shift · 08:00 → 20:00</span></div>
+      <div class="clock tab" id="clock">08:00:00</div>
+    </div>
+  </header>
+
+  <main class="canvas">
+    <div id="map"></div>
+
+    <!-- Hero KPI rail — 8 cells. Each cell = label + value + ONE short
+         sub-line. Delta lines removed: they were noise and triggered the
+         vertical clipping the tester reported. -->
+    <div class="hero-rail">
+      <div class="h-cell crit">
+        <div class="h-l">P1 Active</div>
+        <div class="h-v tab" id="hp-p1">—</div>
+        <div class="h-sub" id="hp-p1-d">Critical</div>
+      </div>
+      <div class="h-cell warn">
+        <div class="h-l">P2 Active</div>
+        <div class="h-v tab" id="hp-p2">—</div>
+        <div class="h-sub" id="hp-p2-d">Urgent</div>
+      </div>
+      <div class="h-cell p34c">
+        <div class="h-l">P3/4 Active</div>
+        <div class="h-v tab" id="hp-p34">—</div>
+        <div class="h-sub" id="hp-p34-d">Non-urgent</div>
+      </div>
+      <div class="h-cell info">
+        <div class="h-l">Deployed</div>
+        <div class="h-v tab"><span id="hp-dep">—</span><span style="font-size:.55em;color:var(--t3);font-weight:400;">/<span id="hp-tot">—</span></span></div>
+        <div class="h-sub" id="hp-dep-d">utilisation</div>
+      </div>
+      <div class="h-cell ok">
+        <div class="h-l">Avg Resp</div>
+        <div class="h-v tab" id="hp-resp">—</div>
+        <div class="h-sub" id="hp-resp-d">target &lt; 8:00</div>
+      </div>
+      <div class="h-cell">
+        <div class="h-l">Calls / Shift</div>
+        <div class="h-v tab" id="hp-calls">—</div>
+        <div class="h-sub" id="hp-calls-d">today</div>
+      </div>
+      <div class="h-cell">
+        <div class="h-l">Conveyed</div>
+        <div class="h-v tab" id="hp-conv">—</div>
+        <div class="h-sub" id="hp-conv-d">patients</div>
+      </div>
+      <div class="h-cell crit">
+        <div class="h-l">Golden Hr</div>
+        <div class="h-v tab" id="hp-gh">—</div>
+        <div class="h-sub" id="hp-gh-d">&gt;60m breach</div>
+      </div>
+    </div>
+
+    <!-- Advanced filter button + panel -->
+    <div class="filter-wrap" style="top:148px;">
+      <button class="filter-btn" id="db-filter-btn" onclick="toggleFilterPanel()">
+        <span class="mat">tune</span>
+        Filter
+        <span class="filter-count" id="db-filter-count">0</span>
+      </button>
+      <div class="filter-panel" id="db-filter-panel">
+        <div class="fp-head">
+          <span class="mat" style="font-size:16px;color:var(--g);">tune</span>
+          <span class="fp-title">Map filters</span>
+          <button class="fp-close" onclick="toggleFilterPanel()"><span class="mat">close</span></button>
+        </div>
+        <div class="fp-section">
+          <span class="fp-lbl">Unit status</span>
+          <div class="fp-row" id="fp-status-row">
+            <button class="fp-pill on" data-status="all">All</button>
+            <button class="fp-pill" data-status="available">Available</button>
+            <button class="fp-pill" data-status="dispatched">Dispatched</button>
+            <button class="fp-pill" data-status="anomalies">Anomalies <span class="anom-badge" id="anom-count">0</span></button>
+            <button class="fp-pill" data-status="hospitals">Hospitals</button>
+          </div>
+        </div>
+        <div class="fp-section">
+          <span class="fp-lbl">Unit type</span>
+          <div class="fp-row" id="fp-type-row">
+            <button class="fp-pill on" data-utype="all">All</button>
+            <button class="fp-pill" data-utype="ALS">ALS</button>
+            <button class="fp-pill" data-utype="BLS">BLS</button>
+          </div>
+        </div>
+        <div class="fp-section">
+          <span class="fp-lbl">Incident priority</span>
+          <div class="fp-row" id="fp-pri-row">
+            <button class="fp-pill on" data-ipri="all">All</button>
+            <button class="fp-pill p1" data-ipri="1">P1</button>
+            <button class="fp-pill p2" data-ipri="2">P2</button>
+            <button class="fp-pill p3" data-ipri="3">P3+</button>
+          </div>
+        </div>
+        <div class="fp-section">
+          <span class="fp-lbl">County / Region</span>
+          <select class="fp-sel" id="fp-county-sel" onchange="onFilterChange()">
+            <option value="all">All counties</option>
+          </select>
+        </div>
+        <div class="fp-section">
+          <span class="fp-lbl">Hospital level</span>
+          <div class="fp-row" id="fp-hlvl-row">
+            <button class="fp-pill on" data-hlvl="all">All</button>
+            <button class="fp-pill" data-hlvl="4">Level 4</button>
+            <button class="fp-pill" data-hlvl="5">Level 5</button>
+            <button class="fp-pill" data-hlvl="6">Level 6</button>
+          </div>
+        </div>
+        <button class="fp-reset" onclick="resetFilters()">Reset all filters</button>
+      </div>
+    </div>
+
+    <!-- LEFT pane: hot incidents -->
+    <aside class="pane lpane">
+      <div class="p-head">
+        <div class="p-title">Hot incidents</div>
+        <div class="p-count" id="hot-count">6 active</div>
+      </div>
+      <div class="hot-list" id="hot-list"></div>
+    </aside>
+
+    <!-- RIGHT pane: hospitals + zones + ops feed -->
+    <aside class="pane rpane">
+      <div class="p-head">
+        <div class="p-title">Network status</div>
+        <div class="p-count" id="rp-count">60 facilities</div>
+      </div>
+      <div class="rp-scroll" style="padding:0;">
+        <div class="rp-sec">
+          <h4>Nearest hospitals <span>by map centre</span></h4>
+          <div class="hosp-list" id="hosp-list"></div>
+        </div>
+        <div class="rp-sec">
+          <h4>Zone response <span>live average</span></h4>
+          <div class="zone-grid" id="zone-grid"></div>
+        </div>
+        <div class="rp-sec">
+          <h4>Operations feed <span>last 15 events</span></h4>
+          <div class="feed-list" id="feed-list"></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- HUD-ETA — bottom-center -->
+    <div class="hud-panel hud-eta">
+      <div class="hud-ic"><span class="mat">near_me</span></div>
+      <div class="hud-text">
+        <b id="hud-unit-lbl">— loading</b>
+        <span id="hud-unit-sub">awaiting state</span>
+      </div>
+      <div class="hud-sep"></div>
+      <div class="hud-eta-v tab" id="hud-eta">—</div>
+    </div>
+
+    <!-- HUD-Stats removed — incident count is already in the top KPI rail;
+         visible/GPS lag are debug info that don't belong on an LED wall. -->
+
+
+    <!-- Compact legend — left-bottom, just outside lpane. Status priorities +
+         traffic colours in a single tight strip. Simspeed removed (broken). -->
+    <div class="hud-panel hud-legend-compact">
+      <div class="lc-row">
+        <span class="lc-ttl">Priority</span>
+        <span class="lc-i"><i style="background:var(--p1)"></i>P1</span>
+        <span class="lc-i"><i style="background:var(--p2)"></i>P2</span>
+        <span class="lc-i"><i style="background:var(--p3)"></i>P3</span>
+      </div>
+      <div class="lc-row">
+        <span class="lc-ttl">Unit</span>
+        <span class="lc-i"><i class="sq" style="background:#FF3B30"></i>Dispatched</span>
+        <span class="lc-i"><i class="sq" style="background:var(--b2)"></i>On scene</span>
+        <span class="lc-i"><i class="sq" style="background:var(--g)"></i>Available</span>
+      </div>
+      <div class="lc-row">
+        <span class="lc-ttl">Traffic</span>
+        <span class="lc-i"><i class="sq" style="background:#50C020"></i>Clear</span>
+        <span class="lc-i"><i class="sq" style="background:#F5B100"></i>Mod</span>
+        <span class="lc-i"><i class="sq" style="background:#FF8C00"></i>Heavy</span>
+        <span class="lc-i"><i class="sq" style="background:#FF3B30"></i>Severe</span>
+      </div>
+    </div>
+  </main>
+
+  <!-- Bottom stats — 3 categorised zones: Fleet | Calls | Agents -->
+  <section class="cc-row">
+
+    <!-- ZONE 1 — Fleet -->
+    <div class="cc-zone">
+      <div class="cc-zone-h">Fleet</div>
+      <div class="cc-zone-cells">
+        <div class="cc-card">
+          <div class="cc-lbl">Available</div>
+          <div class="cc-val ok tab" id="cc-fl-avl">—</div>
+          <div class="cc-sub">Ready to deploy</div>
+        </div>
+        <div class="cc-card">
+          <div class="cc-lbl">Active</div>
+          <div class="cc-val warn tab" id="cc-fl-act">—</div>
+          <div class="cc-sub">On a job</div>
+        </div>
+        <div class="cc-card">
+          <div class="cc-lbl">Standby</div>
+          <div class="cc-val tab" id="cc-fl-stb">—</div>
+          <div class="cc-sub" id="cc-fl-stb-sub">Break / maint.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ZONE 2 — Calls -->
+    <div class="cc-zone">
+      <div class="cc-zone-h">Calls</div>
+      <div class="cc-zone-cells">
+        <div class="cc-card">
+          <div class="cc-lbl">In Queue</div>
+          <div class="cc-val warn tab" id="cc-q">3</div>
+          <div class="cc-sub" id="cc-qs">Longest 1m 42s</div>
+        </div>
+        <div class="cc-card">
+          <div class="cc-lbl">Avg Wait</div>
+          <div class="cc-val ok tab" id="cc-w">0:38</div>
+          <div class="cc-sub">Target &lt; 60s</div>
+        </div>
+        <div class="cc-card">
+          <div class="cc-lbl">Abandoned</div>
+          <div class="cc-val tab" id="cc-ab">4</div>
+          <div class="cc-sub" id="cc-abs">Shift · 2.1%</div>
+        </div>
+        <div class="cc-card">
+          <div class="cc-lbl">SLA</div>
+          <div class="cc-val ok tab" id="cc-sla">94.2%</div>
+          <div class="cc-sub">Target &gt; 90%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ZONE 3 — Agents / Dispatchers (cc-card style for visual consistency) -->
+    <div class="cc-zone">
+      <div class="cc-zone-h">Agents</div>
+      <div class="cc-zone-cells">
+        <div class="cc-card cc-card-tap" onclick="openAgentModal('on_call')" title="On call — click for list">
+          <div class="cc-lbl">On call</div>
+          <div class="cc-val warn tab" id="ag-on">—</div>
+          <div class="cc-sub">Active line</div>
+        </div>
+        <div class="cc-card cc-card-tap" onclick="openAgentModal('ready')" title="Ready — click for list">
+          <div class="cc-lbl">Ready</div>
+          <div class="cc-val ok tab" id="ag-av">—</div>
+          <div class="cc-sub">Awaiting call</div>
+        </div>
+        <div class="cc-card cc-card-tap" onclick="openAgentModal('break')" title="Break — click for list">
+          <div class="cc-lbl">Break</div>
+          <div class="cc-val tab" id="ag-br">—</div>
+          <div class="cc-sub">Off line</div>
+        </div>
+        <div class="cc-card">
+          <div class="cc-lbl">Total</div>
+          <div class="cc-val tab" id="ag-tot" style="color:var(--b2);">—</div>
+          <div class="cc-sub">On shift</div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- Agent modal (outside cc-row so it can escape) -->
+  <div class="ag-modal" id="ag-modal" style="display:none;">
+    <div class="ag-modal-head">
+      <span id="ag-modal-title">ON CALL</span>
+      <span class="ag-modal-close" onclick="closeAgentModal()">✕</span>
+    </div>
+    <div id="ag-modal-list"></div>
+  </div>
+
+  <footer class="footer">
+    <!-- ECG heartbeat -->
+    <div class="ecg-wrap">
+      <svg class="ecg-svg" viewBox="0 0 400 30" preserveAspectRatio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polyline points="0,15 30,15 50,15 60,3 70,27 80,3 90,27 100,15 130,15 160,15 170,3 180,27 190,3 200,27 210,15 240,15 270,15 280,3 290,27 300,3 310,27 320,15 350,15 380,15 390,3 400,15" stroke="#50C020" stroke-width="1.5" opacity="0.7"/>
+        <polyline points="0,15 30,15 50,15 60,3 70,27 80,3 90,27 100,15 130,15 160,15 170,3 180,27 190,3 200,27 210,15 240,15 270,15 280,3 290,27 300,3 310,27 320,15 350,15 380,15 390,3 400,15" stroke="#50C020" stroke-width="1.5" opacity="0.7" transform="translate(200,0)"/>
+      </svg>
+    </div>
+    <div class="f-pill"><span class="gd"></span>SYNC 0.2s · CAD 4.2.1</div>
+    <div class="f-pill" style="font-family:var(--fh);font-size:11px;color:var(--g);letter-spacing:1.2px;">NADC DISPATCH</div>
+    <div class="ticker"><div class="ticker-track" id="ticker"></div></div>
+    <div class="f-pill" id="last-event">updated —</div>
+  </footer>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="/lib/nadc-state.js"></script>
+<script src="/lib/nadc-routing.js"></script>
+<script src="/lib/nadc-realtime.js"></script>
+<script src="/lib/nadc-auth.js"></script>
+<script>
+'use strict';
+var MAPBOX_TOKEN = '';
+var map, _markers = {}, _routeReady = false, _currentZoom = 10.8, _activeFilter = 'all';
+var _mapFilter = {status:'all', unitType:'all', incPri:'all', county:'all', hospLevel:'all'};
+var _ZONE_COUNTY = {
+  CBD:'Nairobi',WEST:'Nairobi',EAST:'Nairobi',STHB:'Nairobi',LANG:'Nairobi',KASA:'Nairobi',EMBA:'Nairobi',KIAB:'Nairobi',
+  MOMB:'Mombasa',KILF:'Kilifi',TAIT:'Taita-Taveta',
+  KISM:'Kisumu',KAKA:'Kakamega',KISI:'Kisii',SIAY:'Siaya',
+  ELDO:'Uasin Gishu',NKRU:'Nakuru',KERI:'Kericho',NAIV:'Nakuru',
+  NYER:'Nyeri',MERU:'Meru',MACH:'Machakos',EMBU:'Embu',THIK:'Kiambu',
+  KIAM:'Kiambu',GARR:'Garissa',WAJI:'Wajir',MAND:'Mandera',MARS:'Marsabit',
+  TURI:'Turkana',HORN:'Isiolo',LAMU:'Lamu',NKUR:'Nakuru'
+};
+var _routePending = {}, _selectedUnitId = null, _selectedPopup = null;
+var _unitRouteKeys = {};
+var _dashHudTargetMs = null;
+var _hudCycleIdx = 0;
+var _mapCenter = {lng:36.8219, lat:-1.2921};
+var _dbEtaMarkers=[],_dbEtaIntervals=[],_dbLastRouteKey=null;
+var _syncInjects={}; // incidents received from dispatch/PSAP via cross-app BroadcastChannel
+var _emtFeedItems=[]; // EMT clinical/ePCR/status events for ops feed injection
+var R = 10, C = 2 * Math.PI * R;
+
+var U_COL = {available:'#34C759',dispatching:'#FF3B30',dispatched:'#FF3B30',en_route:'#FF8C00',on_scene:'#27AAE1',transport:'#50C020',standby:'#555',maintenance:'#888'};
+var U_SHORT = {available:'AVL',dispatching:'DSP',dispatched:'DSP',en_route:'ENR',on_scene:'SCN',transport:'TRN',standby:'SBY',maintenance:'MNT'};
+function unitColor(st){return U_COL[st]||'#555';}
+function unitShort(st){return U_SHORT[st]||'???';}
+function markerHTML(unit,zoom){
+  var c=unitColor(unit.status);
+  if(zoom<9) return '<div style="width:6px;height:6px;border-radius:50%;background:'+c+';box-shadow:0 0 0 1.5px rgba(255,255,255,.28)"></div>';
+  if(zoom<11.5) return '<div style="display:flex;align-items:center;gap:4px"><div style="width:8px;height:8px;border-radius:50%;background:'+c+';box-shadow:0 0 0 1.5px rgba(255,255,255,.28);flex-shrink:0"></div><div style="font-family:monospace;font-size:10px;font-weight:600;color:rgba(255,255,255,.9);background:rgba(11,15,20,.85);padding:1px 4px;border-radius:3px;white-space:nowrap">'+unit.id+'</div></div>';
+  return '<div style="display:flex;align-items:center;gap:5px;background:rgba(17,22,29,.95);border:1px solid '+c+';border-radius:999px;padding:3px 8px 3px 5px;white-space:nowrap"><div style="width:7px;height:7px;border-radius:50%;background:'+c+';flex-shrink:0"></div><div style="font-family:monospace;font-size:10px;font-weight:600;color:rgba(255,255,255,.9)">'+unit.id+'</div><div style="font-family:monospace;font-size:9px;color:'+c+'">'+unitShort(unit.status)+'</div></div>';
+}
+function refreshAllMarkerHTML(){
+  if(!map||!map.loaded()) return;
+  _currentZoom=map.getZoom();
+  NACDState.getFleet().forEach(function(u){var mk=_markers[u.id];if(mk) mk.el.innerHTML=markerHTML(u,_currentZoom);});
+}
+
+function ft(s){var m=Math.floor(s/60),x=s%60;return String(m).padStart(2,'0')+':'+String(x).padStart(2,'0');}
+function setText(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
+function setClass(id,cls){var e=document.getElementById(id);if(e){e.className=e.className.replace(/\b(ok|warn|crit)\b/g,'').trim();if(cls)e.classList.add(cls);}}
+function pad(n){return String(n).padStart(2,'0');}
+
+var DAYS=['SUN','MON','TUE','WED','THU','FRI','SAT'],MONTHS=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+function tickClock(){
+  var d=new Date();
+  setText('clock',pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds()));
+  setText('cdate',DAYS[d.getDay()]+' '+pad(d.getDate())+' '+MONTHS[d.getMonth()]+' '+d.getFullYear());
+}
+tickClock(); setInterval(tickClock,1000);
+setInterval(function(){
+  if(_dashHudTargetMs===null) return;
+  var rem=Math.max(0,Math.round((_dashHudTargetMs-Date.now())/1000));
+  setText('hud-eta',ft(rem));
+},1000);
+/* Cycle through en-route dispatches every 6s */
+setInterval(function(){
+  _hudCycleIdx++;
+  var s=NACDState.getState();if(s)updateHUD(s.incidents,s.fleet);
+},6000);
+
+/* Route helpers */
+function fetchRoute(lng1,lat1,lng2,lat2,done){
+  NACDRouting.fetchRoute(lng1,lat1,lng2,lat2,function(result){
+    done(result.geometry,result);
+  });
+}
+function kmDist(lat1,lng1,lat2,lng2){return Math.sqrt((lat1-lat2)*(lat1-lat2)+(lng1-lng2)*(lng1-lng2))*111;}
+function clearDbSelectionRoute(){
+  _dbEtaIntervals.forEach(function(iv){clearInterval(iv);});_dbEtaIntervals=[];
+  _dbEtaMarkers.forEach(function(mk){mk.remove();});_dbEtaMarkers=[];
+  if(map&&map.getSource('route-leg-a'))map.getSource('route-leg-a').setData({type:'FeatureCollection',features:[]});
+  if(map&&map.getSource('route-leg-b'))map.getSource('route-leg-b').setData({type:'FeatureCollection',features:[]});
+}
+function addDbWaypointMarker(lng,lat,label,etaSec,color){
+  var uid='dm'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+  var el=document.createElement('div');
+  el.style.cssText='background:rgba(11,15,20,0.94);border:1.5px solid '+color+';border-radius:10px;padding:6px 12px;pointer-events:none;box-shadow:0 3px 16px rgba(0,0,0,.65);white-space:nowrap;';
+  el.innerHTML='<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:9px;font-weight:700;letter-spacing:.1em;color:'+color+';text-transform:uppercase;margin-bottom:3px">'+label+'</div>'
+    +'<div id="'+uid+'" style="font-family:\'JetBrains Mono\',monospace;font-weight:700;font-size:16px;color:#fff;line-height:1">'+(etaSec<=0?'Arrived':ft(etaSec))+'</div>';
+  var mk=new mapboxgl.Marker({element:el,anchor:'bottom',offset:[0,-6]}).setLngLat([lng,lat]).addTo(map);
+  _dbEtaMarkers.push(mk);
+  if(etaSec>0){
+    var targetMs=Date.now()+etaSec*1000;
+    var iv=setInterval(function(){var d=document.getElementById(uid);if(!d){clearInterval(iv);return;}var rem=Math.max(0,Math.round((targetMs-Date.now())/1000));d.textContent=rem===0?'Arrived':ft(rem);},1000);
+    _dbEtaIntervals.push(iv);
+  }
+}
+function drawDbSelectionRoute(unit,inc){
+  clearDbSelectionRoute();
+  if(!inc||!unit) return;
+  var st=inc.status;
+  var col=inc.priority===1?'#FF3B30':inc.priority===2?'#FF8C00':'#F5B100';
+  var scene={lng:inc.lng,lat:inc.lat};
+  var hospital=inc.hospitalId?NACDState.findHospital(inc.hospitalId):null;
+  if(st==='en_route'||st==='dispatched'){
+    (function(u,s,priCol){fetchRoute(u.lng,u.lat,s.lng,s.lat,function(geom,info){
+      var lineCol=info?info.trafficColor:priCol;
+      if(map&&map.getSource('route-leg-a'))map.getSource('route-leg-a').setData({type:'FeatureCollection',features:[{type:'Feature',properties:{color:lineCol},geometry:geom}]});
+      var etaSec=info?info.durationInTraffic:Math.round(kmDist(u.lat,u.lng,s.lat,s.lng)/40*3600);
+      var delayMins=info&&info.delaySecs>60?Math.round(info.delaySecs/60):0;
+      var markerLabel='Scene ETA'+(delayMins>0?' +'+delayMins+'m traffic':'');
+      addDbWaypointMarker(s.lng,s.lat,markerLabel,etaSec,lineCol);
+    });})(unit,scene,col);
+    if(hospital){
+      (function(s,h){fetchRoute(s.lng,s.lat,h.lng,h.lat,function(geom){if(map&&map.getSource('route-leg-b'))map.getSource('route-leg-b').setData({type:'FeatureCollection',features:[{type:'Feature',geometry:geom}]});});})(scene,hospital);
+      var etaH=Math.round((kmDist(unit.lat,unit.lng,scene.lat,scene.lng)+kmDist(scene.lat,scene.lng,hospital.lat,hospital.lng))/40*3600);
+      addDbWaypointMarker(hospital.lng,hospital.lat,'Hospital ETA',etaH,'#27AAE1');
+    }
+  } else if(st==='transport'){
+    var dest=hospital||scene;
+    (function(u,d){fetchRoute(u.lng,u.lat,d.lng,d.lat,function(geom){if(map&&map.getSource('route-leg-a'))map.getSource('route-leg-a').setData({type:'FeatureCollection',features:[{type:'Feature',properties:{color:'#50C020'},geometry:geom}]});});})(unit,dest);
+    if(hospital){var etaT=Math.round(kmDist(unit.lat,unit.lng,hospital.lat,hospital.lng)/40*3600);addDbWaypointMarker(hospital.lng,hospital.lat,'Hospital ETA',etaT,'#27AAE1');}
+  } else if(st==='on_scene'&&hospital){
+    (function(s,h){fetchRoute(s.lng,s.lat,h.lng,h.lat,function(geom){if(map&&map.getSource('route-leg-b'))map.getSource('route-leg-b').setData({type:'FeatureCollection',features:[{type:'Feature',geometry:geom}]});});})(scene,hospital);
+    var etaOS=Math.round(kmDist(scene.lat,scene.lng,hospital.lat,hospital.lng)/40*3600);
+    addDbWaypointMarker(hospital.lng,hospital.lat,'Hospital Est.',etaOS,'#27AAE1');
+  }
+}
+function incidentDestination(inc){
+  if(inc.status==='transport'&&inc.hospitalId){var h=NACDState.findHospital(inc.hospitalId);if(h)return{lng:h.lng,lat:h.lat};}
+  return{lng:inc.lng,lat:inc.lat};
+}
+
+/* Mapbox init */
+function initMap(token){
+  mapboxgl.accessToken=token||MAPBOX_TOKEN;
+  map=new mapboxgl.Map({container:'map',style:'mapbox://styles/mapbox/navigation-night-v1',center:[36.8219,-1.2921],zoom:10.8,pitch:35,antialias:true});
+  map.on('load',function(){
+    /* Background routes */
+    map.addSource('routes-all',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+    map.addLayer({id:'routes-all-line',type:'line',source:'routes-all',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':['get','color'],'line-width':3,'line-opacity':0.42,'line-dasharray':[6,3]}});
+    /* Leg A — unit → scene */
+    map.addSource('route-leg-a',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+    map.addLayer({id:'route-leg-a-glow',type:'line',source:'route-leg-a',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':['get','color'],'line-width':14,'line-opacity':0.22,'line-blur':7}});
+    map.addLayer({id:'route-leg-a-line',type:'line',source:'route-leg-a',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':['get','color'],'line-width':6,'line-opacity':0.96}});
+    /* Leg B — scene → hospital (projected dashed) */
+    map.addSource('route-leg-b',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+    map.addLayer({id:'route-leg-b-glow',type:'line',source:'route-leg-b',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#27AAE1','line-width':10,'line-opacity':0.16,'line-blur':5}});
+    map.addLayer({id:'route-leg-b-line',type:'line',source:'route-leg-b',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#27AAE1','line-width':4,'line-opacity':0.72,'line-dasharray':[10,5]}});
+    map.addSource('incidents',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+    map.addLayer({id:'inc-glow',type:'circle',source:'incidents',filter:['==',['get','priority'],1],paint:{'circle-radius':18,'circle-color':'#FF3B30','circle-opacity':0.18,'circle-blur':1}});
+    map.addLayer({id:'inc-circle',type:'circle',source:'incidents',paint:{'circle-radius':['interpolate',['linear'],['zoom'],8,9,14,14],'circle-color':['case',['==',['get','priority'],1],'#FF3B30',['==',['get','priority'],2],'#FF8C00','#F5B100'],'circle-stroke-width':2.5,'circle-stroke-color':'#ffffff','circle-opacity':1}});
+    map.addLayer({id:'inc-label',type:'symbol',source:'incidents',layout:{'text-field':['concat','P',['to-string',['get','priority']]],'text-size':9,'text-anchor':'center','text-allow-overlap':true,'text-ignore-placement':true,'text-font':['DIN Pro Bold','Arial Unicode MS Bold']},paint:{'text-color':'#ffffff'}});
+    map.on('click','inc-circle',function(e){
+      var p=e.features[0].properties;
+      var col=p.priority===1?'#FF3B30':p.priority===2?'#FF8C00':'#F5B100';
+      map.flyTo({center:e.lngLat,zoom:14,pitch:35,speed:.9});
+      new mapboxgl.Popup({offset:14,closeButton:true}).setLngLat(e.lngLat).setHTML('<div class="pop"><div class="pop-head"><div class="pop-pri p'+p.priority+'">P'+p.priority+'</div><div class="pop-h-t"><b>'+p.number+'</b><span>'+p.complaint+'</span></div></div><div class="pop-r"><span class="l">Location</span><span class="v">'+p.address+'</span></div><div class="pop-r"><span class="l">Status</span><span class="v" style="color:'+col+';">'+(p.status||'').toUpperCase().replace(/_/g,' ')+'</span></div>'+(p.unitId?'<div class="pop-r"><span class="l">Unit</span><span class="v" style="color:#27AAE1;">'+p.unitId+'</span></div>':'')+
+      '</div>').addTo(map);
+      if(p.unitId) selectUnit(p.unitId);
+    });
+    map.on('mouseenter','inc-circle',function(){map.getCanvas().style.cursor='pointer';});
+    map.on('mouseleave','inc-circle',function(){map.getCanvas().style.cursor='';});
+    initHospitals(NACDState.getHospitals());
+    map.resize();
+    _routeReady=true;
+    addTrafficOverlay(map);
+  });
+  map.on('zoom',refreshAllMarkerHTML);
+  map.on('moveend',function(){_mapCenter={lng:map.getCenter().lng,lat:map.getCenter().lat};renderHosp(NACDState.getHospitals());});
+  window.addEventListener('resize',function(){map.resize();});
+}
+
+/* Custom traffic overlay — definitively removes navigation-night-v1's built-in
+   traffic layers (which paint cyan-green 'low' tint on all roads at city zoom)
+   and replaces them with a brand-coloured layer we control. */
+function addTrafficOverlay(map){
+  try{
+    // 1. Remove every base-style traffic layer outright (not just hide).
+    //    The built-in 'mapbox-traffic' source is shared by 15+ layers that
+    //    render coloured road tints at minzoom=6, which is what was flooding
+    //    the map in cyan-green at city-overview zoom.
+    var styleLayers=(map.getStyle().layers||[]).slice();
+    for(var li=0;li<styleLayers.length;li++){
+      var ly=styleLayers[li];
+      if(ly.id==='sha-traffic-line') continue;
+      var isTraffic=/traffic/i.test(ly.id)
+        || ly.source==='mapbox-traffic'
+        || (ly.paint && JSON.stringify(ly.paint).indexOf('congestion')!==-1);
+      if(isTraffic){
+        try{map.removeLayer(ly.id);}catch(e){}
+      }
+    }
+    // 2. Drop the source itself now that no layer references it. Our custom
+    //    overlay uses an independent 'sha-traffic' source pulling the same tiles.
+    try{map.removeSource('mapbox-traffic');}catch(e){}
+
+    // 3. Add our brand-coloured overlay. Filter drops 'unknown' segments;
+    //    'low' only renders from zoom 12+ so wide city views aren't dominated
+    //    by green tint where free-flow is the norm.
+    if(map.getSource('sha-traffic')) return;
+    map.addSource('sha-traffic',{type:'vector',url:'mapbox://mapbox.mapbox-traffic-v1'});
+    var beforeLayer=null;
+    var remaining=map.getStyle().layers||[];
+    for(var i=0;i<remaining.length;i++){
+      if(remaining[i].type==='symbol'){beforeLayer=remaining[i].id;break;}
+    }
+    map.addLayer({
+      id:'sha-traffic-line',
+      type:'line',
+      source:'sha-traffic',
+      'source-layer':'traffic',
+      minzoom:11,
+      filter:['all',
+        ['in',['get','congestion'],['literal',['low','moderate','heavy','severe']]],
+        ['any',
+          ['!=',['get','congestion'],'low'],
+          ['>=',['zoom'],12]
+        ]
+      ],
+      paint:{
+        'line-width':['interpolate',['linear'],['zoom'],
+          11,1.0,
+          13,2.0,
+          15,3.2,
+          18,5.0],
+        'line-color':['match',['get','congestion'],
+          'low','#50C020',
+          'moderate','#F5B100',
+          'heavy','#FF8C00',
+          'severe','#FF3B30',
+          'rgba(0,0,0,0)'],
+        'line-opacity':['interpolate',['linear'],['zoom'],
+          11,0.5,
+          13,0.75,
+          16,0.9]
+      }
+    },beforeLayer);
+  }catch(e){console.warn('[traffic] overlay failed',e);}
+}
+
+function updateIncidentLayer(incidents){
+  if(!map||!map.getSource('incidents')) return;
+  var feats=[];
+  incidents.forEach(function(inc){
+    if(inc.status==='cleared'||inc.status==='cancelled') return;
+    feats.push({type:'Feature',geometry:{type:'Point',coordinates:[inc.lng,inc.lat]},properties:{id:inc.id,number:inc.number,priority:inc.priority,complaint:inc.complaint,address:inc.address,status:inc.status,unitId:inc.unitId||''}});
+  });
+  map.getSource('incidents').setData({type:'FeatureCollection',features:feats});
+}
+
+function ensureMarker(unit){
+  if(_markers[unit.id]) return _markers[unit.id];
+  var el=document.createElement('div');el.style.cssText='cursor:pointer;';
+  el.innerHTML=markerHTML(unit,_currentZoom);
+  var m=new mapboxgl.Marker({element:el,anchor:'center'}).setLngLat([unit.lng,unit.lat]).addTo(map);
+  (function(uid){el.onclick=function(e){e.stopPropagation();selectUnit(uid);};})(unit.id);
+  _markers[unit.id]={m:m,el:el};
+  return _markers[unit.id];
+}
+function updateMarkers(fleet){
+  if(!map||!map.loaded()) return;
+  _currentZoom=map.getZoom();
+  fleet.forEach(function(u){var mk=ensureMarker(u);mk.m.setLngLat([u.lng,u.lat]);mk.el.innerHTML=markerHTML(u,_currentZoom);});
+  applyMapFilter();
+}
+
+function selectUnit(unitId){
+  _selectedUnitId=unitId;
+  if(_selectedPopup){_selectedPopup.remove();_selectedPopup=null;}
+  if(!map||!map.getSource('route-leg-a')) return;
+  var state=NACDState.getState();
+  var unit=null;
+  for(var i=0;i<state.fleet.length;i++){if(state.fleet[i].id===unitId){unit=state.fleet[i];break;}}
+  if(!unit) return;
+  var inc=null;
+  for(var j=0;j<state.incidents.length;j++){var si=state.incidents[j];if(si.unitId===unitId&&si.status!=='cleared'&&si.status!=='cancelled'){inc=si;break;}}
+  var col=unitColor(unit.status);
+  var incCol=inc?(inc.priority===1?'#FF3B30':inc.priority===2?'#FF8C00':'#F5B100'):col;
+  var hw='<div class="pop"><div class="pop-head"><div style="width:32px;height:32px;border-radius:8px;background:rgba(0,0,0,0.25);border:1.5px solid '+col+';display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-weight:700;font-size:11px;color:'+col+';">'+unit.id.replace('A-','')+'</div><div class="pop-h-t"><b>'+unit.id+'</b><span>'+(unit.type||'BLS')+' · '+(unit.status||'').replace(/_/g,' ')+'</span></div></div>'+(inc?'<div class="pop-r"><span class="l">Incident</span><span class="v">'+inc.number+'</span></div><div class="pop-r"><span class="l">Call</span><span class="v">'+inc.complaint+'</span></div><div class="pop-r"><span class="l">Priority</span><span class="v" style="color:'+incCol+';">P'+inc.priority+'</span></div>':'<div class="pop-r"><span class="l">Status</span><span class="v" style="color:'+col+';">AVAILABLE</span></div>')+'</div>';
+  _selectedPopup=new mapboxgl.Popup({offset:12,closeButton:true,closeOnClick:false}).setLngLat([unit.lng,unit.lat]).setHTML(hw).addTo(map);
+  _selectedPopup.on('close',function(){_selectedUnitId=null;clearDbSelectionRoute();_dbLastRouteKey=null;});
+  _dbLastRouteKey=null;
+  drawDbSelectionRoute(unit,inc);
+}
+
+function updateRealRoutes(incidents,fleet){
+  if(!_routeReady||!map||!map.getSource('routes-all')) return;
+  var routeFeats=[],fetchCount=0;
+  incidents.forEach(function(inc){
+    if(inc.status!=='en_route'&&inc.status!=='transport') return;
+    var unit=null;
+    for(var k=0;k<fleet.length;k++){if(fleet[k].id===inc.unitId){unit=fleet[k];break;}}
+    if(!unit) return;
+    var dest=incidentDestination(inc);
+    var color=inc.priority===1?'#FF3B30':inc.priority===2?'#FF8C00':'#F5B100';
+    var routeKey=unit.id+':'+inc.id+':'+inc.status;
+    var liveUnit=NACDState.findUnit(unit.id);
+    if(liveUnit&&liveUnit._routeWaypoints&&_unitRouteKeys[unit.id]===routeKey){
+      var wp=liveUnit._routeWaypoints;var idx=Math.min(liveUnit._waypointIdx||0,wp.length-1);
+      var dispCoords=[[unit.lng,unit.lat]].concat(wp.slice(idx+1));
+      if(dispCoords.length>=2) routeFeats.push({type:'Feature',properties:{color:color},geometry:{type:'LineString',coordinates:dispCoords}});
+    } else if(fetchCount<3&&!_routePending[routeKey]){
+      fetchCount++;_routePending[routeKey]=true;
+      (function(u,d,uid,rkey){fetchRoute(u.lng,u.lat,d.lng,d.lat,function(geom){delete _routePending[rkey];_unitRouteKeys[uid]=rkey;NACDState.setUnitRoute(uid,geom.coordinates);});})(unit,dest,unit.id,routeKey);
+    }
+  });
+  for(var uid in _unitRouteKeys){var still=false;for(var si=0;si<incidents.length;si++){if(incidents[si].unitId===uid&&(incidents[si].status==='en_route'||incidents[si].status==='transport')){still=true;break;}}if(!still)delete _unitRouteKeys[uid];}
+  map.getSource('routes-all').setData({type:'FeatureCollection',features:routeFeats});
+}
+
+function applyMapFilter(){
+  var f=_mapFilter;
+  _activeFilter=f.status;
+  var fleet=NACDState.getFleet(),fleetMap={};
+  fleet.forEach(function(u){fleetMap[u.id]=u;});
+  Object.keys(_markers).forEach(function(id){
+    var mk=_markers[id],u=fleetMap[id];
+    if(!mk||!mk.el) return;
+    var show=false;
+    if(f.status==='hospitals'){show=false;}
+    else if(f.status==='all'){show=true;}
+    else if(f.status==='available'){show=u&&u.status==='available';}
+    else if(f.status==='dispatched'){show=u&&(u.status==='dispatching'||u.status==='dispatched'||u.status==='en_route'||u.status==='on_scene'||u.status==='transport');}
+    else if(f.status==='anomalies'){show=u&&!!u.anomaly;}
+    if(show&&u){
+      if(f.unitType!=='all'&&u.type!==f.unitType) show=false;
+      if(show&&f.county!=='all'){var uc=_ZONE_COUNTY[u.zone]||u.zone;if(uc!==f.county) show=false;}
+    }
+    mk.el.style.display=show?'':'none';
+  });
+  if(map&&map.getLayer){
+    if(map.getLayer('inc-circle')){
+      if(f.incPri!=='all'){
+        var n=parseInt(f.incPri);
+        var expr=n===3?['>=',['get','priority'],3]:['==',['get','priority'],n];
+        map.setFilter('inc-circle',expr);
+        map.setFilter('inc-glow',expr);
+        map.setFilter('inc-label',expr);
+      } else {
+        map.setFilter('inc-circle',null);
+        map.setFilter('inc-glow',null);
+        map.setFilter('inc-label',null);
+      }
+    }
+  }
+}
+
+function applyLayerFilter(filter){_mapFilter.status=filter;applyMapFilter();}
+
+function toggleFilterPanel(){
+  var panel=document.getElementById('db-filter-panel');
+  var btn=document.getElementById('db-filter-btn');
+  panel.classList.toggle('open');
+  btn.classList.toggle('active',panel.classList.contains('open'));
+}
+
+function updateFilterCount(){
+  var f=_mapFilter,count=0;
+  if(f.status!=='all') count++;
+  if(f.unitType!=='all') count++;
+  if(f.incPri!=='all') count++;
+  if(f.county!=='all') count++;
+  if(f.hospLevel!=='all') count++;
+  var badge=document.getElementById('db-filter-count');
+  if(badge){badge.textContent=count;badge.classList.toggle('show',count>0);}
+  var btn=document.getElementById('db-filter-btn');
+  if(btn) btn.classList.toggle('active',count>0);
+}
+
+function onFilterChange(){
+  var sel=document.getElementById('fp-county-sel');
+  if(sel) _mapFilter.county=sel.value;
+  updateFilterCount();applyMapFilter();
+}
+
+function resetFilters(){
+  _mapFilter={status:'all',unitType:'all',incPri:'all',county:'all',hospLevel:'all'};
+  document.querySelectorAll('#fp-status-row .fp-pill').forEach(function(p){p.classList.toggle('on',p.getAttribute('data-status')==='all');});
+  document.querySelectorAll('#fp-type-row .fp-pill').forEach(function(p){p.classList.toggle('on',p.getAttribute('data-utype')==='all');});
+  document.querySelectorAll('#fp-pri-row .fp-pill').forEach(function(p){p.classList.toggle('on',p.getAttribute('data-ipri')==='all');});
+  document.querySelectorAll('#fp-hlvl-row .fp-pill').forEach(function(p){p.classList.toggle('on',p.getAttribute('data-hlvl')==='all');});
+  var sel=document.getElementById('fp-county-sel');if(sel)sel.value='all';
+  updateFilterCount();applyMapFilter();
+}
+
+function populateCountyDropdown(){
+  var fleet=NACDState.getFleet();
+  var seen={};
+  fleet.forEach(function(u){if(u.zone){var c=_ZONE_COUNTY[u.zone]||u.zone;seen[c]=1;}});
+  var counties=Object.keys(seen).sort();
+  var sel=document.getElementById('fp-county-sel');
+  if(!sel) return;
+  counties.forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+}
+
+function initFilterPanel(){
+  document.querySelectorAll('#fp-status-row .fp-pill').forEach(function(pill){
+    pill.onclick=function(){
+      document.querySelectorAll('#fp-status-row .fp-pill').forEach(function(p){p.classList.remove('on');});
+      pill.classList.add('on');
+      _mapFilter.status=pill.getAttribute('data-status')||'all';
+      updateFilterCount();applyMapFilter();
+    };
+  });
+  document.querySelectorAll('#fp-type-row .fp-pill').forEach(function(pill){
+    pill.onclick=function(){
+      document.querySelectorAll('#fp-type-row .fp-pill').forEach(function(p){p.classList.remove('on');});
+      pill.classList.add('on');
+      _mapFilter.unitType=pill.getAttribute('data-utype')||'all';
+      updateFilterCount();applyMapFilter();
+    };
+  });
+  document.querySelectorAll('#fp-pri-row .fp-pill').forEach(function(pill){
+    pill.onclick=function(){
+      document.querySelectorAll('#fp-pri-row .fp-pill').forEach(function(p){p.classList.remove('on');});
+      pill.classList.add('on');
+      _mapFilter.incPri=pill.getAttribute('data-ipri')||'all';
+      updateFilterCount();applyMapFilter();
+    };
+  });
+  document.querySelectorAll('#fp-hlvl-row .fp-pill').forEach(function(pill){
+    pill.onclick=function(){
+      document.querySelectorAll('#fp-hlvl-row .fp-pill').forEach(function(p){p.classList.remove('on');});
+      pill.classList.add('on');
+      _mapFilter.hospLevel=pill.getAttribute('data-hlvl')||'all';
+      updateFilterCount();applyMapFilter();
+    };
+  });
+  document.addEventListener('click',function(e){
+    var panel=document.getElementById('db-filter-panel');
+    var wrap=panel&&panel.closest?panel.closest('.filter-wrap'):null;
+    if(panel&&panel.classList.contains('open')&&!panel.contains(e.target)&&e.target.id!=='db-filter-btn'&&!(wrap&&wrap.contains(e.target))){
+      panel.classList.remove('open');
+    }
+  });
+}
+
+var STAGE={pending:'Pending',dispatching:'Dispatched',dispatched:'Dispatched',en_route:'En route',on_scene:'On scene',transport:'Transporting'};
+function renderHot(incidents){
+  // Merge cross-app injected incidents (dispatch/PSAP) — deduplicated by id
+  var merged=incidents.slice();
+  var ids={};
+  merged.forEach(function(i){ids[i.id]=1;});
+  Object.keys(_syncInjects).forEach(function(k){
+    var si=_syncInjects[k];
+    if(ids[si.id]){
+      for(var j=0;j<merged.length;j++){if(merged[j].id===si.id){merged[j]=si;break;}}
+    } else {merged.push(si);ids[si.id]=1;}
+  });
+  var hot=merged.filter(function(i){return i.status!=='cleared'&&i.status!=='cancelled'&&i.priority<=2;})
+    .sort(function(a,b){return a.priority-b.priority||(b.createdAt-a.createdAt);}).slice(0,6);
+  setText('hot-count',hot.length+' active');
+  var html=hot.map(function(i){
+    var el=Math.round((Date.now()-i.createdAt)/1000);
+    var pct=Math.min(1,el/(i.priority===1?480:900));
+    var off=(C*(1-pct)).toFixed(2);
+    var critCls=i.priority===1?' crit':' p2';
+    var st=i.status;
+    return '<div class="hot'+critCls+'" data-lng="'+i.lng+'" data-lat="'+i.lat+'">'+
+      '<div class="hot-r1"><span class="pri-chip p'+i.priority+'"><span class="dot"></span>P'+i.priority+'</span><span class="hot-id">'+i.number+'</span><span class="hot-code">'+(i.icd11||'')+'</span>'+
+      '<div class="hot-sla"><span class="hot-time tab">'+ft(el)+'</span><div class="sla-ring"><svg viewBox="0 0 22 22"><circle class="bg" cx="11" cy="11" r="'+R+'"/><circle class="fg" cx="11" cy="11" r="'+R+'" stroke-dasharray="'+C.toFixed(2)+'" stroke-dashoffset="'+off+'"/></svg></div></div></div>'+
+      '<div class="hot-type">'+i.complaint+'</div>'+
+      '<div class="hot-meta"><span class="mat">place</span><span>'+i.address+'</span>'+(i.unitId?'<span class="sep"></span><span class="unit">'+i.unitId+'</span>':'')+
+      '<span class="hot-stage '+st+'"><span class="dot"></span>'+(STAGE[st]||st)+'</span></div></div>';
+  }).join('');
+  var hel=document.getElementById('hot-list');
+  if(hel){hel.innerHTML=html;document.querySelectorAll('.hot').forEach(function(el){el.onclick=function(){var lng=parseFloat(el.getAttribute('data-lng')),lat=parseFloat(el.getAttribute('data-lat'));if(map)map.flyTo({center:[lng,lat],zoom:14,pitch:35,speed:.9});};});}
+}
+
+function hospDist(h){
+  var dlng=(h.lng-_mapCenter.lng)*Math.cos(_mapCenter.lat*Math.PI/180);
+  var dlat=h.lat-_mapCenter.lat;
+  return Math.sqrt(dlng*dlng+dlat*dlat)*111;
+}
+function renderHosp(hospitals){
+  // Wall view = glance only. Show 5 nearest + a summary line at the top so
+  // operators see network health at-a-glance without anyone having to scroll.
+  var sorted=hospitals.slice().sort(function(a,b){return hospDist(a)-hospDist(b);}).slice(0,5);
+  var html=sorted.map(function(h){
+    var cls=h.edPct>=90?'crit':h.edPct>=80?'warn':'ok';
+    var lbl=h.edPct>=90?'BYPASS':h.edPct>=80?'CAUTION':'OPEN';
+    var km=hospDist(h).toFixed(1);
+    return '<div class="hosp-row '+cls+'">'+
+      '<div style="flex:1;min-width:0;"><div class="hosp-n">'+(h.n||h.full)+'</div>'+
+      '<div style="font-family:var(--fm);font-size:9px;color:var(--t3);margin-top:2px;display:flex;align-items:center;gap:4px;">'+(h.nat?'<span class="hosp-l6">L6</span>':'')+km+'km · <span class="hosp-status" style="padding:1px 4px;font-size:9px;">'+lbl+'</span></div></div>'+
+      '<div class="hosp-bar" style="max-width:46px;flex-shrink:0;"><i style="width:'+h.edPct+'%"></i></div>'+
+      '<div class="hosp-pct tab">'+h.edPct+'%</div></div>';
+  }).join('');
+  var el=document.getElementById('hosp-list');if(el)el.innerHTML=html;
+  var cnt=document.getElementById('rp-count');if(cnt)cnt.textContent=sorted.length+' nearby · 8 zones';
+}
+function renderFleet(fleet){
+  var c={available:0,dispatching:0,dispatched:0,en_route:0,on_scene:0,transport:0,standby:0,maintenance:0};
+  fleet.forEach(function(u){if(c.hasOwnProperty(u.status))c[u.status]++;});
+  var active = c.dispatching + c.dispatched + c.en_route + c.on_scene + c.transport;
+  var standby = c.standby + c.maintenance;
+  // Bottom-row cells (canonical home for fleet stats now)
+  setText('cc-fl-avl', c.available);
+  setText('cc-fl-act', active);
+  setText('cc-fl-stb', standby);
+  setText('cc-fl-stb-sub', c.standby + ' break · ' + c.maintenance + ' maint.');
+  // Old right-pane fleet grid retained for legacy compatibility if present
+  var el = document.getElementById('fleet-status-grid');
+  if (el) {
+    var cells = [
+      {n:c.available, l:'Available', cls:'avl'},
+      {n:active,      l:'Active',    cls:'enr'},
+      {n:standby,     l:'Standby',   cls:''}
+    ];
+    el.innerHTML = cells.map(function(x){return '<div class="fleet-cell '+x.cls+'"><div class="fleet-cell-n tab">'+x.n+'</div><div class="fleet-cell-l">'+x.l+'</div></div>';}).join('');
+  }
+}
+
+function renderZones(zones){
+  // Cap to 4 busiest zones — wall stays glanceable
+  var top=zones.slice(0).sort(function(a,b){return b.count-a.count;}).slice(0,4);
+  var html=top.map(function(z){
+    var m=(z.avgMins+(Math.random()-0.5)*0.3).toFixed(1);
+    var cls=m<=6?'ok':m<=8.5?'warn':'crit';
+    var label=z.name.split('/')[0].trim().split(' ').slice(0,2).join(' ');
+    return '<div class="zone-c '+cls+'"><div class="zone-n">'+label+'</div><div class="zone-t tab">'+m+'<span style="font-family:var(--fm);font-size:10px;color:var(--t3);margin-left:2px;">min</span></div></div>';
+  }).join('');
+  var el=document.getElementById('zone-grid');if(el)el.innerHTML=html;
+}
+
+function buildTicker(incidents){
+  var recent=incidents.filter(function(i){return i.dispatchedAt;}).slice(-10);
+  var items=recent.map(function(i){
+    var t=new Date(i.dispatchedAt);
+    var ts=pad(t.getHours())+':'+pad(t.getMinutes());
+    var tag=i.status==='cleared'?'s':'d';
+    return '<span class="ticker-evt"><span class="t">'+ts+'</span><span class="tag '+tag+'">'+(tag==='d'?'DISPATCH':'STATUS')+'</span>'+i.number+' P'+i.priority+' · '+i.complaint+' · '+i.address+(i.unitId?' → '+i.unitId:'')+'</span>';
+  }).join('');
+  if(items){var el=document.getElementById('ticker');if(el)el.innerHTML=items+items;}
+}
+
+function updateKPIs(kpis){
+  setText('hp-p1',kpis.p1);
+  setText('hp-p2',kpis.p2);
+  setText('hp-p34',kpis.p34);
+  var rm=Math.floor(kpis.avgResponseSec/60),rs=kpis.avgResponseSec%60;
+  setText('hp-resp',rm+':'+pad(rs));
+  setText('hp-dep',kpis.deployed);
+  setText('hp-tot',kpis.fleetTotal);
+  setText('sys-fleet-cnt',kpis.fleetTotal);
+  var util = kpis.fleetTotal ? Math.round((kpis.deployed/kpis.fleetTotal)*100) : 0;
+  setText('hp-dep-d', util + '% utilisation');
+  setText('hp-calls',kpis.callsShift||'—');
+  setText('hp-conv',kpis.conveyed||'—');
+  setText('hp-gh',kpis.goldenHr||0);
+  /* anomalies badge */
+  setText('anom-count',kpis.anomalies||0);
+  /* HUD-Stats */
+  var vis=Object.keys(_markers).filter(function(id){var mk=_markers[id];return mk&&mk.el&&mk.el.style.display!=='none';}).length;
+  /* hud-stats block was removed; setText calls would be no-ops anyway */
+  /* CC row — mock 3CX */
+  var q=kpis.callsInQueue||0;
+  setText('cc-q',q);
+  var qel=document.getElementById('cc-q');
+  if(qel) qel.className='cc-val tab'+(q>=5?' crit':q>=2?' warn':'');
+  var ws=kpis.avgWaitSec||0;
+  setText('cc-w',ft(ws));
+  var wel=document.getElementById('cc-w');
+  if(wel) wel.className='cc-val tab'+(ws>=60?' warn':' ok');
+  var longest=kpis.longestWaitSec||0;
+  setText('cc-qs','Longest: '+ft(longest));
+  var ab=kpis.abandoned||0;
+  setText('cc-ab',ab);
+  var total=kpis.callsShift||1;
+  setText('cc-abs','This shift · '+(total>0?(ab/total*100).toFixed(1):'0.0')+'%');
+  var sla=kpis.slaCompliancePct||0;
+  setText('cc-sla',sla.toFixed(1)+'%');
+  var slael=document.getElementById('cc-sla');
+  if(slael) slael.className='cc-val tab'+(sla<90?' warn':' ok');
+}
+
+function updateAgents(agents){
+  var on=0,av=0,br=0;
+  agents.forEach(function(a){
+    if(a.status==='on_call')on++;
+    else if(a.status==='ready')av++;
+    else if(a.status==='break')br++;
+  });
+  setText('ag-on',on);
+  setText('ag-av',av);
+  setText('ag-br',br);
+  setText('ag-tot',agents.length);
+}
+
+var _currentModalStatus=null;
+function openAgentModal(status){
+  var modal=document.getElementById('ag-modal');
+  var titleEl=document.getElementById('ag-modal-title');
+  var listEl=document.getElementById('ag-modal-list');
+  if(!modal||!listEl||!titleEl) return;
+  _currentModalStatus=status;
+  var labels={'on_call':'ON CALL','ready':'READY','break':'ON BREAK'};
+  var colors={'on_call':'var(--p1)','ready':'var(--g)','break':'var(--p2)'};
+  titleEl.textContent=labels[status]||status.toUpperCase();
+  var agents=NACDState.getAgentRecords().filter(function(a){return a.status===status;});
+  var html='';
+  agents.forEach(function(a){
+    var col=colors[a.status]||'var(--t2)';
+    var roleLabel=a.role.replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});
+    html+='<div class="ag-modal-row">'+
+      '<div class="ag-av-dot" style="background:'+col+';"></div>'+
+      '<div class="ag-av-name">'+a.displayName+'</div>'+
+      '<div class="ag-av-role">'+roleLabel+'</div>'+
+      '<div class="ag-av-ext">'+a.extension+'</div>'+
+    '</div>';
+  });
+  if(!html) html='<div style="padding:12px 16px;color:var(--t3);font-size:12px;">No agents in this state</div>';
+  listEl.innerHTML=html;
+  modal.style.display='block';
+}
+function closeAgentModal(){
+  var modal=document.getElementById('ag-modal');
+  if(modal) modal.style.display='none';
+  _currentModalStatus=null;
+}
+/* Close modal on outside click */
+document.addEventListener('click',function(e){
+  var modal=document.getElementById('ag-modal');
+  if(modal&&modal.style.display==='block'&&!modal.contains(e.target)&&!e.target.closest('.ag-stat')){closeAgentModal();}
+});
+
+function updateHUD(incidents,fleet){
+  var active=incidents.filter(function(i){return(i.status==='en_route'||i.status==='dispatched')&&i.unitId;})
+    .sort(function(a,b){return(a.priority||9)-(b.priority||9);});
+  if(!active.length){
+    _dashHudTargetMs=null;
+    setText('hud-unit-lbl','No active dispatches');
+    setText('hud-unit-sub','— awaiting dispatch');
+    setText('hud-eta','--:--');
+    return;
+  }
+  _hudCycleIdx=_hudCycleIdx%active.length;
+  var inc=active[_hudCycleIdx];
+  var u=null;
+  for(var i=0;i<fleet.length;i++){if(fleet[i].id===inc.unitId){u=fleet[i];break;}}
+  if(!u){_hudCycleIdx=0;return;}
+  var dk=Math.sqrt(Math.pow(u.lat-inc.lat,2)+Math.pow(u.lng-inc.lng,2))*111;
+  var etaSec=Math.round(dk/40*3600);
+  _dashHudTargetMs=Date.now()+etaSec*1000;
+  setText('hud-unit-lbl',u.id+' → '+(inc.number||inc.id));
+  setText('hud-unit-sub',(inc.address||'—').split(',')[0]+' \xb7 '+(u.type||'BLS')+' \xb7 P'+(inc.priority||'?')+(active.length>1?' ('+(_hudCycleIdx+1)+'/'+active.length+')':''));
+}
+
+function updateHudStats(fleet){
+  var gpsMs=Math.round(200+Math.random()*300);
+  setText('hud-gps',(gpsMs/1000).toFixed(1)+'s');
+}
+
+function initHospitals(hospitals){
+  var feats=hospitals.map(function(h){return{type:'Feature',geometry:{type:'Point',coordinates:[h.lng,h.lat]},properties:{id:h.id,n:h.n,full:h.full||h.n,level:h.level||5,county:h.county||'',edPct:h.edPct||0,div:h.div||'open',nat:!!h.nat,specs:(h.specialties||[]).join(', ')}};});
+  map.addSource('hospitals',{type:'geojson',data:{type:'FeatureCollection',features:feats}});
+  map.addLayer({id:'hosp-bg-l6',type:'circle',source:'hospitals',minzoom:3,filter:['>=',['get','level'],6],paint:{'circle-radius':['interpolate',['linear'],['zoom'],3,5,7,8,12,11],'circle-color':'#9A6C00','circle-stroke-width':1.5,'circle-stroke-color':'#FFD700','circle-opacity':0.95}});
+  map.addLayer({id:'hosp-bg-l5',type:'circle',source:'hospitals',minzoom:5,filter:['==',['get','level'],5],paint:{'circle-radius':['interpolate',['linear'],['zoom'],5,4,7,6,12,8],'circle-color':'#1268D0','circle-stroke-width':1,'circle-stroke-color':'rgba(255,255,255,0.75)','circle-opacity':0.92}});
+  map.addLayer({id:'hosp-bg-l4',type:'circle',source:'hospitals',minzoom:9,filter:['==',['get','level'],4],paint:{'circle-radius':['interpolate',['linear'],['zoom'],9,3,12,6],'circle-color':'#2A6E78','circle-stroke-width':1,'circle-stroke-color':'rgba(255,255,255,0.55)','circle-opacity':0.88}});
+  map.addLayer({id:'hosp-lbl',type:'symbol',source:'hospitals',minzoom:3,layout:{'text-field':'H','text-font':['DIN Pro Bold','Arial Unicode MS Bold'],'text-size':['interpolate',['linear'],['zoom'],3,7,12,11],'text-anchor':'center','text-allow-overlap':true,'text-ignore-placement':true},paint:{'text-color':'#ffffff'}});
+  map.addLayer({id:'hosp-name',type:'symbol',source:'hospitals',minzoom:10,filter:['>=',['get','level'],5],layout:{'text-field':['get','n'],'text-font':['DIN Pro Regular','Arial Unicode MS Regular'],'text-size':10,'text-offset':[0,1.2],'text-anchor':'top','text-optional':true},paint:{'text-color':'rgba(255,255,255,0.9)','text-halo-color':'rgba(11,15,20,0.85)','text-halo-width':1.5}});
+  ['hosp-bg-l6','hosp-bg-l5','hosp-bg-l4'].forEach(function(lid){
+    map.on('click',lid,function(e){
+      var p=e.features[0].properties;
+      var divCol=p.div==='bypass'?'#FF3B30':p.div==='diversion'?'#FF8C00':'#34C759';
+      var lvlBg=p.level>=6?'rgba(155,108,0,0.22)':p.level===5?'rgba(18,104,208,0.22)':'rgba(42,110,120,0.22)';
+      var lvlCol=p.level>=6?'#FFD700':p.level===5?'#5BA4F5':'#50C8C0';
+      new mapboxgl.Popup({offset:10}).setLngLat(e.lngLat).setHTML('<div class="pop"><div class="pop-head"><div style="width:32px;height:32px;border-radius:8px;background:'+lvlBg+';color:'+lvlCol+';display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-weight:700;font-size:12px;">L'+p.level+'</div><div class="pop-h-t"><b>'+p.full+'</b><span>'+p.county+' County</span></div></div><div class="pop-r"><span class="l">ED capacity</span><span class="v">'+p.edPct+'%</span></div><div class="pop-r"><span class="l">Status</span><span class="v" style="color:'+divCol+';">'+(p.div||'open').toUpperCase()+'</span></div>'+(p.specs?'<div class="pop-r"><span class="l">Specialties</span><span class="v">'+p.specs+'</span></div>':'')+
+      '</div>').addTo(map);
+    });
+    map.on('mouseenter',lid,function(){map.getCanvas().style.cursor='pointer';});
+    map.on('mouseleave',lid,function(){map.getCanvas().style.cursor='';});
+  });
+}
+
+function renderOpsFeed(events){
+  var el=document.getElementById('feed-list');
+  if(!el||!events) return;
+  // Wall view = glance only; cap visible events so the right pane fits 1080p
+  // without scrolling. Operators on their own workstations get the full log.
+  var recent=events.slice(0,6);
+  if(!recent.length){el.innerHTML='<div style="color:var(--t3);font-size:11px;padding:6px 0;">No events yet</div>';return;}
+  function chipClass(t){return t==='supervisor'?'sup':t==='system'?'sys':'disp';}
+  function chipLabel(t){return t==='supervisor'?'SUP':t==='system'?'SYS':'DSP';}
+  function relTime(ts){var s=Math.round((Date.now()-ts)/1000);if(s<60)return s+'s';if(s<3600)return Math.floor(s/60)+'m';return Math.floor(s/3600)+'h';}
+  var html='';
+  for(var i=0;i<recent.length;i++){
+    var ev=recent[i];
+    var evType=(ev.eventType||'').replace(/_/g,' ');
+    var meta=ev.unitId?ev.unitId:(ev.incidentId?ev.incidentId.slice(-6):'');
+    html+='<div class="feed-row"><span class="feed-chip '+chipClass(ev.actorType)+'">'+chipLabel(ev.actorType)+'</span><div class="feed-body"><div class="feed-evt">'+evType+'</div>'+(meta?'<div class="feed-meta">'+meta+'</div>':'')+
+    '</div><div class="feed-time">'+relTime(ev.createdAt)+'</div></div>';
+  }
+  el.innerHTML=html;
+}
+
+/* Init */
+initFilterPanel();
+fetch('/api/config').then(function(r){return r.json();}).catch(function(){return{};})
+.then(function(cfg){
+  initMap(cfg.mapboxToken);
+  NACDState.init({supabaseUrl:cfg.supabaseUrl||'',supabaseKey:cfg.supabaseAnonKey||'',seedIncidents:12,autoStart:true});
+  window._onNACDAuthReady=function(auth){
+    var ov=document.getElementById('nacd-auth-overlay');
+    if(ov){ov.style.opacity='0';setTimeout(function(){ov.style.display='none';},220);}
+  };
+  if(window.NACDAuth) NACDAuth.init({supabaseUrl:cfg.supabaseUrl,supabaseAnonKey:cfg.supabaseAnonKey,clerkPublishableKey:cfg.clerkPublishableKey},'dashboard');
+
+  // Patch renderOpsFeed to prepend EMT cross-app events at the top of the ops feed
+  (function(){
+    var _orig=renderOpsFeed;
+    renderOpsFeed=function(events){
+      _orig(events);
+      if(!_emtFeedItems.length) return;
+      var el=document.getElementById('feed-list');
+      if(!el) return;
+      function _rt(ts){var s=Math.round((Date.now()-ts)/1000);return s<60?s+'s':Math.floor(s/60)+'m';}
+      var extra=_emtFeedItems.slice(0,6).map(function(it){
+        return '<div class="feed-row"><span class="feed-chip sys" style="color:#27AAE1;background:rgba(39,170,225,.12)">EMT</span>'+
+          '<div class="feed-body"><div class="feed-evt">'+it.label+'</div>'+
+          (it.meta?'<div class="feed-meta">'+it.meta+'</div>':'')+
+          '</div><div class="feed-time">'+_rt(it.ts)+'</div></div>';
+      }).join('');
+      el.innerHTML=extra+el.innerHTML;
+    };
+  })();
+
+  // Patch buildTicker to prepend EMT status items
+  (function(){
+    var _origT=buildTicker;
+    buildTicker=function(incidents){
+      _origT(incidents);
+      var emtTkr=_emtFeedItems.filter(function(it){return it.ticker;}).slice(0,3);
+      if(!emtTkr.length) return;
+      var el=document.getElementById('ticker');
+      if(!el) return;
+      var extra=emtTkr.map(function(it){
+        var d=new Date(it.ts);
+        var ts=('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
+        return '<span class="ticker-evt"><span class="t">'+ts+'</span>'+
+          '<span class="tag s">EMT</span>'+it.label+(it.meta?' \xb7 '+it.meta:'')+'</span>';
+      }).join('');
+      el.innerHTML=extra+el.innerHTML;
+    };
+  })();
+
+  NACDState.on('state:initialized',function(state){
+    renderHosp(state.hospitals);
+    renderFleet(state.fleet);
+    renderZones(state.zones);
+    buildTicker(state.incidents);
+    updateAgents(NACDState.getAgentRecords());
+    populateCountyDropdown();
+  });
+  NACDState.on('state:tick',function(state){
+    updateKPIs(state.kpis);
+    renderHot(state.incidents);
+    if(map&&_routeReady){
+      updateMarkers(state.fleet);
+      updateIncidentLayer(state.incidents);
+      updateRealRoutes(state.incidents,state.fleet);
+    }
+    renderHosp(state.hospitals);
+    renderFleet(state.fleet);
+    buildTicker(state.incidents);
+    updateHUD(state.incidents,state.fleet);
+    updateHudStats(state.fleet);
+    updateAgents(NACDState.getAgentRecords());
+    renderOpsFeed(NACDState.getDispatchEvents());
+    setText('last-event','updated '+new Date().toISOString().substr(11,8));
+  });
+
+  // Cross-app incident sync: receive dispatch updates + PSAP-created incidents
+  if(typeof BroadcastChannel!=='undefined'){
+    try{
+      var _dbSyncBC=new BroadcastChannel('nadc-sync');
+      _dbSyncBC.onmessage=function(ev){
+        var d=ev.data;
+        if(!d||d.source==='dashboard') return;
+        if((d.type==='incident:updated'||d.type==='incident:created')&&d.incident&&d.incident.id){
+          var di=d.incident;
+          // Drop any PSAP temp entry at the same location to avoid duplicates
+          Object.keys(_syncInjects).forEach(function(k){
+            if(k.indexOf('psap:')===0){
+              var si=_syncInjects[k];
+              if(Math.abs((si.lat||0)-(di.lat||0))<0.005&&Math.abs((si.lng||0)-(di.lng||0))<0.005) delete _syncInjects[k];
+            }
+          });
+          _syncInjects[di.id]=di;
+        }
+        // EMT: unit status moved to at_hospital or cleared
+        if(d.source==='emt'&&d.type==='unit:status_update'&&d.newStatus){
+          var _uId=d.unitId||'unit';
+          var _iId=d.incidentId||'';
+          if(d.newStatus==='at_hospital'||d.newStatus==='cleared'){
+            // Update status in syncInjects if we have the incident
+            if(_iId&&_syncInjects[_iId]) _syncInjects[_iId].status=d.newStatus;
+            var _lbl=_uId+(d.newStatus==='at_hospital'?' → at hospital':' cleared');
+            var _found=false;
+            for(var _fi=0;_fi<_emtFeedItems.length;_fi++){
+              if(_emtFeedItems[_fi]._key===d.type+':'+_uId+':'+d.newStatus){_found=true;break;}
+            }
+            if(!_found){
+              _emtFeedItems.unshift({label:_lbl,meta:_iId||undefined,ts:Date.now(),ticker:true,_key:d.type+':'+_uId+':'+d.newStatus});
+              if(_emtFeedItems.length>10) _emtFeedItems.pop();
+            }
+          }
+        }
+        // EMT: clinical vitals update
+        if(d.source==='emt'&&d.type==='clinical:update'){
+          var _obs=d.vitals||d.observation||{};
+          var _pts=[];
+          if(_obs.spo2!=null) _pts.push('SpO2 '+_obs.spo2+'%');
+          if(_obs.hr!=null) _pts.push('HR '+_obs.hr);
+          if(_obs.rr!=null) _pts.push('RR '+_obs.rr);
+          if(_obs.sys!=null&&_obs.dia!=null) _pts.push('BP '+_obs.sys+'/'+_obs.dia);
+          if(_obs.gcs!=null) _pts.push('GCS '+_obs.gcs);
+          if(_pts.length){
+            _emtFeedItems.unshift({label:'vitals recorded',meta:(d.unitId||'')+(_pts.length?' \xb7 '+_pts[0]:''),ts:Date.now(),ticker:false,_key:''});
+            if(_emtFeedItems.length>10) _emtFeedItems.pop();
+          }
+        }
+        // EMT: ePCR submitted
+        if(d.source==='emt'&&d.type==='epcr:submitted'&&d.claimRef){
+          var _alreadyEpcr=false;
+          for(var _ei=0;_ei<_emtFeedItems.length;_ei++){
+            if(_emtFeedItems[_ei]._key==='epcr:'+d.claimRef){_alreadyEpcr=true;break;}
+          }
+          if(!_alreadyEpcr){
+            var _icd=d.icdCode||d.icd11||'';
+            _emtFeedItems.unshift({label:'ePCR submitted',meta:d.claimRef+(_icd?' \xb7 '+_icd:''),ts:Date.now(),ticker:true,_key:'epcr:'+d.claimRef});
+            if(_emtFeedItems.length>10) _emtFeedItems.pop();
+          }
+        }
+      };
+      var _dbPsapBC=new BroadcastChannel('nadc-incident-sync');
+      _dbPsapBC.onmessage=function(ev){
+        var d=ev.data;
+        if(!d||d.type!=='psap:incident:created'||!d.incident) return;
+        var i=d.incident;
+        var k='psap:'+(i.psapNumber||(Math.round((i.lat||0)*1000)+'_'+Math.round((i.lng||0)*1000)));
+        if(!_syncInjects[k]){
+          _syncInjects[k]={
+            id:k,number:i.psapNumber||'PSAP-LIVE',
+            priority:i.priority||1,status:'pending',
+            complaint:i.complaint||'',address:i.address||'',
+            lat:i.lat||0,lng:i.lng||0,
+            icd11:i.icd11||'',unitId:null,
+            createdAt:Date.now()
+          };
+        }
+      };
+    }catch(e){}
+  }
+});
+</script>
+
+<script>
+(function(){
+  function toggleAppSw(){
+    var p=document.getElementById('app-sw-panel');
+    var b=document.querySelector('.app-sw-btn');
+    if(!p) return;
+    var willOpen = !p.classList.contains('open');
+    p.classList.toggle('open');
+    if(b) b.classList.toggle('open', willOpen);
+  }
+  document.addEventListener('click',function(e){
+    var p=document.getElementById('app-sw-panel');
+    if(!p||!p.classList.contains('open')) return;
+    if(p.contains(e.target)) return;
+    if(e.target.closest && e.target.closest('.app-sw-btn')) return;
+    p.classList.remove('open');
+    var b=document.querySelector('.app-sw-btn');
+    if(b) b.classList.remove('open');
+  });
+  // Expose as global so inline onclick can call it
+  window.toggleAppSw = toggleAppSw;
+})();
+</script>
+
+</body>
+</html>

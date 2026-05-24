@@ -1,0 +1,3022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SHA · NADC — Operations</title>
+<meta name="description" content="SHA National Ambulance Dispatch Centre — real-time emergency coordination platform for the Republic of Kenya.">
+<meta name="theme-color" content="#00519B">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SHA NADC">
+<meta property="og:title" content="SHA · National Ambulance Dispatch Centre">
+<meta property="og:description" content="Real-time emergency coordination · Republic of Kenya">
+<meta property="og:url" content="https://sha-nadc.silicongw.com/dispatch">
+<meta property="og:image" content="https://sha-nadc.silicongw.com/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="1200">
+<meta property="og:image:alt" content="SHA National Ambulance Dispatch Centre">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SHA · National Ambulance Dispatch Centre">
+<meta name="twitter:description" content="Real-time emergency coordination · Republic of Kenya">
+<meta name="twitter:image" content="https://sha-nadc.silicongw.com/assets/og-image.png">
+
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Barlow+Condensed:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined" rel="stylesheet">
+
+<style>
+:root{
+  --b:#00519B;  --b2:#27AAE1;
+  --g:#50C020;  --g2:#3DA818;
+  --p1:#FF3B30; --p2:#FF8C00; --p3:#F5B100;
+  --ok:#34C759;
+  --bg:#0B0F14;
+  --surface:#11161D;
+  --surface-2:#161C25;
+  --line:rgba(255,255,255,0.06);
+  --line-2:rgba(255,255,255,0.10);
+  --t1:rgba(255,255,255,0.95);
+  --t2:rgba(255,255,255,0.62);
+  --t3:rgba(255,255,255,0.40);
+  --t4:rgba(255,255,255,0.25);
+  --fh:"Exo 2", system-ui, sans-serif;
+  --fm:"JetBrains Mono", ui-monospace, monospace;
+  --fc:"Barlow Condensed", sans-serif;
+  --r-sm:8px; --r-md:12px; --r-lg:16px; --r-pill:999px;
+  --shadow-1:0 1px 2px rgba(0,0,0,.3);
+  --shadow-2:0 8px 24px rgba(0,0,0,.3);
+  --shadow-3:0 16px 48px rgba(0,0,0,.5);
+}
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;background:var(--bg);color:var(--t1);font-family:var(--fh);font-feature-settings:"ss01","tnum";overflow:hidden;-webkit-font-smoothing:antialiased;}
+button{font-family:inherit;cursor:pointer;}
+.mat{font-family:"Material Symbols Outlined";font-weight:400;font-style:normal;font-size:20px;line-height:1;}
+.tab{font-variant-numeric:tabular-nums;}
+
+/* ── Top bar ───────────────────────────────────── */
+.shell{display:grid;grid-template-rows:60px 1fr;height:100vh;}
+.topbar{display:flex;align-items:center;gap:14px;padding:0 18px;background:rgba(11,15,20,0.92);backdrop-filter:saturate(160%) blur(14px);border-bottom:1px solid var(--line);position:relative;z-index:50;}
+.brand{display:flex;align-items:center;gap:10px;padding-right:14px;border-right:1px solid var(--line);height:32px;}
+.brand-mark{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#00519B 0%,#27AAE1 100%);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;letter-spacing:.5px;color:#fff;}
+.brand-text b{font-family:var(--fh);font-weight:600;font-size:13px;color:var(--t1);letter-spacing:.3px;display:block;line-height:1.1;}
+.brand-text span{font-family:var(--fm);font-size:9.5px;letter-spacing:1.2px;color:var(--t3);text-transform:uppercase;}
+.nav-pills{display:flex;align-items:center;gap:2px;}
+.np{display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:var(--r-pill);font-family:var(--fh);font-size:13px;font-weight:500;color:var(--t2);background:transparent;border:none;transition:background .15s,color .15s;}
+.np:hover{background:rgba(255,255,255,0.04);color:var(--t1);}
+.np.on{background:rgba(80,192,32,.12);color:var(--g);}
+.np .mat{font-size:18px;}
+.h-rule{width:1px;height:26px;background:var(--line);margin:0 6px;flex-shrink:0;}
+.pg-nav{display:flex;align-items:center;gap:2px;}
+.pn{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:var(--r-pill);text-decoration:none;font-family:var(--fh);font-size:11.5px;font-weight:500;color:var(--t2);transition:background .15s,color .15s;white-space:nowrap;}
+.pn:hover{background:rgba(255,255,255,.05);color:var(--t1);}
+.pn.on{background:rgba(80,192,32,.13);color:var(--g);}
+.pn .mat{font-size:14px;}
+.pn .pm{font-family:var(--fm);font-size:8px;color:var(--t4);letter-spacing:.6px;text-transform:uppercase;margin-left:1px;}
+.pn.on .pm{color:rgba(80,192,32,.5);}
+.spacer{flex:1;}
+.search-pill{display:flex;align-items:center;gap:8px;height:34px;padding:0 14px;width:300px;background:rgba(255,255,255,0.04);border:1px solid var(--line);border-radius:var(--r-pill);transition:border-color .15s;}
+.search-pill:focus-within{border-color:rgba(80,192,32,0.35);background:rgba(80,192,32,0.04);}
+.search-pill .mat{color:var(--t3);font-size:18px;}
+.search-pill input{flex:1;background:none;border:none;outline:none;font-family:var(--fh);font-size:13px;color:var(--t1);}
+.search-pill input::placeholder{color:var(--t3);}
+.search-pill kbd{font-family:var(--fm);font-size:10px;color:var(--t3);padding:1px 6px;border:1px solid var(--line);border-radius:4px;}
+.icon-btn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:var(--r-pill);background:transparent;border:none;color:var(--t2);position:relative;transition:background .12s;}
+.icon-btn:hover{background:rgba(255,255,255,0.05);color:var(--t1);}
+.icon-btn .dot{position:absolute;top:7px;right:8px;width:6px;height:6px;background:var(--p1);border-radius:50%;border:1.5px solid var(--bg);}
+.user{display:flex;align-items:center;gap:9px;padding:4px 10px 4px 4px;border-radius:var(--r-pill);background:rgba(255,255,255,0.04);border:1px solid var(--line);transition:border-color .12s;cursor:pointer;}
+.user:hover{border-color:var(--line-2);}
+.user-av{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#00519B,#27AAE1);display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-weight:600;font-size:11px;color:#fff;}
+.user-text{line-height:1.1;}
+.user-text b{font-family:var(--fh);font-size:12px;font-weight:600;color:var(--t1);display:block;}
+.user-text span{font-family:var(--fm);font-size:9px;letter-spacing:.4px;color:var(--t3);}
+
+/* ── Main canvas ───────────────────────────────── */
+.canvas{position:relative;overflow:hidden;background:var(--bg);}
+#map{position:absolute;inset:0;}
+.canvas::before{content:"";position:absolute;top:0;left:0;right:0;height:120px;background:linear-gradient(180deg,rgba(11,15,20,0.55) 0%,transparent 100%);pointer-events:none;z-index:5;}
+.canvas::after{content:"";position:absolute;bottom:0;left:0;right:0;height:80px;background:linear-gradient(0deg,rgba(11,15,20,0.4) 0%,transparent 100%);pointer-events:none;z-index:5;}
+
+/* ── KPI rail ──────────────────────────────────── */
+.kpi-rail{position:fixed;top:74px;left:372px;right:392px;display:flex;align-items:stretch;justify-content:center;gap:1px;background:rgba(17,22,29,0.95);backdrop-filter:saturate(160%) blur(14px);border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--shadow-2);z-index:10;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-ms-overflow-style:none;}
+.kpi-rail::-webkit-scrollbar{display:none;}
+.kpi{padding:9px 18px;display:flex;flex-direction:column;gap:3px;min-width:104px;position:relative;flex-shrink:0;}
+.kpi + .kpi{border-left:1px solid var(--line);}
+.kpi-l{font-family:var(--fc);font-size:10.5px;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;color:var(--t3);white-space:nowrap;}
+.kpi-v{font-family:var(--fh);font-weight:600;font-size:22px;line-height:1;color:var(--t1);}
+.kpi.crit .kpi-v{color:var(--p1);}
+.kpi.warn .kpi-v{color:var(--p2);}
+.kpi.ok   .kpi-v{color:var(--g);}
+.kpi-d{font-family:var(--fm);font-size:10px;color:var(--t3);display:flex;align-items:center;gap:4px;white-space:nowrap;}
+.kpi-d .mat{font-size:11px;}
+.kpi-d.up{color:var(--p1);}
+.kpi-d.dn{color:var(--g);}
+@keyframes kpiPulse{0%,100%{background:transparent;}50%{background:rgba(255,59,48,.10);}}
+.kpi.crit.pulse{animation:kpiPulse 1.4s ease infinite;}
+/* ── KPI rail responsive — keep it between the side panels, compact down as
+   the viewport narrows. Matches the lpane/rpane breakpoints exactly so the
+   left/right offsets always sit just outside the panels. */
+@media (max-width:1366px){
+  .kpi-rail{left:332px;right:352px;}
+  .kpi{padding:7px 12px;min-width:86px;}
+  .kpi-l{font-size:9.5px;letter-spacing:1.2px;}
+  .kpi-v{font-size:18px;}
+}
+@media (max-width:1180px){
+  .kpi-rail{left:292px;right:332px;}
+  .kpi{padding:6px 10px;min-width:74px;}
+  .kpi-v{font-size:16px;}
+  .kpi-d{font-size:9px;}
+}
+@media (max-width:1024px){
+  .kpi-rail{left:272px;right:312px;}
+  .kpi{padding:5px 8px;min-width:62px;}
+  .kpi-l{font-size:8.5px;letter-spacing:1px;}
+  .kpi-v{font-size:14px;}
+  .kpi-d .mat{display:none;}
+}
+
+/* ── LEFT PANE ─────────────────────────────────── */
+.lpane{position:fixed;top:80px;left:14px;bottom:14px;width:340px;background:rgba(17,22,29,0.96);backdrop-filter:saturate(160%) blur(14px);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-2);z-index:10;display:flex;flex-direction:column;overflow:hidden;}
+.lp-head{padding:14px 16px 10px;border-bottom:1px solid var(--line);}
+.lp-row1{display:flex;align-items:center;gap:8px;}
+.lp-title{font-family:var(--fh);font-weight:600;font-size:14px;color:var(--t1);letter-spacing:.2px;flex:1;}
+.lp-count{font-family:var(--fm);font-size:11px;color:var(--t3);padding:2px 8px;background:rgba(255,255,255,0.05);border-radius:var(--r-pill);}
+.lp-filters{display:flex;gap:5px;margin-top:10px;}
+.fp{display:flex;align-items:center;gap:5px;padding:5px 10px;font-family:var(--fm);font-size:10.5px;background:rgba(255,255,255,0.03);border:1px solid var(--line);color:var(--t2);border-radius:var(--r-pill);letter-spacing:.3px;}
+.fp:hover{background:rgba(255,255,255,0.06);color:var(--t1);}
+.fp.on{background:rgba(80,192,32,0.14);color:var(--g);border-color:rgba(80,192,32,0.3);}
+.fp .c{font-family:var(--fm);color:var(--t4);font-size:9.5px;}
+.fp.on .c{color:var(--g);}
+.fp.crit{color:var(--p1);}
+.fp.crit.on{background:rgba(255,59,48,0.12);border-color:rgba(255,59,48,0.3);}
+
+.lp-list{flex:1;overflow:auto;padding:8px;}
+.lp-list::-webkit-scrollbar{width:4px;}
+.lp-list::-webkit-scrollbar-track{background:rgba(255,255,255,.04);}
+.lp-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:2px;}
+.lp-list::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.30);}
+
+/* Incident card */
+.inc{display:flex;flex-direction:column;gap:6px;padding:12px 13px;margin-bottom:6px;background:transparent;border:1px solid transparent;border-radius:var(--r-md);cursor:pointer;transition:background .12s,border-color .12s;}
+.inc:hover{background:rgba(255,255,255,0.03);border-color:var(--line);}
+.inc.sel{background:rgba(80,192,32,0.06);border-color:rgba(80,192,32,0.30);}
+.inc-r1{display:flex;align-items:center;gap:8px;}
+.pri-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:var(--r-pill);font-family:var(--fm);font-weight:600;font-size:10px;letter-spacing:.5px;}
+.pri-chip.p1{background:rgba(255,59,48,0.14);color:var(--p1);}
+.pri-chip.p2{background:rgba(255,140,0,0.13);color:var(--p2);}
+.pri-chip.p3{background:rgba(245,177,0,0.13);color:var(--p3);}
+.pri-chip.p4{background:rgba(80,192,32,0.13);color:var(--g);}
+.pri-chip .dot{width:5px;height:5px;border-radius:50%;background:currentColor;}
+.pri-chip.p1 .dot{animation:softPulse 1.6s ease infinite;}
+@keyframes softPulse{0%,100%{box-shadow:0 0 0 0 currentColor;opacity:1;}50%{box-shadow:0 0 0 4px transparent;opacity:.55;}}
+.inc-id{font-family:var(--fm);font-size:11px;color:var(--t2);}
+.inc-time{margin-left:auto;font-family:var(--fm);font-size:11.5px;color:var(--t2);}
+.inc.crit .inc-time{color:var(--p1);font-weight:500;}
+.inc-type{font-family:var(--fh);font-size:14px;font-weight:500;color:var(--t1);line-height:1.25;}
+.inc-meta{display:flex;align-items:center;gap:8px;font-family:var(--fm);font-size:11px;color:var(--t3);}
+.inc-meta .mat{font-size:13px;}
+.inc-meta .sep{width:3px;height:3px;border-radius:50%;background:var(--t4);}
+.inc-meta .unit{color:var(--b2);}
+.inc-stage{display:inline-flex;align-items:center;gap:4px;font-family:var(--fm);font-size:10px;color:var(--t3);padding:2px 6px;background:rgba(255,255,255,0.04);border-radius:var(--r-pill);margin-left:auto;}
+.inc-stage .dot{width:5px;height:5px;border-radius:50%;}
+.inc-stage.dispatched .dot,.inc-stage.dispatching .dot{background:var(--p1);}
+.inc-stage.en_route .dot{background:var(--p2);}
+.inc-stage.on_scene .dot{background:var(--b2);}
+.inc-stage.transport .dot{background:var(--g);}
+.inc-stage.pending .dot{background:var(--t3);}
+
+/* New incident slide-in */
+@keyframes slideInHl{0%{transform:translateY(-10px);opacity:0;background:rgba(80,192,32,.18);border-color:rgba(80,192,32,.45);}35%{transform:translateY(0);opacity:1;}100%{background:transparent;border-color:transparent;}}
+.inc.new-inc{animation:slideInHl 2.5s ease forwards;}
+
+/* ── RIGHT PANE ────────────────────────────────── */
+.rpane{position:fixed;top:80px;right:14px;bottom:14px;width:360px;background:rgba(17,22,29,0.96);backdrop-filter:saturate(160%) blur(14px);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-2);z-index:10;display:flex;flex-direction:column;overflow:hidden;}
+/* ── Responsive: shrink panels as the viewport gets narrower so the map
+   between them stays usable. Wall (dashboard) is unaffected — only the
+   dispatch console + supervisor + admin use this model. */
+@media (max-width:1366px){
+  .lpane{width:300px;}
+  .rpane{width:320px;}
+}
+@media (max-width:1180px){
+  .lpane{width:260px;}
+  .rpane{width:300px;}
+}
+@media (max-width:1024px){
+  .lpane{width:240px;}
+  .rpane{width:280px;}
+}
+.rp-head{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;}
+.rp-pri{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:var(--r-md);font-family:var(--fh);font-weight:700;font-size:12px;letter-spacing:.5px;}
+.rp-pri.p1{background:rgba(255,59,48,0.15);color:var(--p1);}
+.rp-pri.p2{background:rgba(255,140,0,0.13);color:var(--p2);}
+.rp-pri.p3{background:rgba(245,177,0,0.13);color:var(--p3);}
+.rp-pri.p4{background:rgba(80,192,32,0.13);color:var(--g);}
+.rp-text b{font-family:var(--fh);font-weight:600;font-size:14px;color:var(--t1);display:block;line-height:1.1;}
+.rp-text span{font-family:var(--fm);font-size:11px;color:var(--t3);}
+.rp-body{flex:1;overflow:auto;padding:14px 16px 90px;}
+.rp-body::-webkit-scrollbar{width:4px;}
+.rp-body::-webkit-scrollbar-track{background:rgba(255,255,255,.04);}
+.rp-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:2px;}
+.rp-body::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.30);}
+.rp-type{font-family:var(--fh);font-weight:500;font-size:18px;color:var(--t1);line-height:1.2;margin-bottom:4px;}
+.rp-code{font-family:var(--fm);font-size:11px;color:var(--t3);}
+.rp-code b{color:var(--p2);}
+.rp-loc{margin-top:14px;display:flex;align-items:center;gap:10px;padding:11px 12px;background:rgba(255,255,255,0.025);border:1px solid var(--line);border-radius:var(--r-md);}
+.rp-loc .mat{color:var(--g);}
+.rp-loc-text{flex:1;line-height:1.2;}
+.rp-loc-text b{font-family:var(--fh);font-weight:500;font-size:13px;color:var(--t1);display:block;}
+.rp-loc-text span{font-family:var(--fm);font-size:11px;color:var(--t3);}
+.rp-w3w{font-family:var(--fm);font-size:11px;color:var(--b2);}
+.rp-section{margin-top:18px;}
+.rp-section h4{font-family:var(--fc);font-size:11px;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;color:var(--t3);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
+.rp-section h4 span{font-family:var(--fm);font-size:10.5px;color:var(--t3);text-transform:none;letter-spacing:0;}
+.rp-grid{display:grid;grid-template-columns:90px 1fr;gap:8px 12px;font-family:var(--fm);font-size:12px;}
+.rp-l{color:var(--t3);font-size:11px;}
+.rp-v{color:var(--t1);}
+.rp-v.b2{color:var(--b2);}
+.rp-v.ok{color:var(--g);}
+
+/* Timeline */
+.tl{position:relative;padding-left:22px;}
+.tl::before{content:"";position:absolute;left:5px;top:6px;bottom:6px;width:1.5px;background:var(--line-2);}
+.tl-step{position:relative;margin-bottom:12px;}
+.tl-step::before{content:"";position:absolute;left:-22px;top:3px;width:11px;height:11px;border-radius:50%;background:var(--surface-2);border:2px solid var(--t4);}
+.tl-step.done::before{background:var(--g);border-color:var(--g);}
+.tl-step.now::before{background:var(--g);border-color:var(--g);box-shadow:0 0 0 4px rgba(80,192,32,.18);}
+@keyframes tlPulse{0%{box-shadow:0 0 0 0 rgba(80,192,32,.4);}100%{box-shadow:0 0 0 14px rgba(80,192,32,0);}}
+.tl-step.now::after{content:"";position:absolute;left:-17px;top:8px;width:1px;height:1px;border-radius:50%;animation:tlPulse 2s ease infinite;}
+.tl-l{font-family:var(--fh);font-weight:500;font-size:13px;color:var(--t1);}
+.tl-step.todo .tl-l{color:var(--t3);}
+.tl-t{font-family:var(--fm);font-size:10.5px;color:var(--t3);margin-top:2px;}
+
+/* Recommend units */
+.rec{display:flex;flex-direction:column;gap:6px;}
+.rec-row{display:flex;align-items:center;gap:11px;padding:11px 13px;background:rgba(255,255,255,0.025);border:1px solid var(--line);border-radius:var(--r-md);transition:border-color .12s,background .12s;cursor:pointer;}
+.rec-row:hover{border-color:var(--line-2);background:rgba(255,255,255,0.045);}
+.rec-row.top{border-color:rgba(80,192,32,0.35);background:rgba(80,192,32,0.06);}
+.rec-num{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-weight:600;font-size:11px;background:rgba(255,255,255,0.05);color:var(--t3);}
+.rec-row.top .rec-num{background:var(--g);color:#000;}
+.rec-body{flex:1;min-width:0;}
+.rec-id{font-family:var(--fm);font-size:13px;color:var(--t1);font-weight:500;}
+.rec-meta{font-family:var(--fm);font-size:10.5px;color:var(--t3);margin-top:2px;}
+.rec-tag{font-family:var(--fm);font-size:9.5px;letter-spacing:.5px;padding:2px 6px;border-radius:var(--r-pill);}
+.rec-tag.als{background:rgba(80,192,32,0.13);color:var(--g);}
+.rec-tag.bls{background:rgba(39,170,225,0.13);color:var(--b2);}
+.rec-eta{font-family:var(--fh);font-weight:600;font-size:16px;color:var(--t1);min-width:48px;text-align:right;}
+.rec-row.top .rec-eta{color:var(--g);}
+
+/* Action zone */
+.rp-act{position:absolute;left:0;right:0;bottom:0;padding:12px 16px;background:linear-gradient(180deg,rgba(17,22,29,0) 0%,rgba(17,22,29,0.95) 24%,rgba(17,22,29,1) 100%);border-top:1px solid var(--line);display:flex;gap:8px;}
+.btn{flex:1;height:42px;border:none;border-radius:var(--r-md);font-family:var(--fh);font-weight:600;font-size:13px;letter-spacing:.3px;display:flex;align-items:center;justify-content:center;gap:6px;transition:transform .1s,background .12s;}
+.btn .mat{font-size:18px;}
+.btn:active{transform:translateY(1px);}
+.btn-pri{background:var(--g);color:#000;}
+.btn-pri:hover{background:#62D932;}
+.btn-pri:disabled{background:rgba(255,255,255,0.06);color:var(--t3);cursor:default;}
+.btn-sec{flex:0 0 42px;background:rgba(255,255,255,0.05);color:var(--t1);}
+.btn-sec:hover{background:rgba(255,255,255,0.08);}
+
+/* ── MAP FLOATING CONTROLS ─────────────────────── */
+.map-pill-stack{position:fixed;top:200px;left:372px;right:392px;z-index:9;display:flex;flex-direction:column;align-items:center;pointer-events:none;}
+.map-pill-stack > *{pointer-events:auto;}
+@media (max-width:1366px){.map-pill-stack{left:332px;right:352px;}}
+@media (max-width:1180px){.map-pill-stack{left:292px;right:332px;}}
+@media (max-width:1024px){.map-pill-stack{left:272px;right:312px;}}
+/* Advanced filter */
+.dp-filter-btn{display:flex;align-items:center;gap:7px;height:36px;padding:0 16px;background:rgba(17,22,29,0.97);border:1px solid var(--line);border-radius:var(--r-pill);font-family:var(--fh);font-size:13px;font-weight:500;color:var(--t2);cursor:pointer;transition:all .12s;box-shadow:0 1px 8px rgba(0,0,0,.4);}
+.dp-filter-btn:hover{color:var(--t1);border-color:var(--line-2);}
+.dp-filter-btn.active{color:var(--g);background:rgba(80,192,32,.10);border-color:rgba(80,192,32,.30);}
+.dp-filter-btn .mat{font-size:17px;}
+.dp-filter-count{background:var(--g);color:#0B0F14;font-family:var(--fm);font-size:10px;font-weight:700;padding:1px 6px;border-radius:var(--r-pill);min-width:18px;text-align:center;display:none;}
+.dp-filter-count.show{display:inline-block;}
+.dp-filter-panel{display:none;position:absolute;top:calc(100% + 8px);z-index:20;background:rgba(17,22,29,0.98);backdrop-filter:saturate(160%) blur(18px);border:1px solid var(--line-2);border-radius:var(--r-lg);box-shadow:0 12px 40px rgba(0,0,0,.7);padding:18px 20px;width:310px;}
+.dp-filter-panel.open{display:block;}
+.dfp-head{display:flex;align-items:center;gap:8px;margin-bottom:16px;}
+.dfp-title{font-family:var(--fc);font-size:10px;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;color:var(--t3);flex:1;}
+.dfp-close{width:24px;height:24px;border-radius:var(--r-pill);background:rgba(255,255,255,.04);border:none;color:var(--t3);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.dfp-close .mat{font-size:14px;}
+.dfp-section{margin-bottom:14px;}
+.dfp-section:last-child{margin-bottom:0;}
+.dfp-lbl{font-family:var(--fc);font-size:9.5px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--t4);display:block;margin-bottom:7px;}
+.dfp-row{display:flex;flex-wrap:wrap;gap:5px;}
+.dfp-pill{display:flex;align-items:center;height:28px;padding:0 11px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:var(--r-pill);font-family:var(--fh);font-size:11.5px;color:var(--t2);cursor:pointer;transition:all .12s;}
+.dfp-pill:hover{background:rgba(255,255,255,.07);color:var(--t1);}
+.dfp-pill.on{background:rgba(80,192,32,.14);color:var(--g);border-color:rgba(80,192,32,.3);}
+.dfp-pill.on.p1{background:rgba(255,59,48,.12);color:var(--p1);border-color:rgba(255,59,48,.3);}
+.dfp-pill.on.p2{background:rgba(255,140,0,.12);color:var(--p2);border-color:rgba(255,140,0,.3);}
+.dfp-pill.on.p3{background:rgba(245,177,0,.12);color:var(--p3);border-color:rgba(245,177,0,.3);}
+.dfp-sel{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:var(--r-md);padding:7px 10px;font-family:var(--fh);font-size:12px;color:var(--t1);outline:none;cursor:pointer;}
+.dfp-sel option{background:#11161D;}
+.dfp-reset{width:100%;margin-top:14px;padding:8px;border-radius:var(--r-md);background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--t3);font-family:var(--fh);font-size:12px;cursor:pointer;transition:all .12s;}
+.dfp-reset:hover{background:rgba(255,255,255,.07);color:var(--t1);}
+.map-controls{position:absolute;bottom:24px;right:24px;display:flex;flex-direction:column;gap:8px;z-index:9;}
+.mc-group{background:rgba(17,22,29,0.95);border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--shadow-2);overflow:hidden;}
+.mc-btn{width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:transparent;border:none;color:var(--t2);transition:background .12s,color .12s;}
+.mc-btn + .mc-btn{border-top:1px solid var(--line);}
+.mc-btn:hover{background:rgba(255,255,255,0.04);color:var(--t1);}
+
+/* HUD */
+.hud-eta{position:fixed;bottom:18px;left:372px;right:392px;margin:0 auto;display:flex;align-items:center;justify-content:center;gap:14px;padding:12px 18px;background:rgba(17,22,29,0.96);border:1px solid var(--line);border-radius:var(--r-pill);box-shadow:var(--shadow-2);z-index:9;width:fit-content;max-width:calc(100vw - 800px);}
+@media (max-width:1366px){.hud-eta{left:332px;right:352px;max-width:calc(100vw - 720px);padding:10px 14px;gap:10px;}}
+@media (max-width:1180px){.hud-eta{left:292px;right:332px;max-width:calc(100vw - 640px);padding:9px 12px;gap:8px;}.hud-eta-text b{font-size:12px;}.hud-eta-text span{font-size:10px;}.hud-eta-eta{font-size:15px;}}
+@media (max-width:1024px){.hud-eta{left:272px;right:312px;max-width:calc(100vw - 600px);padding:8px 10px;gap:7px;}.hud-eta-ic{width:26px;height:26px;}}
+.hud-eta-ic{width:32px;height:32px;border-radius:50%;background:rgba(80,192,32,0.14);color:var(--g);display:flex;align-items:center;justify-content:center;}
+.hud-eta-text b{font-family:var(--fh);font-weight:600;font-size:14px;color:var(--t1);display:block;line-height:1.1;}
+.hud-eta-text span{font-family:var(--fm);font-size:11px;color:var(--t3);}
+.hud-eta-sep{width:1px;height:24px;background:var(--line);}
+.hud-eta-eta{font-family:var(--fh);font-weight:600;font-size:18px;color:var(--g);}
+
+/* Hospital chips — horizontal strip */
+.hosp-chips{position:fixed;bottom:80px;left:372px;right:392px;display:flex;flex-direction:row;flex-wrap:wrap;gap:6px;z-index:8;justify-content:center;pointer-events:auto;}
+@media (max-width:1366px){.hosp-chips{left:332px;right:352px;}}
+@media (max-width:1180px){.hosp-chips{left:292px;right:332px;}}
+@media (max-width:1024px){.hosp-chips{left:272px;right:312px;}}
+.hosp-chip{display:flex;align-items:center;gap:8px;padding:7px 12px;background:rgba(17,22,29,0.95);border:1px solid var(--line);border-radius:var(--r-pill);font-family:var(--fm);font-size:11px;box-shadow:var(--shadow-1);cursor:pointer;transition:border-color .12s,background .12s;}
+.hosp-chip:hover{border-color:var(--line-2);background:rgba(22,28,37,0.98);}
+.hosp-chip-n{font-family:var(--fh);font-weight:500;font-size:12px;color:var(--t1);white-space:nowrap;}
+.hosp-chip-bar{width:48px;height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;flex-shrink:0;}
+.hosp-chip-bar i{height:100%;display:block;border-radius:2px;}
+.hosp-chip-pct{color:var(--t2);min-width:28px;text-align:right;font-size:10.5px;}
+.hosp-chip-stat{font-family:var(--fm);font-size:9px;letter-spacing:.5px;white-space:nowrap;}
+.hosp-chip-l6{font-family:var(--fm);font-size:9px;letter-spacing:.5px;background:rgba(245,177,0,0.14);color:var(--p3);padding:1px 5px;border-radius:3px;}
+.hosp-chip.ok .hosp-chip-bar i{background:var(--g);}
+.hosp-chip.ok .hosp-chip-pct{color:var(--g);}
+.hosp-chip.ok .hosp-chip-stat{color:var(--g);}
+.hosp-chip.warn .hosp-chip-bar i{background:var(--p2);}
+.hosp-chip.warn .hosp-chip-pct{color:var(--p2);}
+.hosp-chip.warn .hosp-chip-stat{color:var(--p2);}
+.hosp-chip.crit .hosp-chip-bar i{background:var(--p1);}
+.hosp-chip.crit .hosp-chip-pct{color:var(--p1);}
+.hosp-chip.crit .hosp-chip-stat{color:var(--p1);}
+
+/* Supervisor Oversight strip (read-only — no action buttons by design) */
+.sv-strip{
+  margin-top:0;padding:10px 12px;
+  background:rgba(39,170,225,0.04);
+  border:1px solid rgba(39,170,225,0.15);
+  border-radius:var(--r-md);
+}
+.sv-chips{display:flex;flex-wrap:wrap;gap:5px;min-height:20px;}
+.sv-chip{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:2px 8px;border-radius:var(--r-pill);
+  font-family:var(--fm);font-size:10px;font-weight:600;letter-spacing:.4px;
+}
+.sv-chip.barge{background:rgba(255,59,48,0.13);color:var(--p1);}
+.sv-chip.takeover{background:rgba(255,59,48,0.20);color:var(--p1);}
+.sv-chip.transfer{background:rgba(255,140,0,0.13);color:var(--p2);}
+.sv-chip.qa{background:rgba(245,177,0,0.13);color:var(--p3);}
+.sv-note{font-family:var(--fh);font-size:12px;color:var(--t2);margin-top:7px;font-style:italic;line-height:1.35;}
+/* Dispatch event entries in timeline */
+.tl-evt{position:relative;margin-bottom:10px;}
+.tl-evt::before{content:"";position:absolute;left:-22px;top:3px;width:9px;height:9px;border-radius:3px;background:rgba(39,170,225,0.25);border:1px solid rgba(39,170,225,0.5);}
+.tl-evt-row{display:flex;align-items:center;gap:6px;}
+.tl-evt-chip{display:inline-flex;padding:1px 5px;border-radius:3px;font-family:var(--fm);font-size:9.5px;font-weight:600;flex-shrink:0;}
+.tl-evt-chip.sup{background:rgba(245,177,0,0.14);color:var(--p3);}
+.tl-evt-chip.disp{background:rgba(39,170,225,0.12);color:var(--b2);}
+.tl-evt-chip.sys{background:rgba(255,255,255,0.06);color:var(--t3);}
+.tl-evt-l{font-family:var(--fh);font-size:12px;color:var(--t2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tl-evt-t{font-family:var(--fm);font-size:10px;color:var(--t3);}
+
+/* Mapbox tweaks */
+.mapboxgl-ctrl-attrib,.mapboxgl-ctrl-bottom-left,.mapboxgl-ctrl-bottom-right{display:none !important;}
+
+/* Markers */
+.amb-marker{position:relative;cursor:pointer;}
+.inc-pin{width:38px;height:38px;cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;}
+.inc-pin .body{width:32px;height:32px;border-radius:50%;background:#FFFFFF;color:#0B0F14;display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-weight:700;font-size:13px;box-shadow:0 6px 16px rgba(0,0,0,.5),0 0 0 3px rgba(0,0,0,.2);position:relative;z-index:2;}
+.inc-pin.p1 .body{background:var(--p1);color:#fff;}
+.inc-pin.p2 .body{background:var(--p2);color:#fff;}
+.inc-pin.p3 .body{background:var(--p3);color:#000;}
+.inc-pin.p4 .body{background:var(--g);color:#000;}
+.inc-pin.p1::before{content:"";position:absolute;inset:-4px;border-radius:50%;background:var(--p1);opacity:0.25;animation:pinPulse 1.8s ease infinite;z-index:1;}
+@keyframes pinPulse{0%{transform:scale(.85);opacity:.5;}100%{transform:scale(1.7);opacity:0;}}
+
+.hosp-pin{position:relative;display:flex;flex-direction:column;align-items:center;cursor:pointer;}
+.hosp-pin .h-sign{width:16px;height:16px;border-radius:4px;background:#1268D0;border:1.5px solid rgba(255,255,255,.75);display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-weight:800;font-size:10px;color:#fff;box-shadow:0 2px 6px rgba(0,0,0,.5);line-height:1;transition:transform .12s;}
+.hosp-pin:hover .h-sign{transform:scale(1.15);}
+.hosp-pin.l6 .h-sign{width:18px;height:18px;font-size:11px;background:#9A6C00;border-color:#FFD700;box-shadow:0 2px 8px rgba(155,108,0,.5),0 0 0 1px rgba(255,215,0,.25);}
+.hosp-pin .h-name{position:absolute;top:20px;left:50%;transform:translateX(-50%);font-family:var(--fh);font-size:10px;font-weight:600;color:#fff;background:rgba(11,15,20,.85);border:1px solid rgba(255,255,255,.1);padding:2px 6px;border-radius:4px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:20;}
+.hosp-pin:hover .h-name{opacity:1;}
+
+.mapboxgl-popup-content{background:rgba(17,22,29,.98) !important;border:1px solid var(--line) !important;border-radius:var(--r-md) !important;padding:0 !important;box-shadow:var(--shadow-3) !important;color:var(--t1) !important;font-family:var(--fh);}
+.mapboxgl-popup-tip{display:none !important;}
+.pop{padding:14px 16px;min-width:200px;}
+.pop-head{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.pop-h-t b{font-family:var(--fh);font-weight:600;font-size:13px;color:var(--t1);display:block;line-height:1.15;}
+.pop-h-t span{font-family:var(--fm);font-size:10.5px;color:var(--t3);}
+@keyframes nacd-spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+
+/* PSAP origin badge on incident cards */
+.psap-chip{display:inline-flex;align-items:center;gap:3px;padding:2px 6px;background:rgba(39,170,225,.12);border:1px solid rgba(39,170,225,.25);border-radius:var(--r-pill);font-family:var(--fm);font-size:9px;font-weight:600;letter-spacing:.6px;color:var(--b2);margin-left:2px;}
+.det-chip{display:inline-flex;align-items:center;padding:2px 6px;background:rgba(255,255,255,.06);border-radius:var(--r-pill);font-family:var(--fm);font-size:9px;color:var(--t3);margin-left:2px;}
+.det-chip.E,.det-chip.e{background:rgba(255,59,48,.15);color:var(--p1);}
+.det-chip.D,.det-chip.d{background:rgba(255,140,0,.15);color:var(--p2);}
+.det-chip.C,.det-chip.c{background:rgba(245,177,0,.15);color:var(--p3);}
+.det-chip.B,.det-chip.b,.det-chip.A,.det-chip.a{background:rgba(80,192,32,.12);color:var(--g);}
+@keyframes psapFlash{0%,100%{background:rgba(39,170,225,.0);}30%{background:rgba(39,170,225,.10);}}
+.inc.psap-flash{animation:psapFlash 1.6s ease;}
+
+/* PSAP triage detail section */
+.psap-section{margin:12px 0;padding:10px 12px;background:rgba(39,170,225,.06);border:1px solid rgba(39,170,225,.14);border-radius:var(--r-md);}
+.psap-sec-head{display:flex;align-items:center;gap:6px;margin-bottom:8px;font-family:var(--fh);font-weight:600;font-size:11px;color:var(--b2);letter-spacing:.4px;}
+.psap-sec-head .mat{font-size:14px;}
+.psap-det-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;}
+.psap-det-row{display:flex;flex-direction:column;gap:1px;}
+.psap-det-label{font-family:var(--fm);font-size:9px;color:var(--t4);letter-spacing:.6px;text-transform:uppercase;}
+.psap-det-val{font-family:var(--fm);font-size:11px;color:var(--t1);}
+.psap-det-det{display:flex;align-items:center;gap:6px;margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,.06);}
+.psap-lvl-badge{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:6px;font-family:var(--fh);font-weight:700;font-size:12px;}
+.psap-lvl-badge.E{background:rgba(255,59,48,.2);color:var(--p1);border:1px solid rgba(255,59,48,.3);}
+.psap-lvl-badge.D{background:rgba(255,140,0,.2);color:var(--p2);border:1px solid rgba(255,140,0,.3);}
+.psap-lvl-badge.C{background:rgba(245,177,0,.2);color:var(--p3);border:1px solid rgba(245,177,0,.3);}
+.psap-lvl-badge.B,.psap-lvl-badge.A{background:rgba(80,192,32,.15);color:var(--g);border:1px solid rgba(80,192,32,.25);}
+.psap-code{font-family:var(--fm);font-size:11px;color:var(--t2);}
+
+/* ── SHA brand logo + animation ─────────────────── */
+.sha-logo-pill{display:flex;align-items:center;flex-shrink:0;padding:0;background:transparent;}
+.sha-logo-pill img{height:28px;width:auto;display:block;filter:invert(1) hue-rotate(195deg) saturate(1.4);animation:brand-glow 4s ease-in-out infinite;}
+@keyframes brand-glow{0%,100%{opacity:.82;}50%{opacity:1;}}
+.sha-nadc{font-family:var(--fh);font-weight:700;font-size:13px;letter-spacing:.3px;background:linear-gradient(90deg,var(--b2) 0%,var(--g) 45%,var(--b2) 90%);background-size:200% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:nadc-sweep 9s linear infinite;line-height:1.1;display:block;}
+@keyframes nadc-sweep{0%{background-position:100% 0;}100%{background-position:-100% 0;}}
+
+/* ── New Call button ─────────────────────────────── */
+.lp-head-actions{display:flex;align-items:center;gap:8px;}
+.btn-new-call{background:var(--g);border:none;border-radius:var(--r-sm);padding:4px 10px 4px 7px;font-family:var(--fh);font-weight:700;font-size:10.5px;color:#fff;cursor:pointer;display:flex;align-items:center;gap:3px;white-space:nowrap;flex-shrink:0;}
+.btn-new-call:hover{background:var(--g2);}
+.btn-new-call .mat{font-size:14px;}
+
+/* ── Create Incident modal ───────────────────────── */
+#cad-new-modal{position:fixed;inset:0;z-index:3100;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;}
+#cad-new-modal.open{display:flex;}
+.cad-modal-box{background:var(--surface);border:1px solid var(--line-2);border-radius:var(--r-lg);padding:24px 28px;width:480px;max-width:95vw;max-height:90vh;overflow-y:auto;position:relative;}
+.cad-modal-box h2{font-family:var(--fh);font-weight:700;font-size:15px;margin:0 0 18px;letter-spacing:.3px;display:flex;align-items:center;gap:7px;}
+.cad-modal-box h2 .mat{font-size:18px;color:var(--p1);}
+.cad-modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--t3);cursor:pointer;font-size:20px;line-height:1;padding:2px 7px;}
+.cad-modal-close:hover{color:var(--t1);}
+.cad-sec-label{font-family:var(--fm);font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:var(--t4);margin-bottom:6px;}
+.cad-pri-row{display:flex;gap:8px;margin-bottom:16px;}
+.cad-pri{flex:1;padding:9px 6px;border-radius:var(--r-sm);border:1.5px solid var(--line);background:transparent;cursor:pointer;font-family:var(--fh);font-weight:700;font-size:12px;color:var(--t3);text-align:center;transition:all .12s;}
+.cad-pri.p1{border-color:rgba(255,59,48,.3);color:var(--p1);}
+.cad-pri.p1.on{background:rgba(255,59,48,.18);border-color:var(--p1);color:#fff;}
+.cad-pri.p2{border-color:rgba(255,140,0,.3);color:var(--p2);}
+.cad-pri.p2.on{background:rgba(255,140,0,.18);border-color:var(--p2);color:#fff;}
+.cad-pri.p3{border-color:rgba(245,177,0,.3);color:var(--p3);}
+.cad-pri.p3.on{background:rgba(245,177,0,.18);border-color:var(--p3);color:#fff;}
+.cad-field{margin-bottom:14px;}
+.cad-field label{display:block;font-family:var(--fm);font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:var(--t3);margin-bottom:5px;}
+.cad-field input,.cad-field select,.cad-field textarea{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--line-2);border-radius:var(--r-sm);padding:8px 10px;font-family:var(--fm);font-size:12px;color:var(--t1);outline:none;box-sizing:border-box;-webkit-appearance:none;}
+.cad-field input:focus,.cad-field select:focus,.cad-field textarea:focus{border-color:var(--b2);}
+.cad-field select option{background:#11161D;color:var(--t1);}
+.cad-field textarea{resize:vertical;min-height:52px;}
+.cad-row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.cad-als-row{display:flex;align-items:center;gap:8px;margin-bottom:16px;cursor:pointer;}
+.cad-als-row input[type=checkbox]{width:14px;height:14px;accent-color:var(--b2);cursor:pointer;flex-shrink:0;}
+.cad-als-row span{font-family:var(--fm);font-size:12px;color:var(--t2);}
+.cad-modal-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:4px;padding-top:14px;border-top:1px solid var(--line);}
+.cad-modal-foot .btn-ghost{background:transparent;border:1px solid var(--line-2);border-radius:var(--r-sm);padding:7px 16px;font-family:var(--fh);font-size:12px;color:var(--t2);cursor:pointer;}
+.cad-modal-foot .btn-ghost:hover{border-color:rgba(255,255,255,.2);color:var(--t1);}
+.cad-modal-foot .btn-sub{background:var(--g);border:none;border-radius:var(--r-sm);padding:7px 18px;font-family:var(--fh);font-weight:700;font-size:12px;color:#fff;cursor:pointer;display:flex;align-items:center;gap:5px;}
+.cad-modal-foot .btn-sub:hover{background:var(--g2);}
+.cad-modal-foot .btn-sub .mat{font-size:14px;}
+
+/* ── Origin picker step ──────────────────────────── */
+.cad-origin-step{display:block;}
+.cad-origin-step h2{margin-bottom:6px;}
+.cad-origin-hint{font-family:var(--fm);font-size:11px;color:var(--t3);margin-bottom:16px;}
+.cad-origin-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.cad-origin-card{background:rgba(255,255,255,.03);border:1.5px solid var(--line);border-radius:var(--r-md);padding:14px 14px 12px;cursor:pointer;text-align:left;transition:border-color .12s,background .12s;}
+.cad-origin-card:hover{background:rgba(255,255,255,.055);border-color:rgba(255,255,255,.2);}
+.cad-origin-card.psap-path{border-color:rgba(39,170,225,.3);}
+.cad-origin-card.psap-path:hover{background:rgba(39,170,225,.07);border-color:var(--b2);}
+.cad-oc-icon{font-size:20px;color:var(--t3);margin-bottom:8px;display:block;}
+.cad-origin-card.psap-path .cad-oc-icon{color:var(--b2);}
+.cad-oc-title{font-family:var(--fh);font-weight:700;font-size:13px;color:var(--t1);display:block;margin-bottom:3px;}
+.cad-oc-sub{font-family:var(--fm);font-size:10.5px;color:var(--t3);display:block;line-height:1.4;}
+
+/* ── Form step (shown after origin selection) ────── */
+.cad-form-step{display:none;}
+.cad-form-step.open{display:block;}
+.cad-form-back{display:flex;align-items:center;gap:5px;background:none;border:none;color:var(--t3);cursor:pointer;font-family:var(--fm);font-size:11px;padding:0;margin-bottom:14px;}
+.cad-form-back:hover{color:var(--t1);}
+.cad-form-back .mat{font-size:14px;}
+.cad-origin-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:var(--r-pill);font-family:var(--fm);font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;margin-bottom:14px;}
+.cad-origin-badge.phone{background:rgba(39,170,225,.12);color:var(--b2);border:1px solid rgba(39,170,225,.2);}
+.cad-origin-badge.transfer{background:rgba(80,192,32,.1);color:var(--g);border:1px solid rgba(80,192,32,.18);}
+.cad-origin-badge.field{background:rgba(255,140,0,.1);color:var(--p2);border:1px solid rgba(255,140,0,.2);}
+.cad-origin-badge.manual{background:rgba(255,255,255,.06);color:var(--t2);border:1px solid var(--line);}
+.cad-origin-badge .mat{font-size:12px;}
+
+/* ── PSAP side panel ─────────────────────────────── */
+#psap-side-panel{position:fixed;top:44px;right:0;bottom:0;width:min(720px,90vw);background:var(--bg);border-left:1px solid var(--line-2);z-index:2500;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:-8px 0 32px rgba(0,0,0,.5);}
+#psap-side-panel.open{transform:translateX(0);}
+#psap-panel-head{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--line);flex-shrink:0;background:var(--surface);}
+#psap-panel-head .ph-title{display:flex;align-items:center;gap:7px;font-family:var(--fh);font-weight:700;font-size:13px;color:var(--t1);}
+#psap-panel-head .ph-title .mat{font-size:16px;color:var(--b2);}
+#psap-panel-close{background:none;border:1px solid var(--line);border-radius:var(--r-sm);padding:4px 12px;font-family:var(--fm);font-size:11px;color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:4px;}
+#psap-panel-close:hover{color:var(--t1);border-color:rgba(255,255,255,.2);}
+#psap-panel-close .mat{font-size:13px;}
+#psap-panel-frame{flex:1;border:none;width:100%;}
+#psap-panel-dim{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:2499;display:none;backdrop-filter:blur(2px);}
+#psap-panel-dim.open{display:block;}
+
+/* ── More-options popup ──────────────────────────── */
+#more-opts-pop{position:fixed;z-index:2800;background:#161C25;border:1px solid rgba(255,255,255,.12);border-radius:var(--r-md);padding:8px 0;width:224px;box-shadow:0 8px 32px rgba(0,0,0,.6);display:none;}
+#more-opts-pop.open{display:block;}
+.mop-sec{padding:4px 0;border-bottom:1px solid rgba(255,255,255,.06);}
+.mop-sec:last-child{border-bottom:none;}
+.mop-sec-label{padding:4px 14px 5px;font-family:var(--fm);font-size:9.5px;letter-spacing:.8px;text-transform:uppercase;color:var(--t4);}
+.mop-pri-row{display:flex;gap:5px;padding:2px 12px 8px;}
+.mop-pri-btn{flex:1;padding:5px 4px;border-radius:6px;border:1px solid var(--line);background:transparent;cursor:pointer;font-family:var(--fh);font-weight:700;font-size:11px;text-align:center;}
+.mop-pri-btn.p1{color:var(--p1);border-color:rgba(255,59,48,.28);}
+.mop-pri-btn.p1:hover,.mop-pri-btn.p1.cur{background:rgba(255,59,48,.18);border-color:var(--p1);}
+.mop-pri-btn.p2{color:var(--p2);border-color:rgba(255,140,0,.28);}
+.mop-pri-btn.p2:hover,.mop-pri-btn.p2.cur{background:rgba(255,140,0,.18);border-color:var(--p2);}
+.mop-pri-btn.p3{color:var(--p3);border-color:rgba(245,177,0,.28);}
+.mop-pri-btn.p3:hover,.mop-pri-btn.p3.cur{background:rgba(245,177,0,.18);border-color:var(--p3);}
+.mop-note-box{padding:2px 12px 8px;}
+.mop-note-box textarea{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-family:var(--fm);font-size:11px;color:var(--t1);resize:none;outline:none;box-sizing:border-box;height:52px;}
+.mop-note-box textarea:focus{border-color:var(--b2);}
+.mop-note-send{display:block;width:calc(100% - 24px);margin:0 12px 4px;padding:5px 0;background:rgba(39,170,225,.12);border:1px solid rgba(39,170,225,.22);border-radius:6px;color:var(--b2);font-family:var(--fm);font-weight:700;font-size:10px;letter-spacing:.5px;text-align:center;cursor:pointer;}
+.mop-note-send:hover{background:rgba(39,170,225,.22);}
+.mop-cancel-btn{display:flex;align-items:center;gap:7px;width:100%;padding:8px 14px;background:transparent;border:none;cursor:pointer;color:var(--p1);font-family:var(--fm);font-size:12px;text-align:left;}
+.mop-cancel-btn:hover{background:rgba(255,59,48,.08);}
+.mop-cancel-btn .mat{font-size:15px;}
+
+/* ── Tab overlay views ───────────────────────────── */
+.tab-ov{position:fixed;top:44px;left:0;right:0;bottom:0;z-index:800;background:rgba(11,15,20,.97);display:none;flex-direction:column;overflow:hidden;}
+.tab-ov.open{display:flex;}
+.tab-ov-head{display:flex;align-items:center;justify-content:space-between;padding:14px 20px 10px;border-bottom:1px solid var(--line);flex-shrink:0;}
+.tab-ov-head h2{font-family:var(--fh);font-weight:700;font-size:15px;margin:0;display:flex;align-items:center;gap:8px;}
+.tab-ov-head h2 .mat{font-size:18px;color:var(--b2);}
+.tab-ov-head-right{display:flex;align-items:center;gap:8px;}
+.tab-ov-close{background:none;border:1px solid var(--line);border-radius:var(--r-sm);padding:5px 12px;font-family:var(--fm);font-size:11px;color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:5px;}
+.tab-ov-close:hover{color:var(--t1);border-color:rgba(255,255,255,.2);}
+.tab-ov-close .mat{font-size:14px;}
+.tab-ov-body{flex:1;overflow-y:auto;padding:16px 20px;}
+.ov-table{width:100%;border-collapse:collapse;font-family:var(--fm);font-size:12px;}
+.ov-table th{text-align:left;padding:8px 12px;font-size:10px;letter-spacing:.7px;text-transform:uppercase;color:var(--t4);border-bottom:1px solid var(--line);font-family:'Barlow Condensed',sans-serif;font-weight:600;white-space:nowrap;}
+.ov-table td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--t2);vertical-align:middle;}
+.ov-table tr:hover td{background:rgba(255,255,255,.02);}
+.ov-table tr.clickable{cursor:pointer;}
+.ov-tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:var(--r-pill);font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;white-space:nowrap;}
+.ov-tag.avl{background:rgba(80,192,32,.14);color:var(--g);}
+.ov-tag.dis,.ov-tag.disp{background:rgba(255,59,48,.14);color:var(--p1);}
+.ov-tag.enr{background:rgba(255,140,0,.14);color:var(--p2);}
+.ov-tag.scn{background:rgba(39,170,225,.14);color:var(--b2);}
+.ov-tag.trn{background:rgba(80,192,32,.1);color:var(--g);}
+.ov-tag.pnd{background:rgba(245,177,0,.1);color:var(--p3);}
+.ov-tag.ok{background:rgba(80,192,32,.1);color:var(--g);}
+.ov-tag.warn{background:rgba(255,140,0,.14);color:var(--p2);}
+.ov-tag.crit{background:rgba(255,59,48,.14);color:var(--p1);}
+.ov-tag.p1{background:rgba(255,59,48,.14);color:var(--p1);}
+.ov-tag.p2{background:rgba(255,140,0,.14);color:var(--p2);}
+.ov-tag.p3{background:rgba(245,177,0,.1);color:var(--p3);}
+.ov-btn-new{background:var(--g);border:none;border-radius:var(--r-sm);padding:6px 14px;font-family:var(--fh);font-weight:700;font-size:11px;color:#fff;cursor:pointer;display:flex;align-items:center;gap:5px;}
+.ov-btn-new:hover{background:var(--g2);}
+.ov-btn-new .mat{font-size:14px;}
+.ov-summary{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;}
+.ov-kpi{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-md);padding:10px 16px;min-width:90px;}
+.ov-kpi-n{font-family:var(--fh);font-weight:700;font-size:22px;line-height:1;}
+.ov-kpi-l{font-family:var(--fm);font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:var(--t4);margin-top:3px;}
+
+/* ── App switcher (icon-forward) ─────────────────────────────────────── */
+.app-sw{position:relative;display:inline-flex;}
+.app-sw-btn{display:flex;align-items:center;gap:7px;padding:6px 12px 6px 10px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  border-radius:999px;color:rgba(255,255,255,.95);
+  font-family:'Exo 2',sans-serif;font-size:12.5px;font-weight:600;
+  cursor:pointer;transition:background .12s,border-color .12s;}
+.app-sw-btn:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.14);}
+.app-sw-btn.open{background:rgba(80,192,32,.12);border-color:rgba(80,192,32,.30);}
+.app-sw-btn .mat{font-size:18px;color:#50C020;}
+.app-sw-btn .asb-cur{letter-spacing:.2px;}
+.app-sw-btn .asb-arrow{font-size:14px !important;color:rgba(255,255,255,.4) !important;margin-left:1px;transition:transform .15s;}
+.app-sw-btn.open .asb-arrow{transform:rotate(180deg);}
+.app-sw-panel{display:none;position:absolute;top:calc(100% + 8px);left:0;
+  width:296px;background:rgba(14,22,32,.96);backdrop-filter:saturate(160%) blur(16px);
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:14px;box-shadow:0 18px 42px rgba(0,0,0,.7);
+  z-index:9000;overflow:hidden;padding:8px;}
+.app-sw-panel.open{display:block;animation:asPop .14s ease-out;}
+@keyframes asPop{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
+.asp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.asp-item{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:6px;padding:14px 6px 10px;background:transparent;color:rgba(255,255,255,.7);
+  text-decoration:none;text-align:center;border-radius:10px;
+  border:1px solid transparent;
+  transition:background .12s,color .12s,border-color .12s,transform .08s;}
+.asp-item:hover{background:rgba(255,255,255,.05);color:#fff;border-color:rgba(255,255,255,.08);}
+.asp-item:active{transform:scale(.96);}
+.asp-item.on{background:rgba(80,192,32,.10);color:#50C020;border-color:rgba(80,192,32,.25);}
+.asp-item .mat{font-size:30px;line-height:1;}
+.asp-item b{font-family:'Exo 2',sans-serif;font-weight:500;font-size:11px;display:block;letter-spacing:.1px;}
+
+</style>
+<link rel="stylesheet" href="/assets/tokens-v2.css">
+</head>
+<body>
+<div id="nacd-auth-overlay" style="position:fixed;inset:0;z-index:9000;background:rgba(3,12,23,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .2s;"><div style="font-family:'Exo 2',system-ui,sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,.35);text-transform:uppercase;">SHA · NADC</div><div style="width:26px;height:26px;border:2px solid rgba(80,192,32,.25);border-top-color:#50C020;border-radius:50%;animation:nacd-spin .8s linear infinite;"></div><div style="font-family:'Exo 2',system-ui,sans-serif;font-size:10px;color:rgba(255,255,255,.25);">Authenticating…</div></div>
+
+<div class="shell">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="sha-logo-pill"><img src="/sha-social-health-authority-logo.png" alt="SHA" loading="lazy"></div>
+      <div class="brand-text">
+        <b class="sha-nadc">NADC</b>
+        <span style="font-family:var(--fm);font-size:9.5px;letter-spacing:1.2px;color:var(--t3);text-transform:uppercase;">CAD Console</span>
+      </div>
+    </div>
+    <div class="app-sw">
+  <button class="app-sw-btn" onclick="toggleAppSw()" aria-label="Switch app">
+    <span class="mat">apps</span>
+    <span class="asb-cur">Dispatch</span>
+    <span class="mat asb-arrow">expand_more</span>
+  </button>
+  <div class="app-sw-panel" id="app-sw-panel">
+    <div class="asp-grid">
+      <a class="asp-item" href="/dashboard" title="Wall"><span class="mat">tv</span><b>Wall</b></a>
+      <a class="asp-item" href="/psap" title="PSAP"><span class="mat">call</span><b>PSAP</b></a>
+      <a class="asp-item on" href="/dispatch" title="Dispatch"><span class="mat">radar</span><b>Dispatch</b></a>
+      <a class="asp-item" href="/supervisor" title="Supervisor"><span class="mat">supervisor_account</span><b>Supervisor</b></a>
+      <a class="asp-item" href="/emt" title="EMT"><span class="mat">directions_car</span><b>EMT</b></a>
+      <a class="asp-item" href="/hospital" title="Hospital"><span class="mat">local_hospital</span><b>Hospital</b></a>
+      <a class="asp-item" href="/claims" title="Claims"><span class="mat">receipt_long</span><b>Claims</b></a>
+      <a class="asp-item" href="/providers" title="Providers"><span class="mat">business</span><b>Providers</b></a>
+      <a class="asp-item" href="/admin" title="Admin"><span class="mat">admin_panel_settings</span><b>Admin</b></a>
+    </div>
+  </div>
+</div>
+    <div class="h-rule"></div>
+    <nav class="nav-pills">
+      <button class="np on"><span class="mat">radar</span> Live Map</button>
+      <button class="np"><span class="mat">format_list_bulleted</span> Incidents</button>
+      <button class="np"><span class="mat">local_shipping</span> Fleet</button>
+      <button class="np"><span class="mat">local_hospital</span> Hospitals</button>
+      <button class="np"><span class="mat">bar_chart</span> Analytics</button>
+    </nav>
+    <div class="spacer"></div>
+    <div class="search-pill">
+      <span class="mat">search</span>
+      <input id="dp-search-inp" placeholder="Find incident, unit, location, w3w…">
+      <kbd>⌘ K</kbd>
+    </div>
+    <button class="icon-btn" id="dp-notif-btn"><span class="mat">notifications</span><span class="dot"></span></button>
+    <button class="icon-btn" id="dp-help-btn"><span class="mat">help_outline</span></button>
+    <div class="user">
+      <div class="user-av" id="user-av">JK</div>
+      <div class="user-text">
+        <b id="user-nm">J. Kamau</b><span id="user-role">Dispatcher · 201</span>
+      </div>
+    </div>
+    <button title="Sign out" onclick="if(window.Clerk)window.Clerk.signOut().then(function(){location.reload();})" style="display:flex;align-items:center;padding:5px 7px;border-radius:999px;background:transparent;border:none;color:var(--t3);cursor:pointer;"><span class="mat" style="font-size:16px;">logout</span></button>
+  </header>
+
+  <!-- MAIN CANVAS -->
+  <main class="canvas">
+    <div id="map"></div>
+
+    <!-- KPI rail -->
+    <div class="kpi-rail">
+      <div class="kpi crit">
+        <span class="kpi-l">Active P1</span>
+        <span class="kpi-v tab" id="k-p1">—</span>
+        <span class="kpi-d up"><span class="mat">arrow_upward</span><span id="k-p1-sub">loading</span></span>
+      </div>
+      <div class="kpi warn">
+        <span class="kpi-l">Active P2</span>
+        <span class="kpi-v tab" id="k-p2">—</span>
+        <span class="kpi-d">— stable</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-l">Deployed</span>
+        <span class="kpi-v tab" id="k-dep">—</span>
+        <span class="kpi-d" id="k-dep-sub">loading</span>
+      </div>
+      <div class="kpi ok">
+        <span class="kpi-l">Avg Response</span>
+        <span class="kpi-v tab" id="k-resp">—</span>
+        <span class="kpi-d dn"><span class="mat">arrow_downward</span>vs target</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-l">Queue</span>
+        <span class="kpi-v tab" id="k-calls">—</span>
+        <span class="kpi-d">calls waiting</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-l">SLA Compliance</span>
+        <span class="kpi-v tab" id="k-conv">—</span>
+        <span class="kpi-d">shift</span>
+      </div>
+    </div>
+
+    <!-- Advanced map filter -->
+    <div class="map-pill-stack">
+      <button class="dp-filter-btn" id="dp-filter-btn" onclick="dpToggleFilter()">
+        <span class="mat">tune</span>Filter
+        <span class="dp-filter-count" id="dp-filter-count">0</span>
+      </button>
+      <div class="dp-filter-panel" id="dp-filter-panel">
+        <div class="dfp-head">
+          <span class="mat" style="font-size:16px;color:var(--g);">tune</span>
+          <span class="dfp-title">Map filters</span>
+          <button class="dfp-close" onclick="dpToggleFilter()"><span class="mat">close</span></button>
+        </div>
+        <div class="dfp-section">
+          <span class="dfp-lbl">Unit status</span>
+          <div class="dfp-row" id="dfp-status-row">
+            <button class="dfp-pill on" data-ds="all">All</button>
+            <button class="dfp-pill" data-ds="available">Available</button>
+            <button class="dfp-pill" data-ds="active">Active</button>
+            <button class="dfp-pill" data-ds="anomalies">Anomalies</button>
+            <button class="dfp-pill" data-ds="hospitals">Hospitals</button>
+          </div>
+        </div>
+        <div class="dfp-section">
+          <span class="dfp-lbl">Unit type</span>
+          <div class="dfp-row" id="dfp-type-row">
+            <button class="dfp-pill on" data-dt="all">All</button>
+            <button class="dfp-pill" data-dt="ALS">ALS</button>
+            <button class="dfp-pill" data-dt="BLS">BLS</button>
+          </div>
+        </div>
+        <div class="dfp-section">
+          <span class="dfp-lbl">Incident priority</span>
+          <div class="dfp-row" id="dfp-pri-row">
+            <button class="dfp-pill on" data-dp="all">All</button>
+            <button class="dfp-pill p1" data-dp="1">P1</button>
+            <button class="dfp-pill p2" data-dp="2">P2</button>
+            <button class="dfp-pill p3" data-dp="3">P3+</button>
+          </div>
+        </div>
+        <div class="dfp-section">
+          <span class="dfp-lbl">County / Region</span>
+          <select class="dfp-sel" id="dfp-county-sel" onchange="dpFilterChange()">
+            <option value="all">All counties</option>
+          </select>
+        </div>
+        <div class="dfp-section">
+          <span class="dfp-lbl">Incident type</span>
+          <select class="dfp-sel" id="dfp-itype-sel" onchange="dpFilterChange()">
+            <option value="all">All types</option>
+            <option value="CARDIAC">Cardiac</option>
+            <option value="TRAUMA">Trauma</option>
+            <option value="RESPIRATORY">Respiratory</option>
+            <option value="MATERNITY">Maternity</option>
+            <option value="NEURO">Neuro / Stroke</option>
+            <option value="BURNS">Burns</option>
+            <option value="PSYCHIATRIC">Psychiatric</option>
+          </select>
+        </div>
+        <button class="dfp-reset" onclick="dpResetFilters()">Reset all filters</button>
+      </div>
+    </div>
+
+    <!-- LEFT: incident list -->
+    <aside class="lpane">
+      <div class="lp-head">
+        <div class="lp-row1">
+          <h3 class="lp-title">Active incidents</h3>
+          <div class="lp-head-actions">
+            <span class="lp-count" id="lp-count">— open</span>
+            <button class="btn-new-call" id="btn-new-call"><span class="mat">add</span>New Call</button>
+          </div>
+        </div>
+        <div class="lp-filters">
+          <button class="fp on" data-filter="all">All <span class="c">—</span></button>
+          <button class="fp crit" data-filter="p1">P1 <span class="c">—</span></button>
+          <button class="fp" data-filter="p2">P2 <span class="c">—</span></button>
+          <button class="fp" data-filter="other">Other <span class="c">—</span></button>
+        </div>
+      </div>
+      <div class="lp-list" id="inc-list"></div>
+    </aside>
+
+    <!-- RIGHT: case detail -->
+    <aside class="rpane">
+      <div class="rp-head">
+        <div class="rp-pri p1" id="rp-pri">P1</div>
+        <div class="rp-text">
+          <b id="rp-id">—</b>
+          <span id="rp-el">loading…</span>
+        </div>
+      </div>
+      <div class="rp-body">
+        <div class="rp-type" id="rp-type">Loading…</div>
+        <div class="rp-code"><b id="rp-code">—</b> · MPDS</div>
+
+        <div class="rp-loc">
+          <span class="mat">place</span>
+          <div class="rp-loc-text">
+            <b id="rp-loc">—</b>
+            <span>Nairobi</span>
+          </div>
+          <span class="rp-w3w" id="rp-w3w">—</span>
+        </div>
+
+        <div class="rp-section">
+          <h4>Timeline <span id="rp-elh">—</span></h4>
+          <div class="tl" id="rp-tl"></div>
+          <div class="tl" id="rp-events" style="margin-top:8px;"></div>
+        </div>
+
+        <div class="rp-section psap-section" id="rp-psap" style="display:none;"></div>
+
+        <div class="rp-section" id="sv-oversight" style="display:none;">
+          <h4><span class="mat" style="font-size:14px;color:var(--b2);vertical-align:middle;margin-right:4px;">supervisor_account</span>Supervisor oversight</h4>
+          <div class="sv-strip">
+            <div class="sv-chips" id="sv-chips"></div>
+            <div class="sv-note" id="sv-note" style="display:none;"></div>
+          </div>
+        </div>
+
+        <div class="rp-section">
+          <h4>Nearest units <span>top 3 available</span></h4>
+          <div class="rec" id="rp-rec">
+            <div style="color:var(--t3);font-size:12px;padding:8px 0;text-align:center">Loading…</div>
+          </div>
+        </div>
+
+        <div class="rp-section" id="rp-dest-section">
+          <h4>Destination</h4>
+          <div class="rp-grid">
+            <div class="rp-l">Hospital</div><div class="rp-v" id="rp-dest-name">—</div>
+            <div class="rp-l">Level</div><div class="rp-v" id="rp-dest-level" style="color:var(--p3);">—</div>
+            <div class="rp-l">ED capacity</div><div class="rp-v" id="rp-dest-ed">—</div>
+            <div class="rp-l">Distance</div><div class="rp-v" id="rp-dest-dist">—</div>
+            <div class="rp-l">Pre-alert</div><div class="rp-v ok">Auto-send on TRANSPORT</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rp-act">
+        <button class="btn btn-pri" id="rp-btn"><span class="mat">send</span>Dispatch unit</button>
+        <button class="btn btn-sec" id="dp-alt-route"><span class="mat">alt_route</span></button>
+        <button class="btn btn-sec" id="dp-more-opts"><span class="mat">more_horiz</span></button>
+      </div>
+    </aside>
+
+    <!-- HUD -->
+    <div class="hud-eta">
+      <div class="hud-eta-ic"><span class="mat">near_me</span></div>
+      <div class="hud-eta-text">
+        <b id="hud-unit">— awaiting</b>
+        <span id="hud-addr">Select an incident</span>
+      </div>
+      <div class="hud-eta-sep"></div>
+      <div class="hud-eta-eta tab" id="hud-eta">—:——</div>
+    </div>
+
+    <!-- Hospital chips (bottom centre strip) -->
+    <div class="hosp-chips" id="hosp-chips"></div>
+
+    <!-- Map controls -->
+    <div class="map-controls">
+      <div class="mc-group">
+        <button class="mc-btn" onclick="map&&map.zoomIn()"><span class="mat">add</span></button>
+        <button class="mc-btn" onclick="map&&map.zoomOut()"><span class="mat">remove</span></button>
+      </div>
+      <div class="mc-group">
+        <button class="mc-btn" onclick="resetView()"><span class="mat">my_location</span></button>
+      </div>
+      <div class="mc-group">
+        <button class="mc-btn"><span class="mat">layers</span></button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ── Create Incident Modal ─────────────────────── -->
+<div id="cad-new-modal">
+  <div class="cad-modal-box">
+    <button class="cad-modal-close" id="cad-modal-close">&#x2715;</button>
+
+    <!-- Step 1: Origin picker -->
+    <div class="cad-origin-step" id="cad-origin-step">
+      <h2><span class="mat">add_call</span>New Incident</h2>
+      <div class="cad-origin-hint">How did this incident originate?</div>
+      <div class="cad-origin-cards">
+        <button class="cad-origin-card psap-path" data-origin="psap">
+          <span class="mat cad-oc-icon">call</span>
+          <span class="cad-oc-title">Direct caller (999 / 112)</span>
+          <span class="cad-oc-sub">Member of public on the line — run full MPDS protocol in PSAP</span>
+        </button>
+        <button class="cad-origin-card" data-origin="transfer">
+          <span class="mat cad-oc-icon">local_hospital</span>
+          <span class="cad-oc-title">Hospital referral / transfer</span>
+          <span class="cad-oc-sub">Facility-to-facility, clinical handover already received</span>
+        </button>
+        <button class="cad-origin-card" data-origin="field">
+          <span class="mat cad-oc-icon">radio</span>
+          <span class="cad-oc-title">Field unit radio report</span>
+          <span class="cad-oc-sub">On-scene medic reporting new patient or secondary scene</span>
+        </button>
+        <button class="cad-origin-card" data-origin="manual">
+          <span class="mat cad-oc-icon">edit_note</span>
+          <span class="cad-oc-title">Other manual entry</span>
+          <span class="cad-oc-sub">Walk-in, MCI overflow, system bypass or administrative log</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 2: Form (shown after origin selection) -->
+    <div class="cad-form-step" id="cad-form-step">
+      <button class="cad-form-back" id="cad-form-back"><span class="mat">arrow_back</span>Change origin</button>
+      <div class="cad-origin-badge" id="cad-origin-badge"></div>
+
+      <div class="cad-sec-label">Priority</div>
+      <div class="cad-pri-row">
+        <button class="cad-pri p1" data-pri="1">P1<br><span style="font-size:9px;font-weight:400;opacity:.8">Critical</span></button>
+        <button class="cad-pri p2" data-pri="2">P2<br><span style="font-size:9px;font-weight:400;opacity:.8">Urgent</span></button>
+        <button class="cad-pri p3 on" data-pri="3">P3<br><span style="font-size:9px;font-weight:400;opacity:.8">Non-urgent</span></button>
+      </div>
+
+      <!-- Field origin: unit ID row -->
+      <div class="cad-row2" id="cad-unit-row" style="display:none;">
+        <div class="cad-field">
+          <label>Reporting Unit ID</label>
+          <input id="cad-unit-id" type="text" placeholder="e.g. A-042">
+        </div>
+        <div class="cad-field">
+          <label>Scene Type</label>
+          <select id="cad-scene-type">
+            <option value="">Select…</option>
+            <option>Primary scene</option>
+            <option>Secondary patient on scene</option>
+            <option>MCI — multiple casualties</option>
+            <option>Hospital bypass — patient refusal</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Transfer: referring hospital row -->
+      <div class="cad-field" id="cad-referring-row" style="display:none;">
+        <label>Referring Facility</label>
+        <input id="cad-referring" type="text" placeholder="e.g. Kenyatta National Hospital, Nairobi">
+      </div>
+
+      <div class="cad-field">
+        <label id="cad-nature-label">Nature of Call *</label>
+        <select id="cad-nature">
+          <option value="">Select…</option>
+          <option value="Cardiac Arrest">Cardiac Arrest</option>
+          <option value="Chest Pain">Chest Pain</option>
+          <option value="Respiratory Distress">Respiratory Distress</option>
+          <option value="Stroke / CVA">Stroke / CVA</option>
+          <option value="Road Traffic Accident">Road Traffic Accident (RTA)</option>
+          <option value="Trauma / Injury">Trauma / Injury</option>
+          <option value="Burns">Burns</option>
+          <option value="Obstetric Emergency">Obstetric Emergency</option>
+          <option value="Diabetic Emergency">Diabetic Emergency</option>
+          <option value="Seizure">Seizure</option>
+          <option value="Overdose / Poisoning">Overdose / Poisoning</option>
+          <option value="Psychiatric Emergency">Psychiatric Emergency</option>
+          <option value="Paediatric Emergency">Paediatric Emergency</option>
+          <option value="Post-operative transfer">Post-operative transfer</option>
+          <option value="ICU / HDU transfer">ICU / HDU transfer</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="cad-field">
+        <label id="cad-address-label">Location / Address *</label>
+        <input id="cad-address" type="text" placeholder="e.g. Junction of Ngong Rd and Argwings Kodhek, Nairobi">
+      </div>
+      <div class="cad-row2">
+        <div class="cad-field">
+          <label>what3words (optional)</label>
+          <input id="cad-w3w" type="text" placeholder="///filled.count.soap">
+        </div>
+        <div class="cad-field">
+          <label>County</label>
+          <select id="cad-county">
+            <option value="">Auto-detect</option>
+            <option>Nairobi</option><option>Kiambu</option><option>Machakos</option><option>Kajiado</option>
+            <option>Nakuru</option><option>Laikipia</option><option>Nyeri</option><option>Kirinyaga</option>
+            <option>Murang'a</option><option>Nyandarua</option><option>Meru</option><option>Embu</option>
+            <option>Tharaka-Nithi</option><option>Kitui</option><option>Makueni</option>
+            <option>Mombasa</option><option>Kilifi</option><option>Kwale</option><option>Taita-Taveta</option>
+            <option>Tana River</option><option>Lamu</option>
+            <option>Kisumu</option><option>Siaya</option><option>Homa Bay</option><option>Migori</option>
+            <option>Kisii</option><option>Nyamira</option>
+            <option>Kakamega</option><option>Vihiga</option><option>Bungoma</option><option>Busia</option>
+            <option>Trans Nzoia</option><option>Uasin Gishu</option><option>Nandi</option>
+            <option>Kericho</option><option>Bomet</option><option>Baringo</option>
+            <option>Elgeyo-Marakwet</option><option>West Pokot</option><option>Samburu</option>
+            <option>Turkana</option><option>Marsabit</option><option>Isiolo</option>
+            <option>Garissa</option><option>Wajir</option><option>Mandera</option>
+          </select>
+        </div>
+      </div>
+      <!-- Caller info: hidden for field/transfer origins -->
+      <div class="cad-row2" id="cad-caller-row">
+        <div class="cad-field">
+          <label>Caller Name</label>
+          <input id="cad-caller-name" type="text" placeholder="Optional">
+        </div>
+        <div class="cad-field">
+          <label>Caller Phone</label>
+          <input id="cad-caller-phone" type="tel" placeholder="+254…">
+        </div>
+      </div>
+      <label class="cad-als-row">
+        <input type="checkbox" id="cad-als">
+        <span>Requires ALS (Advanced Life Support)</span>
+      </label>
+      <div class="cad-field">
+        <label>Additional Notes</label>
+        <textarea id="cad-notes" placeholder="e.g. 2 patients, vehicle on fire, patient is conscious…"></textarea>
+      </div>
+      <div class="cad-modal-foot">
+        <button class="btn-ghost" id="cad-modal-cancel">Cancel</button>
+        <button class="btn-sub" id="cad-modal-submit"><span class="mat">send</span>Log Incident</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── PSAP side panel ────────────────────────────── -->
+<div id="psap-panel-dim"></div>
+<div id="psap-side-panel">
+  <div id="psap-panel-head">
+    <div class="ph-title"><span class="mat">call</span>PSAP — New Emergency Call</div>
+    <button id="psap-panel-close"><span class="mat">close</span>Close</button>
+  </div>
+  <iframe id="psap-panel-frame" src="about:blank" allow="microphone"></iframe>
+</div>
+
+<!-- ── More-options popup ─────────────────────────── -->
+<div id="more-opts-pop">
+  <div class="mop-sec">
+    <div class="mop-sec-label">Re-prioritise</div>
+    <div class="mop-pri-row">
+      <button class="mop-pri-btn p1" data-mop-pri="1">P1</button>
+      <button class="mop-pri-btn p2" data-mop-pri="2">P2</button>
+      <button class="mop-pri-btn p3" data-mop-pri="3">P3</button>
+    </div>
+  </div>
+  <div class="mop-sec">
+    <div class="mop-sec-label">Add Dispatcher Note</div>
+    <div class="mop-note-box">
+      <textarea id="mop-note-text" placeholder="e.g. patient is a VVIP, bystander performing CPR…"></textarea>
+    </div>
+    <button class="mop-note-send" id="mop-note-send">ADD NOTE</button>
+  </div>
+  <div class="mop-sec">
+    <button class="mop-cancel-btn" id="mop-cancel-inc"><span class="mat">cancel</span>Cancel Incident</button>
+  </div>
+</div>
+
+<!-- ── Tab Overlay: Incidents ─────────────────────── -->
+<div class="tab-ov" id="tab-ov-incidents">
+  <div class="tab-ov-head">
+    <h2><span class="mat">format_list_bulleted</span>All Incidents</h2>
+    <div class="tab-ov-head-right">
+      <button class="ov-btn-new" id="tab-new-call-btn"><span class="mat">add</span>New Call</button>
+      <button class="tab-ov-close" id="tab-ov-inc-close"><span class="mat">arrow_back</span>Live Map</button>
+    </div>
+  </div>
+  <div class="tab-ov-body">
+    <div class="ov-summary" id="inc-ov-summary"></div>
+    <table class="ov-table" id="inc-ov-table">
+      <thead><tr>
+        <th>Number</th><th>Priority</th><th>Nature</th><th>Location</th>
+        <th>Status</th><th>Unit</th><th>Created</th><th>Elapsed</th>
+      </tr></thead>
+      <tbody id="inc-ov-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ── Tab Overlay: Fleet ─────────────────────────── -->
+<div class="tab-ov" id="tab-ov-fleet">
+  <div class="tab-ov-head">
+    <h2><span class="mat">local_shipping</span>Fleet Status</h2>
+    <div class="tab-ov-head-right">
+      <button class="tab-ov-close" id="tab-ov-fleet-close"><span class="mat">arrow_back</span>Live Map</button>
+    </div>
+  </div>
+  <div class="tab-ov-body">
+    <div class="ov-summary" id="fleet-ov-summary"></div>
+    <table class="ov-table" id="fleet-ov-table">
+      <thead><tr>
+        <th>Unit</th><th>Type</th><th>Status</th><th>Zone</th><th>County</th><th>Incident</th>
+      </tr></thead>
+      <tbody id="fleet-ov-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ── Tab Overlay: Hospitals ─────────────────────── -->
+<div class="tab-ov" id="tab-ov-hospitals">
+  <div class="tab-ov-head">
+    <h2><span class="mat">local_hospital</span>Hospital Capacity</h2>
+    <div class="tab-ov-head-right">
+      <button class="tab-ov-close" id="tab-ov-hosp-close"><span class="mat">arrow_back</span>Live Map</button>
+    </div>
+  </div>
+  <div class="tab-ov-body">
+    <table class="ov-table" id="hosp-ov-table">
+      <thead><tr>
+        <th>Hospital</th><th>Level</th><th>County</th><th>ED Capacity</th><th>Recommendation</th>
+      </tr></thead>
+      <tbody id="hosp-ov-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="/lib/nadc-state.js"></script>
+<script src="/lib/nadc-routing.js"></script>
+<script src="/lib/nadc-realtime.js"></script>
+<script src="/lib/nadc-auth.js"></script>
+<script>
+'use strict';
+
+var MAPBOX_TOKEN='';
+var map,_routeReady=false;
+var _unitRouteKeys={};
+var _selectedId=null;
+var _hudTargetMs=null;
+var _etaMarkers=[],_etaIntervals=[],_lastSelRouteKey=null;
+// Route progress: store leg-A coords+colors for live split on each tick
+var _routeACoords=null,_routeAPriCol='#FF3B30',_routeATrafCol='#50C020';
+var _filterState='all';
+var _layerFilter='all';
+var _showHospitals=true;
+var _dpMapFilter={status:'all',unitType:'all',incPri:'all',county:'all',incType:'all'};
+var _DISP_ZONE_COUNTY={
+  CBD:'Nairobi',WEST:'Nairobi',EAST:'Nairobi',STHB:'Nairobi',LANG:'Nairobi',KASA:'Nairobi',EMBA:'Nairobi',KIAB:'Nairobi',
+  MOMB:'Mombasa',KILF:'Kilifi',TAIT:'Taita-Taveta',
+  KISM:'Kisumu',KAKA:'Kakamega',KISI:'Kisii',SIAY:'Siaya',
+  ELDO:'Uasin Gishu',NKRU:'Nakuru',KERI:'Kericho',NAIV:'Nakuru',
+  NYER:'Nyeri',MERU:'Meru',MACH:'Machakos',EMBU:'Embu',THIK:'Kiambu',
+  KIAM:'Kiambu',GARR:'Garissa',WAJI:'Wajir',MAND:'Mandera',MARS:'Marsabit',
+  TURI:'Turkana',HORN:'Isiolo',LAMU:'Lamu',NKUR:'Nakuru'
+};
+var _prevIncIds={};
+var _markers={};       // fleet: {unitId:{m,el}}
+var _currentZoom=11;
+
+/* ── Utilities ─────────────────────────────────── */
+function ft(s){
+  if(isNaN(s)||s<0) return '--:--';
+  var m=Math.floor(s/60),x=Math.floor(s%60);
+  return String(m).padStart(2,'0')+':'+String(x).padStart(2,'0');
+}
+function setText(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
+function pad(n){return String(n).padStart(2,'0');}
+
+/* ── Clock ─────────────────────────────────────── */
+function tickClock(){
+  var d=new Date(),clk=document.getElementById('dp-clock');
+  if(clk)clk.textContent=pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
+}
+tickClock();setInterval(tickClock,1000);
+
+/* ── Unit colour/label helpers ─────────────────── */
+var U_COL={available:'#34C759',dispatching:'#FF3B30',dispatched:'#FF3B30',en_route:'#FF8C00',on_scene:'#27AAE1',transport:'#50C020',standby:'#555',maintenance:'#888'};
+var U_SHORT={available:'AVL',dispatching:'DSP',dispatched:'DSP',en_route:'ENR',on_scene:'SCN',transport:'TRN',standby:'SBY',maintenance:'MNT'};
+function unitColor(st){return U_COL[st]||'#555';}
+function unitShort(st){return U_SHORT[st]||'???';}
+
+/* ── Zoom-responsive marker HTML ───────────────── */
+function markerHTML(unit,zoom){
+  var c=unitColor(unit.status);
+  if(zoom<9){
+    return '<div style="width:6px;height:6px;border-radius:50%;background:'+c+';box-shadow:0 0 0 1.5px rgba(255,255,255,.28)"></div>';
+  }
+  if(zoom<11.5){
+    return '<div style="display:flex;align-items:center;gap:4px">'+
+      '<div style="width:8px;height:8px;border-radius:50%;background:'+c+';box-shadow:0 0 0 1.5px rgba(255,255,255,.28);flex-shrink:0"></div>'+
+      '<div style="font-family:monospace;font-size:10px;font-weight:600;color:rgba(255,255,255,.9);background:rgba(11,15,20,.85);padding:1px 4px;border-radius:3px;white-space:nowrap">'+unit.id+'</div>'+
+    '</div>';
+  }
+  return '<div style="display:flex;align-items:center;gap:5px;background:rgba(17,22,29,.95);border:1px solid '+c+';border-radius:999px;padding:3px 8px 3px 5px;white-space:nowrap">'+
+    '<div style="width:7px;height:7px;border-radius:50%;background:'+c+';flex-shrink:0"></div>'+
+    '<div style="font-family:monospace;font-size:10px;font-weight:600;color:rgba(255,255,255,.9)">'+unit.id+'</div>'+
+    '<div style="font-family:monospace;font-size:9px;color:'+c+'">'+unitShort(unit.status)+'</div>'+
+  '</div>';
+}
+
+/* ── Layer filter ──────────────────────────────── */
+function isUnitVisible(u){
+  var f=_dpMapFilter;
+  var st=f.status;
+  var show=true;
+  if(st==='all') show=true;
+  else if(st==='available') show=u.status==='available';
+  else if(st==='active') show=['dispatching','dispatched','en_route','on_scene','transport'].indexOf(u.status)>=0;
+  else if(st==='anomalies') show=u.status==='maintenance'||u.status==='standby';
+  else if(st==='hospitals') show=false;
+  if(show&&f.unitType!=='all') show=u.type===f.unitType;
+  if(show&&f.county!=='all'){var uc=_DISP_ZONE_COUNTY[u.zone]||u.zone;show=(uc===f.county);}
+  return show;
+}
+
+/* ── Mapbox init ───────────────────────────────── */
+function initMap(token){
+  mapboxgl.accessToken=token||MAPBOX_TOKEN;
+  map=new mapboxgl.Map({
+    container:'map',
+    style:'mapbox://styles/mapbox/navigation-night-v1',
+    center:[36.8219,-1.2921],zoom:11,pitch:25,antialias:true
+  });
+  map.on('load',function(){
+    /* Background routes — all active units, dashed */
+    map.addSource('routes-all',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+    map.addLayer({id:'routes-all-line',type:'line',source:'routes-all',
+      layout:{'line-cap':'round','line-join':'round'},
+      paint:{'line-color':['get','color'],'line-width':3,'line-opacity':0.42,'line-dasharray':[6,3]}});
+    /* Bearing lines — straight great-circle lines (air-traffic style) */
+    map.addSource('bearing-a',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+    map.addLayer({id:'bearing-a-line',type:'line',source:'bearing-a',
+      layout:{'line-cap':'butt','line-join':'round'},
+      paint:{'line-color':['get','color'],'line-width':1.5,'line-opacity':0.5,'line-dasharray':[4,4]}});
+    map.addSource('bearing-b',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+    map.addLayer({id:'bearing-b-line',type:'line',source:'bearing-b',
+      layout:{'line-cap':'butt','line-join':'round'},
+      paint:{'line-color':'#27AAE1','line-width':1.5,'line-opacity':0.45,'line-dasharray':[4,4]}});
+    /* Leg A — unit → scene (solid, priority colour) */
+    map.addSource('route-leg-a',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+    map.addLayer({id:'route-leg-a-glow',type:'line',source:'route-leg-a',
+      layout:{'line-cap':'round','line-join':'round'},
+      paint:{'line-color':['get','trafficColor'],'line-width':16,'line-opacity':0.35,'line-blur':8}});
+    map.addLayer({id:'route-leg-a-line',type:'line',source:'route-leg-a',
+      layout:{'line-cap':'round','line-join':'round'},
+      paint:{'line-color':['get','color'],'line-width':6,'line-opacity':0.96}});
+    /* Leg B — scene → hospital (projected, dashed hospital blue) */
+    map.addSource('route-leg-b',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+    map.addLayer({id:'route-leg-b-glow',type:'line',source:'route-leg-b',
+      layout:{'line-cap':'round','line-join':'round'},
+      paint:{'line-color':'#27AAE1','line-width':10,'line-opacity':0.16,'line-blur':5}});
+    map.addLayer({id:'route-leg-b-line',type:'line',source:'route-leg-b',
+      layout:{'line-cap':'round','line-join':'round'},
+      paint:{'line-color':'#27AAE1','line-width':4,'line-opacity':0.72,'line-dasharray':[10,5]}});
+    map.resize();
+    /* ── Hospital GL layers (anchored, zoom-scaled) ── */
+    map.addSource('hosp-src',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+    map.addLayer({id:'hosp-bg-l6',type:'circle',source:'hosp-src',minzoom:3,filter:['>=',['get','level'],6],paint:{'circle-radius':['interpolate',['linear'],['zoom'],3,5,7,8,12,11],'circle-color':'#9A6C00','circle-stroke-width':1.5,'circle-stroke-color':'#FFD700','circle-opacity':0.95}});
+    map.addLayer({id:'hosp-bg-l5',type:'circle',source:'hosp-src',minzoom:5,filter:['==',['get','level'],5],paint:{'circle-radius':['interpolate',['linear'],['zoom'],5,4,7,6,12,8],'circle-color':'#1268D0','circle-stroke-width':1,'circle-stroke-color':'rgba(255,255,255,0.75)','circle-opacity':0.92}});
+    map.addLayer({id:'hosp-bg-l4',type:'circle',source:'hosp-src',minzoom:9,filter:['==',['get','level'],4],paint:{'circle-radius':['interpolate',['linear'],['zoom'],9,3,12,6],'circle-color':'#2A6E78','circle-stroke-width':1,'circle-stroke-color':'rgba(255,255,255,0.55)','circle-opacity':0.88}});
+    map.addLayer({id:'hosp-lbl',type:'symbol',source:'hosp-src',minzoom:3,layout:{'text-field':'H','text-font':['DIN Pro Bold','Arial Unicode MS Bold'],'text-size':['interpolate',['linear'],['zoom'],3,7,12,11],'text-anchor':'center','text-allow-overlap':true,'text-ignore-placement':true},paint:{'text-color':'#ffffff'}});
+    map.addLayer({id:'hosp-name',type:'symbol',source:'hosp-src',minzoom:10,filter:['>=',['get','level'],5],layout:{'text-field':['get','n'],'text-font':['DIN Pro Regular','Arial Unicode MS Regular'],'text-size':10,'text-offset':[0,1.2],'text-anchor':'top','text-optional':true},paint:{'text-color':'rgba(255,255,255,0.9)','text-halo-color':'rgba(11,15,20,0.85)','text-halo-width':1.5}});
+    ['hosp-bg-l6','hosp-bg-l5','hosp-bg-l4'].forEach(function(lid){
+      map.on('click',lid,function(e){
+        var p=e.features[0].properties;
+        if(_selectedId) NACDState.dispatch.setHospital(_selectedId,p.id);
+        var divCol=p.div==='bypass'?'#FF3B30':p.div==='diversion'?'#FF8C00':'#34C759';
+        var lvlBg=p.level>=6?'rgba(155,108,0,0.22)':p.level===5?'rgba(18,104,208,0.22)':'rgba(42,110,120,0.22)';
+        var lvlCol=p.level>=6?'#FFD700':p.level===5?'#5BA4F5':'#50C8C0';
+        new mapboxgl.Popup({offset:10}).setLngLat(e.lngLat).setHTML('<div class="pop"><div class="pop-head"><div style="width:32px;height:32px;border-radius:8px;background:'+lvlBg+';color:'+lvlCol+';display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-weight:700;font-size:12px;">L'+p.level+'</div><div class="pop-h-t"><b>'+p.full+'</b><span>'+p.county+' County</span></div></div><div class="pop-r"><span class="l">ED capacity</span><span class="v">'+p.edPct+'%</span></div><div class="pop-r"><span class="l">Status</span><span class="v" style="color:'+divCol+';">'+(p.div||'open').toUpperCase()+'</span></div>'+(_selectedId?'<div class="pop-r"><span class="l">Destination</span><span class="v" style="color:var(--g);">Set ✓</span></div>':'')+'</div>').addTo(map);
+      });
+      map.on('mouseenter',lid,function(){map.getCanvas().style.cursor='pointer';});
+      map.on('mouseleave',lid,function(){map.getCanvas().style.cursor='';});
+    });
+    /* ── Incident GL layers (anchored, zoom-scaled) ── */
+    map.addSource('incidents',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+    map.addLayer({id:'inc-glow',type:'circle',source:'incidents',filter:['==',['get','priority'],1],paint:{'circle-radius':['interpolate',['linear'],['zoom'],8,16,14,26],'circle-color':'#FF3B30','circle-opacity':0.20,'circle-blur':1.2}});
+    map.addLayer({id:'inc-circle',type:'circle',source:'incidents',paint:{'circle-radius':['interpolate',['linear'],['zoom'],8,7,12,10,16,14],'circle-color':['case',['==',['get','priority'],1],'#FF3B30',['==',['get','priority'],2],'#FF8C00','#F5B100'],'circle-stroke-width':2.5,'circle-stroke-color':'#ffffff','circle-opacity':1}});
+    map.addLayer({id:'inc-label',type:'symbol',source:'incidents',layout:{'text-field':['concat','P',['to-string',['get','priority']]],'text-size':9,'text-anchor':'center','text-allow-overlap':true,'text-ignore-placement':true,'text-font':['DIN Pro Bold','Arial Unicode MS Bold']},paint:{'text-color':'#ffffff'}});
+    map.addLayer({id:'inc-selected',type:'circle',source:'incidents',filter:['==',['get','id'],'__none__'],paint:{'circle-radius':['interpolate',['linear'],['zoom'],8,12,12,17,16,22],'circle-color':'rgba(0,0,0,0)','circle-stroke-width':3,'circle-stroke-color':'#ffffff','circle-opacity':1}});
+    map.on('click','inc-circle',function(e){selectIncident(e.features[0].properties.id);});
+    map.on('mouseenter','inc-circle',function(){map.getCanvas().style.cursor='pointer';});
+    map.on('mouseleave','inc-circle',function(){map.getCanvas().style.cursor='';});
+    updateHospitalLayer(NACDState.getHospitals());
+    _routeReady=true;
+    addTrafficOverlay(map);
+  });
+  map.on('zoom',function(){
+    _currentZoom=map.getZoom();
+    refreshAllMarkerHTML();
+  });
+  window.addEventListener('resize',function(){if(map)map.resize();});
+  map.on('moveend',function(){
+    var hosps=NACDState.getHospitals?NACDState.getHospitals():[];
+    renderHospChips(hosps);
+  });
+}
+
+function resetView(){if(map)map.flyTo({center:[36.8219,-1.2921],zoom:11,pitch:25,speed:.9});}
+window.resetView=resetView;
+
+/* ── Route helpers ─────────────────────────────── */
+function routeCacheKey(lng1,lat1,lng2,lat2){
+  function r(v){return Math.round(v*1000)/1000;}
+  return r(lng1)+','+r(lat1)+'>'+r(lng2)+','+r(lat2);
+}
+// fetchRoute delegates to NACDRouting (Google traffic → Mapbox fallback)
+// done(geometry, result) — geometry is GeoJSON LineString; result has traffic info
+function fetchRoute(lng1,lat1,lng2,lat2,done){
+  NACDRouting.fetchRoute(lng1,lat1,lng2,lat2,function(result){
+    done(result.geometry,result);
+  });
+}
+
+/* ── Selection route & ETA waypoint markers ────── */
+function clearSelectionRoute(){
+  _etaIntervals.forEach(function(iv){clearInterval(iv);});
+  _etaIntervals=[];
+  _etaMarkers.forEach(function(mk){mk.remove();});
+  _etaMarkers=[];
+  _routeACoords=null;
+  var _empty={type:'FeatureCollection',features:[]};
+  if(map&&map.getSource('route-leg-a'))map.getSource('route-leg-a').setData(_empty);
+  if(map&&map.getSource('route-leg-b'))map.getSource('route-leg-b').setData(_empty);
+  if(map&&map.getSource('bearing-a'))  map.getSource('bearing-a').setData(_empty);
+  if(map&&map.getSource('bearing-b'))  map.getSource('bearing-b').setData(_empty);
+}
+
+function addWaypointMarker(lng,lat,label,etaSec,color){
+  var uid='wm'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+  var el=document.createElement('div');
+  el.style.cssText='background:rgba(11,15,20,0.94);border:1.5px solid '+color+';border-radius:10px;padding:6px 12px;pointer-events:none;box-shadow:0 3px 16px rgba(0,0,0,.65);white-space:nowrap;';
+  el.innerHTML='<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:9px;font-weight:700;letter-spacing:.1em;color:'+color+';text-transform:uppercase;margin-bottom:3px">'+label+'</div>'
+    +'<div id="'+uid+'" style="font-family:\'JetBrains Mono\',monospace;font-weight:700;font-size:16px;color:#fff;line-height:1">'+(etaSec<=0?'Arrived':ft(etaSec))+'</div>';
+  var mk=new mapboxgl.Marker({element:el,anchor:'bottom',offset:[0,-6]}).setLngLat([lng,lat]).addTo(map);
+  _etaMarkers.push(mk);
+  if(etaSec>0){
+    var targetMs=Date.now()+etaSec*1000;
+    var iv=setInterval(function(){
+      var d=document.getElementById(uid);
+      if(!d){clearInterval(iv);return;}
+      var rem=Math.max(0,Math.round((targetMs-Date.now())/1000));
+      d.textContent=rem===0?'Arrived':ft(rem);
+    },1000);
+    _etaIntervals.push(iv);
+  }
+}
+
+function kmDist(lat1,lng1,lat2,lng2){
+  return Math.sqrt((lat1-lat2)*(lat1-lat2)+(lng1-lng2)*(lng1-lng2))*111;
+}
+
+// Split a GeoJSON LineString at the closest point to (unitLng, unitLat).
+// Returns {covered:[…], remaining:[…]} — both are [lng,lat] arrays.
+function splitRouteAtUnit(coords,unitLng,unitLat){
+  if(!coords||coords.length<2) return null;
+  var bestIdx=0,bestT=0,bestDist=Infinity;
+  for(var i=0;i<coords.length-1;i++){
+    var ax=coords[i][0],ay=coords[i][1];
+    var bx=coords[i+1][0],by=coords[i+1][1];
+    var dx=bx-ax,dy=by-ay;
+    var len2=dx*dx+dy*dy;
+    var t=len2>0?Math.max(0,Math.min(1,((unitLng-ax)*dx+(unitLat-ay)*dy)/len2)):0;
+    var px=ax+t*dx,py=ay+t*dy;
+    var d=(unitLng-px)*(unitLng-px)+(unitLat-py)*(unitLat-py);
+    if(d<bestDist){bestDist=d;bestIdx=i;bestT=t;}
+  }
+  var ax2=coords[bestIdx][0],ay2=coords[bestIdx][1];
+  var bx2=coords[bestIdx+1][0],by2=coords[bestIdx+1][1];
+  var sp=[ax2+bestT*(bx2-ax2),ay2+bestT*(by2-ay2)];
+  var covered=coords.slice(0,bestIdx+1).concat([sp]);
+  var remaining=[sp].concat(coords.slice(bestIdx+1));
+  // Need at least 2 points each side
+  if(covered.length<2) covered=[coords[0],sp];
+  if(remaining.length<2) remaining=[sp,coords[coords.length-1]];
+  return{covered:covered,remaining:remaining};
+}
+
+function drawSelectionRoute(inc){
+  clearSelectionRoute();
+  if(!inc||!inc.unitId) return;
+  var st=inc.status;
+  var isMoving=(st==='dispatched'||st==='en_route'||st==='on_scene'||st==='transport');
+  if(!isMoving) return;
+  var unit=NACDState.findUnit(inc.unitId);
+  if(!unit) return;
+  var col=inc.priority===1?'#FF3B30':inc.priority===2?'#FF8C00':'#F5B100';
+  var scene={lng:inc.lng,lat:inc.lat};
+  var hospital=inc.hospitalId?NACDState.findHospital(inc.hospitalId):null;
+
+  /* Bearing lines — straight air-traffic lines, always visible when unit/hospital known */
+  if(unit){
+    if(map&&map.getSource('bearing-a'))
+      map.getSource('bearing-a').setData({type:'FeatureCollection',features:[{type:'Feature',
+        properties:{color:col},
+        geometry:{type:'LineString',coordinates:[[unit.lng,unit.lat],[scene.lng,scene.lat]]}}]});
+  }
+  if(hospital){
+    if(map&&map.getSource('bearing-b'))
+      map.getSource('bearing-b').setData({type:'FeatureCollection',features:[{type:'Feature',
+        geometry:{type:'LineString',coordinates:[[scene.lng,scene.lat],[hospital.lng,hospital.lat]]}}]});
+  }
+
+  if(st==='en_route'||st==='dispatched'){
+    /* Leg A — unit → scene, coloured by live traffic */
+    (function(u,s,priCol){
+      fetchRoute(u.lng,u.lat,s.lng,s.lat,function(geom,info){
+        var trafCol=info?info.trafficColor:priCol;
+        var coords=geom&&geom.coordinates?geom.coordinates.slice():null;
+        // Ensure last waypoint is exactly at scene so unit arrives precisely
+        if(coords&&coords.length) coords.push([s.lng,s.lat]);
+        // Store for live progress split on every tick
+        _routeACoords=coords;_routeAPriCol=priCol;_routeATrafCol=trafCol;
+        if(map&&map.getSource('route-leg-a')&&coords)
+          map.getSource('route-leg-a').setData({type:'FeatureCollection',features:[{type:'Feature',
+            properties:{color:priCol,trafficColor:trafCol},geometry:{type:'LineString',coordinates:coords}}]});
+        var etaSec=info?info.durationInTraffic:Math.round(kmDist(u.lat,u.lng,s.lat,s.lng)/40*3600);
+        var delayMins=info&&info.delaySecs>60?Math.round(info.delaySecs/60):0;
+        var markerLabel='Scene ETA'+(delayMins>0?' +'+delayMins+'m traffic':'');
+        addWaypointMarker(s.lng,s.lat,markerLabel,etaSec,trafCol);
+      });
+    })(unit,scene,col);
+    /* Leg B — scene → hospital (projected, dashed blue) */
+    if(hospital){
+      (function(s,h){
+        fetchRoute(s.lng,s.lat,h.lng,h.lat,function(geom,info){
+          if(map&&map.getSource('route-leg-b'))
+            map.getSource('route-leg-b').setData({type:'FeatureCollection',features:[{type:'Feature',geometry:geom}]});
+          var etaHosp=info?info.durationInTraffic:Math.round(kmDist(s.lat,s.lng,h.lat,h.lng)/40*3600);
+          addWaypointMarker(h.lng,h.lat,'Hospital ETA',etaHosp,'#27AAE1');
+        });
+      })(scene,hospital);
+    }
+  } else if(st==='transport'){
+    /* Leg A — unit → hospital, green (nearly cleared) */
+    var dest=hospital||scene;
+    (function(u,d){
+      fetchRoute(u.lng,u.lat,d.lng,d.lat,function(geom,info){
+        var trafCol=info?info.trafficColor:'#50C020';
+        var coords=geom&&geom.coordinates?geom.coordinates.slice():null;
+        if(coords&&coords.length) coords.push([d.lng,d.lat]);
+        _routeACoords=coords;_routeAPriCol='#50C020';_routeATrafCol=trafCol;
+        if(map&&map.getSource('route-leg-a')&&coords)
+          map.getSource('route-leg-a').setData({type:'FeatureCollection',features:[{type:'Feature',
+            properties:{color:'#50C020',trafficColor:trafCol},geometry:{type:'LineString',coordinates:coords}}]});
+        if(hospital){
+          var etaT=info?info.durationInTraffic:Math.round(kmDist(u.lat,u.lng,d.lat,d.lng)/40*3600);
+          addWaypointMarker(d.lng,d.lat,'Hospital ETA',etaT,'#27AAE1');
+        }
+      });
+    })(unit,dest);
+  } else if(st==='on_scene'){
+    /* Leg B only — projected scene → hospital */
+    if(hospital){
+      (function(s,h){
+        fetchRoute(s.lng,s.lat,h.lng,h.lat,function(geom,info){
+          if(map&&map.getSource('route-leg-b'))
+            map.getSource('route-leg-b').setData({type:'FeatureCollection',features:[{type:'Feature',geometry:geom}]});
+          var etaOS=info?info.durationInTraffic:Math.round(kmDist(s.lat,s.lng,h.lat,h.lng)/40*3600);
+          addWaypointMarker(h.lng,h.lat,'Hospital Est.',etaOS,'#27AAE1');
+        });
+      })(scene,hospital);
+    }
+  }
+}
+function incidentDestination(inc){
+  if(inc.status==='transport'&&inc.hospitalId){
+    var h=NACDState.findHospital(inc.hospitalId);
+    if(h)return{lng:h.lng,lat:h.lat};
+  }
+  return{lng:inc.lng,lat:inc.lat};
+}
+
+/* ── Hospital GL source update ─────────────────── */
+function updateHospitalLayer(hospitals){
+  if(!map||!map.getSource('hosp-src')) return;
+  var feats=hospitals.map(function(h){
+    return{type:'Feature',geometry:{type:'Point',coordinates:[h.lng,h.lat]},
+      properties:{id:h.id,n:h.n,full:h.full||h.n,level:h.level||5,county:h.county||'',edPct:h.edPct||0,div:h.div||'open',nat:!!h.nat,specs:(h.specialties||[]).join(', ')}};
+  });
+  map.getSource('hosp-src').setData({type:'FeatureCollection',features:feats});
+}
+
+/* ── Fleet markers ─────────────────────────────── */
+function ensureMarker(unit){
+  if(_markers[unit.id]) return _markers[unit.id];
+  var el=document.createElement('div');
+  el.style.cssText='cursor:pointer;';
+  el.innerHTML=markerHTML(unit,_currentZoom);
+  (function(uid){
+    el.onclick=function(){
+      var incs=NACDState.getIncidents();
+      for(var i=0;i<incs.length;i++){
+        if(incs[i].unitId===uid&&incs[i].status!=='cleared'&&incs[i].status!=='cancelled'){
+          selectIncident(incs[i].id);
+          return;
+        }
+      }
+    };
+  })(unit.id);
+  var m=new mapboxgl.Marker({element:el,anchor:'center'}).setLngLat([unit.lng,unit.lat]).addTo(map);
+  _markers[unit.id]={m:m,el:el};
+  return _markers[unit.id];
+}
+
+function updateMarkers(fleet){
+  if(!map||!map.loaded()) return;
+  _currentZoom=map.getZoom();
+  for(var i=0;i<fleet.length;i++){
+    var u=fleet[i];
+    var mk=ensureMarker(u);
+    mk.m.setLngLat([u.lng,u.lat]);
+    var vis=isUnitVisible(u);
+    mk.el.style.display=vis?'':'none';
+    if(vis) mk.el.innerHTML=markerHTML(u,_currentZoom);
+  }
+}
+
+/* Custom traffic overlay — uses Mapbox Traffic v1 vector tiles with SHA brand colours.
+   Replaces the subtle built-in styling so dispatchers can read congestion at a glance. */
+function addTrafficOverlay(map){
+  try{
+    // Remove every base-style traffic layer outright (not just hide via visibility).
+    var styleLayers=(map.getStyle().layers||[]).slice();
+    for(var li=0;li<styleLayers.length;li++){
+      var ly=styleLayers[li];
+      if(ly.id==='sha-traffic-line') continue;
+      var isTraffic=/traffic/i.test(ly.id)
+        || ly.source==='mapbox-traffic'
+        || (ly.paint && JSON.stringify(ly.paint).indexOf('congestion')!==-1);
+      if(isTraffic){
+        try{map.removeLayer(ly.id);}catch(e){}
+      }
+    }
+    try{map.removeSource('mapbox-traffic');}catch(e){}
+
+    if(map.getSource('sha-traffic')) return;
+    map.addSource('sha-traffic',{type:'vector',url:'mapbox://mapbox.mapbox-traffic-v1'});
+    var beforeLayer=null;
+    var remaining=map.getStyle().layers||[];
+    for(var i=0;i<remaining.length;i++){
+      if(remaining[i].type==='symbol'){beforeLayer=remaining[i].id;break;}
+    }
+    map.addLayer({
+      id:'sha-traffic-line',
+      type:'line',
+      source:'sha-traffic',
+      'source-layer':'traffic',
+      minzoom:11,
+      filter:['all',
+        ['in',['get','congestion'],['literal',['low','moderate','heavy','severe']]],
+        ['any',
+          ['!=',['get','congestion'],'low'],
+          ['>=',['zoom'],12]
+        ]
+      ],
+      paint:{
+        'line-width':['interpolate',['linear'],['zoom'],
+          11,1.0,
+          13,2.0,
+          15,3.2,
+          18,5.0],
+        'line-color':['match',['get','congestion'],
+          'low','#50C020',
+          'moderate','#F5B100',
+          'heavy','#FF8C00',
+          'severe','#FF3B30',
+          'rgba(0,0,0,0)'],
+        'line-opacity':['interpolate',['linear'],['zoom'],
+          11,0.5,
+          13,0.75,
+          16,0.9]
+      }
+    },beforeLayer);
+  }catch(e){console.warn('[traffic] overlay failed',e);}
+}
+
+function refreshAllMarkerHTML(){
+  if(!map||!map.loaded()) return;
+  var fleet=NACDState.getFleet();
+  for(var i=0;i<fleet.length;i++){
+    var u=fleet[i];
+    var mk=_markers[u.id];
+    if(!mk) continue;
+    var vis=isUnitVisible(u);
+    mk.el.style.display=vis?'':'none';
+    if(vis) mk.el.innerHTML=markerHTML(u,_currentZoom);
+  }
+}
+
+/* ── Incident GL source update ─────────────────── */
+function updateIncidentLayer(incidents){
+  if(!map||!map.getSource('incidents')) return;
+  var feats=[];
+  incidents.forEach(function(inc){
+    if(inc.status==='cleared'||inc.status==='cancelled') return;
+    feats.push({type:'Feature',geometry:{type:'Point',coordinates:[inc.lng,inc.lat]},
+      properties:{id:inc.id,number:inc.number,priority:inc.priority,complaint:inc.complaint,address:inc.address,status:inc.status,unitId:inc.unitId||'',category:inc.category||''}});
+  });
+  map.getSource('incidents').setData({type:'FeatureCollection',features:feats});
+}
+
+/* ── Routes (real roads via Mapbox Directions) ── */
+function updateRealRoutes(incidents,fleet){
+  if(!_routeReady||!map||!map.getSource('routes-all'))return;
+  var routeFeats=[];
+  var fetchCount=0;
+
+  incidents.forEach(function(inc){
+    if(inc.status!=='en_route'&&inc.status!=='transport')return;
+    var unit=null;
+    for(var k=0;k<fleet.length;k++){if(fleet[k].id===inc.unitId){unit=fleet[k];break;}}
+    if(!unit)return;
+    var dest=incidentDestination(inc);
+    var color=inc.priority===1?'#FF3B30':inc.priority===2?'#FF8C00':'#F5B100';
+
+    var routeKey=unit.id+':'+inc.id+':'+inc.status;
+    var liveUnit=NACDState.findUnit(unit.id);
+    if(liveUnit&&liveUnit._routeWaypoints&&_unitRouteKeys[unit.id]===routeKey){
+      var wp=liveUnit._routeWaypoints;
+      var idx=Math.min(liveUnit._waypointIdx||0,wp.length-1);
+      var dispCoords=[[unit.lng,unit.lat]].concat(wp.slice(idx+1));
+      if(dispCoords.length>=2){
+        routeFeats.push({type:'Feature',properties:{color:color},
+          geometry:{type:'LineString',coordinates:dispCoords}});
+      }
+    } else if(fetchCount<3&&!_routePending[routeKey]){
+      fetchCount++;
+      _routePending[routeKey]=true;
+      (function(u,d,uid,rkey){
+        fetchRoute(u.lng,u.lat,d.lng,d.lat,function(geometry){
+          delete _routePending[rkey];
+          _unitRouteKeys[uid]=rkey;
+          NACDState.setUnitRoute(uid,geometry.coordinates);
+        });
+      })(unit,dest,unit.id,routeKey);
+    }
+  });
+
+  for(var uid in _unitRouteKeys){
+    var stillActive=false;
+    for(var si=0;si<incidents.length;si++){
+      var si_inc=incidents[si];
+      if(si_inc.unitId===uid&&(si_inc.status==='en_route'||si_inc.status==='transport')){
+        stillActive=true;break;
+      }
+    }
+    if(!stillActive)delete _unitRouteKeys[uid];
+  }
+
+  map.getSource('routes-all').setData({type:'FeatureCollection',features:routeFeats});
+}
+
+/* ── KPI rail ──────────────────────────────────── */
+function updateKPIs(kpis){
+  setText('k-p1',kpis.p1);
+  setText('k-p2',kpis.p2);
+  var avail=kpis.available||0;
+  var total=(kpis.deployed||0)+(avail);
+  setText('k-dep',(kpis.deployed||0)+(total>0?'/'+total:''));
+  setText('k-resp',ft(kpis.avgResponseSec||0));
+  setText('k-calls',kpis.callsInQueue||0);
+  setText('k-conv',(kpis.slaCompliancePct||0).toFixed(1)+'%');
+  var p1c=document.querySelector('.kpi.crit');
+  if(p1c){
+    if(kpis.p1>3) p1c.classList.add('pulse');
+    else p1c.classList.remove('pulse');
+  }
+}
+
+/* ── Hospital chips ────────────────────────────── */
+function renderHospChips(hospitals){
+  var el=document.getElementById('hosp-chips');
+  if(!el) return;
+  var local=[];
+  if(map){
+    var bounds=map.getBounds();
+    var sw=bounds.getSouthWest(),ne=bounds.getNorthEast();
+    var latPad=(ne.lat-sw.lat)*0.4,lngPad=(ne.lng-sw.lng)*0.4;
+    var minLat=sw.lat-latPad,maxLat=ne.lat+latPad,minLng=sw.lng-lngPad,maxLng=ne.lng+lngPad;
+    for(var i=0;i<hospitals.length;i++){
+      var h=hospitals[i];
+      if(h.lat>=minLat&&h.lat<=maxLat&&h.lng>=minLng&&h.lng<=maxLng) local.push(h);
+    }
+    var ctr=map.getCenter();
+    local.sort(function(a,b){
+      var da=(a.lat-ctr.lat)*(a.lat-ctr.lat)+(a.lng-ctr.lng)*(a.lng-ctr.lng);
+      var db=(b.lat-ctr.lat)*(b.lat-ctr.lat)+(b.lng-ctr.lng)*(b.lng-ctr.lng);
+      return da-db;
+    });
+    local=local.slice(0,8);
+  } else {
+    for(var j=0;j<hospitals.length;j++){
+      if(hospitals[j].county==='Nairobi'){local.push(hospitals[j]);if(local.length===6)break;}
+    }
+  }
+  var html='';
+  for(var j=0;j<local.length;j++){
+    var h=local[j];
+    var pct=h.edPct||0;
+    var cls=pct>=90?'crit':pct>=75?'warn':'ok';
+    var lbl=pct>=90?'BYPASS':pct>=75?'CAUTION':'OPEN';
+    var name=h.n||(h.full||'').split(' ')[0]||'Hosp';
+    html+='<div class="hosp-chip '+cls+'" data-hid="'+h.id+'" title="'+(h.full||name)+'">'+
+      '<span class="hosp-chip-n">'+name+'</span>'+
+      (h.nat?'<span class="hosp-chip-l6">L6</span>':'')+
+      '<span class="hosp-chip-bar"><i style="width:'+pct+'%"></i></span>'+
+      '<span class="hosp-chip-pct">'+pct+'%</span>'+
+      '<span class="hosp-chip-stat">'+lbl+'</span>'+
+    '</div>';
+  }
+  el.innerHTML=html;
+  var chips=document.querySelectorAll('.hosp-chip');
+  for(var k=0;k<chips.length;k++){
+    (function(chip){
+      chip.onclick=function(){
+        var hid=chip.getAttribute('data-hid');
+        if(_selectedId&&hid) NACDState.dispatch.setHospital(_selectedId,hid);
+      };
+    })(chips[k]);
+  }
+}
+
+/* ── Incident list ─────────────────────────────── */
+var STAGE={pending:'Pending',dispatching:'Dispatched',dispatched:'Dispatched',en_route:'En route',on_scene:'On scene',transport:'Transporting',cleared:'Cleared',cancelled:'Cancelled'};
+
+function getFiltered(all){
+  if(_filterState==='p1') return all.filter(function(i){return i.priority===1;});
+  if(_filterState==='p2') return all.filter(function(i){return i.priority===2;});
+  if(_filterState==='other') return all.filter(function(i){return i.priority>2;});
+  return all;
+}
+
+function renderIncList(incidents){
+  var all=[];
+  for(var i=0;i<incidents.length;i++){
+    if(incidents[i].status!=='cleared'&&incidents[i].status!=='cancelled') all.push(incidents[i]);
+  }
+  all.sort(function(a,b){return a.priority-b.priority||(b.createdAt-a.createdAt);});
+
+  var cP1=0,cP2=0,cOth=0;
+  for(var j=0;j<all.length;j++){
+    if(all[j].priority===1) cP1++;
+    else if(all[j].priority===2) cP2++;
+    else cOth++;
+  }
+  setText('lp-count',all.length+' open');
+
+  var fps=document.querySelectorAll('.fp');
+  if(fps[0]) fps[0].querySelector('.c').textContent=all.length;
+  if(fps[1]) fps[1].querySelector('.c').textContent=cP1;
+  if(fps[2]) fps[2].querySelector('.c').textContent=cP2;
+  if(fps[3]) fps[3].querySelector('.c').textContent=cOth;
+
+  // Detect new incidents
+  var newIds={};
+  for(var k=0;k<all.length;k++){
+    if(!_prevIncIds[all[k].id]) newIds[all[k].id]=true;
+  }
+  _prevIncIds={};
+  for(var m=0;m<all.length;m++) _prevIncIds[all[m].id]=true;
+
+  var filtered=getFiltered(all);
+  var html='';
+  for(var n=0;n<filtered.length;n++){
+    var inc=filtered[n];
+    var eld=Math.round((Date.now()-inc.createdAt)/1000);
+    var sel=inc.id===_selectedId?' sel':'';
+    var critCls=inc.priority===1?' crit':'';
+    var newCls=newIds[inc.id]?' new-inc':'';
+    var st=inc.status;
+    var psapBadge=inc.triageSessionId?'<span class="psap-chip"><span class="mat" style="font-size:10px">call</span>PSAP</span>':'';
+    var detBadge=inc.determinantCode?'<span class="det-chip '+(inc.determinantLevel||'')+'">'+inc.determinantCode+'</span>':'';
+    html+='<div class="inc'+critCls+sel+newCls+'" data-id="'+inc.id+'">'+
+      '<div class="inc-r1">'+
+        '<span class="pri-chip p'+inc.priority+'"><span class="dot"></span>P'+inc.priority+'</span>'+
+        '<span class="inc-id">'+inc.number+'</span>'+
+        psapBadge+detBadge+
+        '<span class="inc-time tab">'+ft(eld)+'</span>'+
+      '</div>'+
+      '<div class="inc-type">'+inc.complaint+'</div>'+
+      '<div class="inc-meta"><span class="mat">place</span><span>'+inc.address+'</span>'+
+        (inc.unitId?'<span class="sep"></span><span class="unit">'+inc.unitId+'</span>':'')+
+        '<span class="inc-stage '+(st||'')+'"><span class="dot"></span>'+(STAGE[st]||st)+'</span>'+
+      '</div></div>';
+  }
+
+  var listEl=document.getElementById('inc-list');
+  if(!listEl) return;
+  listEl.innerHTML=html;
+
+  var cards=document.querySelectorAll('.inc');
+  for(var p=0;p<cards.length;p++){
+    (function(card){
+      card.onclick=function(){selectIncident(card.getAttribute('data-id'));};
+    })(cards[p]);
+  }
+
+  // Auto-select first P1 on load or if selection was cleared
+  var selActive=false;
+  if(_selectedId){
+    for(var q=0;q<all.length;q++){
+      if(all[q].id===_selectedId){selActive=true;break;}
+    }
+  }
+  if(!selActive&&all.length){
+    var pick=null;
+    for(var r=0;r<all.length;r++){if(all[r].priority===1){pick=all[r];break;}}
+    selectIncident((pick||all[0]).id);
+  }
+}
+
+function selectIncident(id){
+  if(!id) return;
+  _selectedId=id;
+  var cards=document.querySelectorAll('.inc');
+  for(var i=0;i<cards.length;i++) cards[i].classList.remove('sel');
+  var card=document.querySelector('.inc[data-id="'+id+'"]');
+  if(card) card.classList.add('sel');
+  var inc=NACDState.findIncident(id);
+  if(inc){
+    renderDetail(inc);
+    if(map){
+      map.flyTo({center:[inc.lng,inc.lat],zoom:13.5,pitch:30,speed:.9});
+      if(map.getLayer('inc-selected')) map.setFilter('inc-selected',['==',['get','id'],id]);
+    }
+    _lastSelRouteKey=null;
+    drawSelectionRoute(inc);
+  }
+}
+
+/* ── Case detail ───────────────────────────────── */
+function renderDetail(inc){
+  if(!inc) return;
+  var eld=Math.round((Date.now()-inc.createdAt)/1000);
+  var golden=Math.max(0,3600-eld);
+
+  setText('rp-id',inc.number);
+  setText('rp-el',ft(eld)+' elapsed · golden '+ft(golden));
+  setText('rp-elh','elapsed '+ft(eld));
+  setText('rp-type',inc.complaint||'—');
+  setText('rp-code',inc.icd11||'—');
+  setText('rp-loc',inc.address||'—');
+  setText('rp-w3w',inc.w3w||'—');
+
+  var priEl=document.getElementById('rp-pri');
+  if(priEl){priEl.className='rp-pri p'+inc.priority;priEl.textContent='P'+inc.priority;}
+
+  // Timeline
+  var steps=['createdAt','dispatchedAt','enRouteAt','onSceneAt','transportAt','clearedAt'];
+  var labels=['Call received','Dispatched','En route','On scene','Transporting','Cleared'];
+  var tlEl=document.getElementById('rp-tl');
+  if(tlEl){
+    var tlHtml='';
+    for(var i=0;i<steps.length;i++){
+      var ts=steps[i];
+      var done=inc[ts]!=null;
+      var isNow=done&&(i===steps.length-1||inc[steps[i+1]]==null);
+      var cls=isNow?'now':done?'done':'todo';
+      var t=inc[ts]?new Date(inc[ts]).toISOString().substr(11,5):'pending';
+      var extra=(ts==='enRouteAt'&&inc.unitId)?' · '+inc.unitId:'';
+      tlHtml+='<div class="tl-step '+cls+'"><div class="tl-l">'+labels[i]+extra+'</div><div class="tl-t">'+t+'</div></div>';
+    }
+    tlEl.innerHTML=tlHtml;
+  }
+
+  // Dispatch events (last 4 for this incident)
+  var eventsEl=document.getElementById('rp-events');
+  if(eventsEl){
+    var evts=NACDState.getDispatchEvents(inc.id).slice(0,4);
+    if(evts.length){
+      function _relSec(ts){var s=Math.round((Date.now()-ts)/1000);return s<60?s+'s':Math.floor(s/60)+'m';}
+      function _evtChip(t){
+        var cls=t==='supervisor'?'sup':t==='system'?'sys':'disp';
+        var lbl=t==='supervisor'?'SUP':t==='system'?'SYS':'DSP';
+        return '<span class="tl-evt-chip '+cls+'">'+lbl+'</span>';
+      }
+      eventsEl.innerHTML=evts.map(function(ev){
+        var label=(ev.eventType||'').replace(/_/g,' ');
+        return '<div class="tl-evt"><div class="tl-evt-row">'+_evtChip(ev.actorType)+
+          '<span class="tl-evt-l">'+label+'</span>'+
+          '<span class="tl-evt-t">'+_relSec(ev.createdAt)+'</span></div></div>';
+      }).join('');
+    } else {
+      eventsEl.innerHTML='';
+    }
+  }
+
+  // PSAP triage section (only when incident originated from call-taker)
+  var psapSec=document.getElementById('rp-psap');
+  if(psapSec){
+    if(inc.triageSessionId||inc.determinantCode){
+      var lvl=inc.determinantLevel||'';
+      var lvlNames={E:'Echo — Immediately Life-Threatening',D:'Delta — Life-Threatening',C:'Charlie — Potentially Life-Threatening',B:'Bravo — Potentially Serious',A:'Alpha — Non-Life-Threatening'};
+      var sexLabel={M:'Male',F:'Female',U:'Unknown'};
+      var html='<div class="psap-sec-head"><span class="mat">call</span>PSAP Triage</div>';
+      html+='<div class="psap-det-grid">';
+      if(inc.callerName)  html+='<div class="psap-det-row"><div class="psap-det-label">Caller</div><div class="psap-det-val">'+inc.callerName+'</div></div>';
+      if(inc.callerPhone) html+='<div class="psap-det-row"><div class="psap-det-label">Phone</div><div class="psap-det-val">'+inc.callerPhone+'</div></div>';
+      if(inc.patientAge)  html+='<div class="psap-det-row"><div class="psap-det-label">Patient age</div><div class="psap-det-val">'+inc.patientAge+' yrs</div></div>';
+      if(inc.patientSex)  html+='<div class="psap-det-row"><div class="psap-det-label">Sex</div><div class="psap-det-val">'+(sexLabel[inc.patientSex]||inc.patientSex)+'</div></div>';
+      html+='</div>';
+      if(inc.determinantCode){
+        html+='<div class="psap-det-det">';
+        html+='<div class="psap-lvl-badge '+lvl+'">'+lvl+'</div>';
+        html+='<div><div class="psap-code">'+inc.determinantCode+'</div>';
+        html+='<div style="font-family:var(--fm);font-size:9px;color:var(--t3);">'+(lvlNames[lvl]||'')+'</div></div>';
+        html+='</div>';
+      }
+      psapSec.style.display='';
+      psapSec.innerHTML=html;
+    } else {
+      psapSec.style.display='none';
+    }
+  }
+
+  // Supervisor Oversight strip (read-only)
+  var awareness=NACDState.dispatchAwareness.forIncident(inc.id);
+  var svSection=document.getElementById('sv-oversight');
+  var svChips=document.getElementById('sv-chips');
+  var svNote=document.getElementById('sv-note');
+  var hasOversight=awareness.openQA.length||awareness.takeoverActive||awareness.transferActive||awareness.bargeActive||awareness.allowedNotes.length;
+  if(svSection) svSection.style.display=hasOversight?'':'none';
+  if(svChips){
+    var chips='';
+    if(awareness.takeoverActive) chips+='<span class="sv-chip takeover">TAKEOVER</span>';
+    if(awareness.bargeActive)    chips+='<span class="sv-chip barge">BARGE</span>';
+    if(awareness.transferActive) chips+='<span class="sv-chip transfer">TRANSFER</span>';
+    if(awareness.openQA.length)  chips+='<span class="sv-chip qa">QA ×'+awareness.openQA.length+'</span>';
+    svChips.innerHTML=chips;
+  }
+  if(svNote){
+    if(awareness.allowedNotes.length){
+      svNote.style.display='';
+      svNote.textContent='“'+awareness.allowedNotes[0].noteText+'”';
+    } else {
+      svNote.style.display='none';
+    }
+  }
+
+  // Nearest available units (top 3 by distance)
+  var fleet=NACDState.getFleet();
+  var avail=[];
+  for(var j=0;j<fleet.length;j++){
+    if(fleet[j].status==='available') avail.push(fleet[j]);
+  }
+  avail.sort(function(a,b){
+    var da=(a.lat-inc.lat)*(a.lat-inc.lat)+(a.lng-inc.lng)*(a.lng-inc.lng);
+    var db=(b.lat-inc.lat)*(b.lat-inc.lat)+(b.lng-inc.lng)*(b.lng-inc.lng);
+    return da-db;
+  });
+  var rec=document.getElementById('rp-rec');
+  if(rec){
+    var top3=avail.slice(0,3);
+    if(!top3.length){
+      rec.innerHTML='<div style="color:var(--t3);font-size:12px;padding:8px 0;text-align:center">No available units</div>';
+    } else {
+      var recHtml='';
+      for(var k=0;k<top3.length;k++){
+        var u=top3[k];
+        var dk=Math.sqrt((u.lat-inc.lat)*(u.lat-inc.lat)+(u.lng-inc.lng)*(u.lng-inc.lng))*111;
+        var etaSec=Math.round(dk/40*3600);
+        var topCls=k===0?' top':'';
+        recHtml+='<div class="rec-row'+topCls+'" data-uid="'+u.id+'">'+
+          '<div class="rec-num">'+(k+1)+'</div>'+
+          '<div class="rec-body"><div class="rec-id">'+u.id+'</div><div class="rec-meta">'+(u.zone||'—')+' · '+dk.toFixed(1)+'km</div></div>'+
+          '<span class="rec-tag '+(u.type||'bls').toLowerCase()+'">'+u.type+'</span>'+
+          '<div class="rec-eta">'+ft(etaSec)+'</div></div>';
+      }
+      rec.innerHTML=recHtml;
+    }
+    var rows=document.querySelectorAll('.rec-row');
+    for(var r=0;r<rows.length;r++){
+      (function(row){
+        row.onclick=function(){
+          var uid=row.getAttribute('data-uid');
+          if(uid&&_selectedId) NACDState.dispatch.assignUnit(_selectedId,uid);
+        };
+      })(rows[r]);
+    }
+  }
+
+  // Destination hospital
+  var hosp=null;
+  if(inc.hospitalId) hosp=NACDState.findHospital(inc.hospitalId);
+  if(!hosp){
+    var hosps=NACDState.getHospitals();
+    var nearest=null,nearestD=Infinity;
+    for(var h=0;h<hosps.length;h++){
+      var hh=hosps[h];
+      var dh=(hh.lat-inc.lat)*(hh.lat-inc.lat)+(hh.lng-inc.lng)*(hh.lng-inc.lng);
+      if(dh<nearestD){nearestD=dh;nearest=hh;}
+    }
+    hosp=nearest;
+  }
+  if(hosp){
+    var pct=hosp.edPct||0;
+    var edStatus=pct>=90?'BYPASS':pct>=75?'CAUTION':'Accepting';
+    var dk2=Math.sqrt((hosp.lat-inc.lat)*(hosp.lat-inc.lat)+(hosp.lng-inc.lng)*(hosp.lng-inc.lng))*111;
+    setText('rp-dest-name',hosp.full||hosp.name||'—');
+    setText('rp-dest-level',hosp.nat?'Level 6 · National referral':'Level 5 · County referral');
+    setText('rp-dest-ed',pct+'% · '+edStatus);
+    setText('rp-dest-dist',dk2.toFixed(1)+' km');
+  }
+
+  // Dispatch / progress button
+  var btn=document.getElementById('rp-btn');
+  if(btn){
+    btn.disabled=false;
+    var nextMap={pending:'dispatched',dispatched:'en_route',dispatching:'en_route',en_route:'on_scene',on_scene:'transport',transport:'cleared'};
+    var nextLbl={pending:'Auto-dispatch',dispatched:'Mark en route',dispatching:'Mark en route',en_route:'Mark on scene',on_scene:'Mark transport',transport:'Mark cleared'};
+    var icons={pending:'send',dispatched:'directions_run',dispatching:'directions_run',en_route:'location_on',on_scene:'local_hospital',transport:'done_all'};
+
+    if(inc.status==='pending'&&!inc.unitId){
+      btn.innerHTML='<span class="mat">send</span>Auto-dispatch';
+      btn.onclick=function(){
+        var av=NACDState.getFleet();
+        var closest=null,closestD=Infinity;
+        for(var x=0;x<av.length;x++){
+          if(av[x].status!=='available') continue;
+          var d=(av[x].lat-inc.lat)*(av[x].lat-inc.lat)+(av[x].lng-inc.lng)*(av[x].lng-inc.lng);
+          if(d<closestD){closestD=d;closest=av[x];}
+        }
+        if(closest) NACDState.dispatch.assignUnit(inc.id,closest.id);
+      };
+    } else if(inc.status==='cleared'||inc.status==='cancelled'){
+      btn.innerHTML='<span class="mat">check_circle</span>Incident closed';
+      btn.onclick=null;
+      btn.disabled=true;
+    } else if(nextMap[inc.status]){
+      btn.innerHTML='<span class="mat">'+(icons[inc.status]||'arrow_forward')+'</span>'+(nextLbl[inc.status]||'Update');
+      (function(status,id){
+        btn.onclick=function(){NACDState.dispatch.updateStatus(id,nextMap[status]);};
+      })(inc.status,inc.id);
+    }
+  }
+
+  updateHUD(inc);
+}
+
+function updateHUD(inc){
+  if(!inc) return;
+  var hudUnit=document.getElementById('hud-unit');
+  var hudAddr=document.getElementById('hud-addr');
+  var active=inc.status==='en_route'||inc.status==='dispatched'||inc.status==='transport';
+  if(inc.unitId&&active){
+    var u=NACDState.findUnit(inc.unitId);
+    if(u){
+      var dk=Math.sqrt((u.lat-inc.lat)*(u.lat-inc.lat)+(u.lng-inc.lng)*(u.lng-inc.lng))*111;
+      var etaSec=Math.round(dk/40*3600);
+      _hudTargetMs=Date.now()+etaSec*1000;
+      if(hudUnit) hudUnit.textContent=inc.unitId+' → '+inc.number;
+      if(hudAddr) hudAddr.textContent=(inc.address||'').split(',')[0]+' \xb7 '+(inc.complaint||'').split('—')[0].trim();
+      return;
+    }
+  }
+  _hudTargetMs=null;
+  setText('hud-eta',active?'—:——':'--:--');
+  if(hudUnit) hudUnit.textContent=active?inc.number+' \xb7 awaiting unit':inc.number+' \xb7 '+inc.status;
+  if(hudAddr) hudAddr.textContent=(inc.address||'').split(',')[0];
+}
+setInterval(function(){
+  var etaEl=document.getElementById('hud-eta');
+  if(!etaEl) return;
+  if(_hudTargetMs===null){return;}
+  var rem=Math.max(0,Math.round((_hudTargetMs-Date.now())/1000));
+  etaEl.textContent=ft(rem);
+},1000);
+
+/* ── Filter pills ──────────────────────────────── */
+function initFilterPills(){
+  var fps=document.querySelectorAll('.fp');
+  for(var i=0;i<fps.length;i++){
+    (function(fp){
+      fp.onclick=function(){
+        _filterState=fp.getAttribute('data-filter')||'all';
+        for(var j=0;j<fps.length;j++) fps[j].classList.remove('on');
+        fp.classList.add('on');
+        renderIncList(NACDState.getIncidents());
+      };
+    })(fps[i]);
+  }
+}
+
+/* ── Layer pills ───────────────────────────────── */
+function dpUpdateFilterCount(){
+  var f=_dpMapFilter,n=0;
+  if(f.status!=='all') n++;
+  if(f.unitType!=='all') n++;
+  if(f.incPri!=='all') n++;
+  if(f.county!=='all') n++;
+  if(f.incType!=='all') n++;
+  var badge=document.getElementById('dp-filter-count');
+  if(badge){badge.textContent=n;badge.classList.toggle('show',n>0);}
+  var btn=document.getElementById('dp-filter-btn');
+  if(btn) btn.classList.toggle('active',n>0);
+}
+
+function dpApplyIncidentFilter(){
+  if(!map||!map.getLayer) return;
+  var f=_dpMapFilter;
+  var incFilter=null;
+  if(f.incPri!=='all'){var n=parseInt(f.incPri);incFilter=n===3?['>=',['get','priority'],3]:['==',['get','priority'],n];}
+  var incTypeFilter=null;
+  if(f.incType!=='all'){incTypeFilter=['==',['get','category'],f.incType];}
+  var combined=null;
+  if(incFilter&&incTypeFilter) combined=['all',incFilter,incTypeFilter];
+  else combined=incFilter||incTypeFilter||null;
+  ['inc-circle','inc-glow','inc-label'].forEach(function(lid){
+    if(map.getLayer(lid)) map.setFilter(lid,combined);
+  });
+}
+
+function dpFilterChange(){
+  var cs=document.getElementById('dfp-county-sel');if(cs)_dpMapFilter.county=cs.value;
+  var it=document.getElementById('dfp-itype-sel');if(it)_dpMapFilter.incType=it.value;
+  dpUpdateFilterCount();refreshAllMarkerHTML();dpApplyIncidentFilter();
+}
+
+function dpToggleFilter(){
+  var panel=document.getElementById('dp-filter-panel');
+  var btn=document.getElementById('dp-filter-btn');
+  if(!panel) return;
+  panel.classList.toggle('open');
+  if(btn) btn.classList.toggle('active',panel.classList.contains('open'));
+}
+
+function dpResetFilters(){
+  _dpMapFilter={status:'all',unitType:'all',incPri:'all',county:'all',incType:'all'};
+  _layerFilter='all';
+  document.querySelectorAll('#dfp-status-row .dfp-pill').forEach(function(p){p.classList.toggle('on',p.getAttribute('data-ds')==='all');});
+  document.querySelectorAll('#dfp-type-row .dfp-pill').forEach(function(p){p.classList.toggle('on',p.getAttribute('data-dt')==='all');});
+  document.querySelectorAll('#dfp-pri-row .dfp-pill').forEach(function(p){p.classList.toggle('on',p.getAttribute('data-dp')==='all');});
+  var cs=document.getElementById('dfp-county-sel');if(cs)cs.value='all';
+  var it=document.getElementById('dfp-itype-sel');if(it)it.value='all';
+  dpUpdateFilterCount();refreshAllMarkerHTML();dpApplyIncidentFilter();
+}
+
+function dpPopulateCounty(){
+  var fleet=NACDState.getFleet?NACDState.getFleet():[];
+  var seen={};
+  fleet.forEach(function(u){if(u.zone){var c=_DISP_ZONE_COUNTY[u.zone]||u.zone;seen[c]=1;}});
+  var sel=document.getElementById('dfp-county-sel');if(!sel)return;
+  Object.keys(seen).sort().forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+}
+
+function initLayerPills(){
+  document.querySelectorAll('#dfp-status-row .dfp-pill').forEach(function(pill){
+    pill.onclick=function(){
+      document.querySelectorAll('#dfp-status-row .dfp-pill').forEach(function(p){p.classList.remove('on');});
+      pill.classList.add('on');
+      var v=pill.getAttribute('data-ds')||'all';
+      _dpMapFilter.status=v;_layerFilter=v;
+      var hospVis=(v==='hospitals'||v==='all')?'visible':'none';
+      ['hosp-bg-l6','hosp-bg-l5','hosp-bg-l4','hosp-lbl','hosp-name'].forEach(function(lid){
+        if(map&&map.getLayer(lid)) map.setLayoutProperty(lid,'visibility',hospVis);
+      });
+      dpUpdateFilterCount();refreshAllMarkerHTML();
+    };
+  });
+  document.querySelectorAll('#dfp-type-row .dfp-pill').forEach(function(pill){
+    pill.onclick=function(){
+      document.querySelectorAll('#dfp-type-row .dfp-pill').forEach(function(p){p.classList.remove('on');});
+      pill.classList.add('on');_dpMapFilter.unitType=pill.getAttribute('data-dt')||'all';
+      dpUpdateFilterCount();refreshAllMarkerHTML();
+    };
+  });
+  document.querySelectorAll('#dfp-pri-row .dfp-pill').forEach(function(pill){
+    pill.onclick=function(){
+      document.querySelectorAll('#dfp-pri-row .dfp-pill').forEach(function(p){p.classList.remove('on');});
+      pill.classList.add('on');_dpMapFilter.incPri=pill.getAttribute('data-dp')||'all';
+      dpUpdateFilterCount();dpApplyIncidentFilter();
+    };
+  });
+  document.addEventListener('click',function(e){
+    var panel=document.getElementById('dp-filter-panel');
+    var wrap=panel&&panel.closest?panel.closest('.map-pill-stack'):null;
+    if(panel&&panel.classList.contains('open')&&!(wrap&&wrap.contains(e.target))){
+      panel.classList.remove('open');
+      var btn=document.getElementById('dp-filter-btn');
+      if(btn&&!_dpMapFilter.status!=='all') btn.classList.remove('active');
+    }
+  });
+}
+
+/* ── Toast helper ──────────────────────────────── */
+var _dpToastTimer=null;
+function showToast(msg,dur){
+  var el=document.getElementById('dp-toast');
+  if(!el){
+    el=document.createElement('div');el.id='dp-toast';
+    el.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(12px);'+
+      'background:rgba(22,28,37,0.97);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.10);'+
+      'border-radius:999px;padding:10px 22px;font-family:var(--fh);font-size:13px;color:rgba(255,255,255,.95);'+
+      'white-space:nowrap;opacity:0;transition:opacity .18s,transform .18s;pointer-events:none;z-index:9999;';
+    document.body.appendChild(el);
+  }
+  el.textContent=msg;el.style.opacity='1';el.style.transform='translateX(-50%) translateY(0)';
+  if(_dpToastTimer)clearTimeout(_dpToastTimer);
+  _dpToastTimer=setTimeout(function(){el.style.opacity='0';el.style.transform='translateX(-50%) translateY(12px)';},dur||2400);
+}
+
+/* ── Nav pills ─────────────────────────────────── */
+function _closeAllTabOvs(){
+  var ovs=document.querySelectorAll('.tab-ov');
+  for(var i=0;i<ovs.length;i++) ovs[i].classList.remove('open');
+  var pills=document.querySelectorAll('.nav-pills .np');
+  for(var j=0;j<pills.length;j++) pills[j].classList.remove('on');
+  var liveMap=document.querySelector('.nav-pills .np');
+  if(liveMap) liveMap.classList.add('on');
+}
+function initNavPills(){
+  var pills=document.querySelectorAll('.nav-pills .np');
+  var ovIds=[null,'tab-ov-incidents','tab-ov-fleet','tab-ov-hospitals',null];
+  for(var i=0;i<pills.length;i++){
+    (function(pill,idx){
+      pill.onclick=function(){
+        _closeAllTabOvs();
+        for(var j=0;j<pills.length;j++) pills[j].classList.remove('on');
+        pill.classList.add('on');
+        if(ovIds[idx]){
+          var ov=document.getElementById(ovIds[idx]);
+          if(ov){ov.classList.add('open');_refreshTabOv(idx);}
+        } else if(idx===4){
+          showToast('Analytics — coming in Sprint 4');
+        }
+      };
+    })(pills[i],i);
+  }
+  document.getElementById('tab-ov-inc-close').onclick=_closeAllTabOvs;
+  document.getElementById('tab-ov-fleet-close').onclick=_closeAllTabOvs;
+  document.getElementById('tab-ov-hosp-close').onclick=_closeAllTabOvs;
+  document.getElementById('tab-new-call-btn').onclick=function(){_closeAllTabOvs();openNewCallModal();};
+}
+function _refreshTabOv(idx){
+  var state=NACDState.getState();if(!state)return;
+  if(idx===1) _renderIncTab(state.incidents);
+  if(idx===2) _renderFleetTab(state.fleet,state.incidents);
+  if(idx===3) _renderHospTab(state.hospitals);
+}
+function _ft(s){var m=Math.floor(s/60);return m>0?m+'m '+(s%60)+'s':s+'s';}
+function _relTime(ts){var s=Math.round((Date.now()-ts)/1000);if(s<60)return s+'s';if(s<3600)return Math.floor(s/60)+'m';return Math.floor(s/3600)+'h '+(Math.floor((s%3600)/60))+'m';}
+
+function _renderIncTab(incidents){
+  var all=incidents.slice().sort(function(a,b){return a.priority-b.priority||(b.createdAt-a.createdAt);});
+  var open=all.filter(function(i){return i.status!=='cleared'&&i.status!=='cancelled';});
+  var p1=open.filter(function(i){return i.priority===1;}).length;
+  var p2=open.filter(function(i){return i.priority===2;}).length;
+  var sumEl=document.getElementById('inc-ov-summary');
+  if(sumEl){
+    sumEl.innerHTML='<div class="ov-kpi"><div class="ov-kpi-n">'+open.length+'</div><div class="ov-kpi-l">Open</div></div>'+
+      '<div class="ov-kpi"><div class="ov-kpi-n" style="color:var(--p1)">'+p1+'</div><div class="ov-kpi-l">P1 Active</div></div>'+
+      '<div class="ov-kpi"><div class="ov-kpi-n" style="color:var(--p2)">'+p2+'</div><div class="ov-kpi-l">P2 Active</div></div>'+
+      '<div class="ov-kpi"><div class="ov-kpi-n" style="color:var(--g)">'+(all.length-open.length)+'</div><div class="ov-kpi-l">Cleared today</div></div>';
+  }
+  var stMap={pending:'pnd',dispatched:'dis',dispatching:'dis',en_route:'enr',on_scene:'scn',transport:'trn',cleared:'ok',cancelled:'ok'};
+  var stLbl={pending:'PENDING',dispatched:'DISPATCHED',dispatching:'DISPATCHING',en_route:'EN ROUTE',on_scene:'ON SCENE',transport:'TRANSPORT',cleared:'CLEARED',cancelled:'CANCELLED'};
+  var rows=all.map(function(inc){
+    var sc=stMap[inc.status]||'';
+    var sl=stLbl[inc.status]||inc.status;
+    return '<tr class="clickable" data-inc-id="'+inc.id+'">'
+      +'<td style="color:var(--t1);font-weight:600">'+inc.number+'</td>'
+      +'<td><span class="ov-tag p'+inc.priority+'">P'+inc.priority+'</span></td>'
+      +'<td>'+inc.complaint+'</td>'
+      +'<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+inc.address+'</td>'
+      +'<td><span class="ov-tag '+sc+'">'+sl+'</span></td>'
+      +'<td style="color:var(--b2);font-family:var(--fm)">'+(inc.unitId||'—')+'</td>'
+      +'<td>'+new Date(inc.createdAt).toISOString().substr(11,5)+'</td>'
+      +'<td>'+_relTime(inc.createdAt)+'</td>'
+      +'</tr>';
+  }).join('');
+  var tbody=document.getElementById('inc-ov-body');
+  if(tbody){tbody.innerHTML=rows;
+    var trs=tbody.querySelectorAll('tr[data-inc-id]');
+    for(var i=0;i<trs.length;i++){
+      (function(tr){tr.onclick=function(){_closeAllTabOvs();selectIncident(tr.getAttribute('data-inc-id'));};})(trs[i]);
+    }
+  }
+}
+
+function _renderFleetTab(fleet,incidents){
+  var stMap={available:'avl',dispatching:'dis',dispatched:'dis',en_route:'enr',on_scene:'scn',transport:'trn',standby:'',maintenance:''};
+  var stLbl={available:'AVAILABLE',dispatching:'DISPATCHING',dispatched:'DISPATCHED',en_route:'EN ROUTE',on_scene:'ON SCENE',transport:'TRANSPORT',standby:'STANDBY',maintenance:'MAINT'};
+  var counts={available:0,dispatched:0,en_route:0,on_scene:0,transport:0,standby:0};
+  fleet.forEach(function(u){if(counts.hasOwnProperty(u.status||''))counts[u.status]++;});
+  var sumEl=document.getElementById('fleet-ov-summary');
+  if(sumEl){
+    sumEl.innerHTML='<div class="ov-kpi"><div class="ov-kpi-n" style="color:var(--g)">'+counts.available+'</div><div class="ov-kpi-l">Available</div></div>'+
+      '<div class="ov-kpi"><div class="ov-kpi-n" style="color:var(--p1)">'+(counts.dispatched)+'</div><div class="ov-kpi-l">Dispatched</div></div>'+
+      '<div class="ov-kpi"><div class="ov-kpi-n" style="color:var(--p2)">'+counts.en_route+'</div><div class="ov-kpi-l">En Route</div></div>'+
+      '<div class="ov-kpi"><div class="ov-kpi-n" style="color:var(--b2)">'+counts.on_scene+'</div><div class="ov-kpi-l">On Scene</div></div>'+
+      '<div class="ov-kpi"><div class="ov-kpi-n" style="color:var(--g)">'+counts.transport+'</div><div class="ov-kpi-l">Transport</div></div>';
+  }
+  var incById={};
+  incidents.forEach(function(i){incById[i.id]=i;});
+  var sorted=fleet.slice().sort(function(a,b){
+    var so={available:0,dispatching:1,dispatched:1,en_route:2,on_scene:3,transport:4,standby:5,maintenance:6};
+    return (so[a.status]||9)-(so[b.status]||9)||(a.id<b.id?-1:1);
+  });
+  var rows=sorted.map(function(u){
+    var sc=stMap[u.status]||'';
+    var sl=stLbl[u.status]||u.status;
+    var inc=u.incidentId?incById[u.incidentId]:null;
+    return '<tr>'
+      +'<td style="color:var(--t1);font-weight:600;font-family:var(--fm)">'+u.id+'</td>'
+      +'<td><span class="ov-tag '+(u.type==='ALS'?'scn':'avl')+'">'+u.type+'</span></td>'
+      +'<td><span class="ov-tag '+sc+'">'+sl+'</span></td>'
+      +'<td style="color:var(--t3)">'+u.zone+'</td>'
+      +'<td style="color:var(--t3)">'+u.county+'</td>'
+      +'<td style="color:var(--b2);font-family:var(--fm)">'+(inc?inc.number:'—')+'</td>'
+      +'</tr>';
+  }).join('');
+  var tbody=document.getElementById('fleet-ov-body');
+  if(tbody) tbody.innerHTML=rows;
+}
+
+function _renderHospTab(hospitals){
+  var sorted=hospitals.slice().sort(function(a,b){return (b.edPct||0)-(a.edPct||0);});
+  var rows=sorted.map(function(h){
+    var pct=h.edPct||0;
+    var cls=pct>=90?'crit':pct>=75?'warn':'ok';
+    var lbl=pct>=90?'BYPASS':pct>=75?'CAUTION':'OPEN';
+    var lvl=h.nat?'Level 6 National':'Level 5 County';
+    return '<tr>'
+      +'<td style="color:var(--t1);font-weight:600">'+(h.full||h.n||h.name)+'</td>'
+      +'<td style="color:var(--t3)">'+lvl+'</td>'
+      +'<td style="color:var(--t3)">'+h.county+'</td>'
+      +'<td style="font-family:var(--fm)">'
+        +'<div style="display:flex;align-items:center;gap:8px;">'
+        +'<div style="width:80px;height:5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:'+(pct>=90?'var(--p1)':pct>=75?'var(--p2)':'var(--g)')+'"></div></div>'
+        +'<span>'+pct+'%</span>'
+        +'</div></td>'
+      +'<td><span class="ov-tag '+cls+'">'+lbl+'</span></td>'
+      +'</tr>';
+  }).join('');
+  var tbody=document.getElementById('hosp-ov-body');
+  if(tbody) tbody.innerHTML=rows;
+}
+
+/* ── Layers (mc-btn) ───────────────────────────── */
+function initLayersBtn(){
+  var btns=document.querySelectorAll('.mc-btn');
+  for(var i=0;i<btns.length;i++){
+    var mat=btns[i].querySelector('.mat');
+    if(mat&&mat.textContent==='layers'){
+      btns[i].onclick=function(){
+        _showHospitals=!_showHospitals;
+        var v=_showHospitals?'visible':'none';
+        ['hosp-bg-l6','hosp-bg-l5','hosp-bg-l4','hosp-lbl','hosp-name'].forEach(function(lid){
+          if(map&&map.getLayer(lid)) map.setLayoutProperty(lid,'visibility',v);
+        });
+        showToast('Hospitals '+(_showHospitals?'shown':'hidden'));
+      };
+      break;
+    }
+  }
+}
+
+/* ── Search ────────────────────────────────────── */
+var _searchQuery='';
+function applySearch(q){
+  _searchQuery=q?q.toLowerCase().trim():'';
+  var incs=NACDState.getIncidents();
+  if(!_searchQuery){renderIncList(incs);Object.keys(_markers).forEach(function(id){var mk=_markers[id];if(mk)mk.el.style.display='';});return;}
+  var filtered=incs.filter(function(i){
+    return (i.number&&i.number.toLowerCase().indexOf(_searchQuery)!==-1)||
+           (i.complaint&&i.complaint.toLowerCase().indexOf(_searchQuery)!==-1)||
+           (i.address&&i.address.toLowerCase().indexOf(_searchQuery)!==-1)||
+           (i.w3w&&i.w3w.toLowerCase().indexOf(_searchQuery)!==-1)||
+           (i.unitId&&i.unitId.toLowerCase().indexOf(_searchQuery)!==-1);
+  });
+  renderIncList(filtered);
+  var matchUnitIds={};
+  filtered.forEach(function(i){if(i.unitId)matchUnitIds[i.unitId]=true;});
+  Object.keys(_markers).forEach(function(uid){if(uid.toLowerCase().indexOf(_searchQuery)!==-1)matchUnitIds[uid]=true;});
+  Object.keys(_markers).forEach(function(id){var mk=_markers[id];if(mk)mk.el.style.display=matchUnitIds[id]?'':'none';});
+}
+function initSearchPill(){
+  var inp=document.getElementById('dp-search-inp');
+  if(!inp)return;
+  inp.addEventListener('input',function(){applySearch(inp.value);});
+  inp.addEventListener('keydown',function(e){if(e.key==='Escape'){inp.value='';applySearch('');}});
+  document.addEventListener('keydown',function(e){
+    if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();inp.focus();inp.select();}
+  });
+}
+
+/* ── Secondary action buttons ──────────────────── */
+/* ── Create Incident modal ────────────────────────── */
+var _cadModalPri=3;
+var _cadOrigin='manual';
+
+var _ORIGIN_META={
+  psap:     {cls:'phone',  icon:'call',       label:'PSAP / Direct call'},
+  transfer: {cls:'transfer',icon:'local_hospital',label:'Hospital Transfer'},
+  field:    {cls:'field',  icon:'radio',      label:'Field Radio Report'},
+  manual:   {cls:'manual', icon:'edit_note',  label:'Manual Entry'}
+};
+
+function openNewCallModal(){
+  var modal=document.getElementById('cad-new-modal');
+  if(!modal)return;
+  _cadOrigin='manual';
+  // Show origin step, hide form step
+  document.getElementById('cad-origin-step').style.display='';
+  document.getElementById('cad-form-step').classList.remove('open');
+  modal.classList.add('open');
+}
+
+function _openFormStep(origin){
+  _cadOrigin=origin;
+  var modal=document.getElementById('cad-new-modal');
+  // Reset form fields
+  _cadModalPri = origin==='transfer'?2:3;
+  var pris=modal.querySelectorAll('.cad-pri');
+  for(var i=0;i<pris.length;i++){
+    var p=parseInt(pris[i].getAttribute('data-pri'));
+    pris[i].classList.toggle('on',p===_cadModalPri);
+  }
+  ['cad-nature','cad-address','cad-w3w','cad-county','cad-caller-name','cad-caller-phone',
+   'cad-notes','cad-unit-id','cad-scene-type','cad-referring'].forEach(function(id){
+    var el=document.getElementById(id);if(el) el.value='';
+  });
+  var alsEl=document.getElementById('cad-als');if(alsEl)alsEl.checked=false;
+
+  // Origin badge
+  var meta=_ORIGIN_META[origin]||_ORIGIN_META.manual;
+  var badge=document.getElementById('cad-origin-badge');
+  if(badge){badge.className='cad-origin-badge '+meta.cls;badge.innerHTML='<span class="mat">'+meta.icon+'</span>'+meta.label;}
+
+  // Show/hide context-specific rows
+  var unitRow=document.getElementById('cad-unit-row');
+  var refRow=document.getElementById('cad-referring-row');
+  var callerRow=document.getElementById('cad-caller-row');
+  var addrLabel=document.getElementById('cad-address-label');
+  var natLabel=document.getElementById('cad-nature-label');
+  if(unitRow)  unitRow.style.display  = origin==='field'?'':'none';
+  if(refRow)   refRow.style.display   = origin==='transfer'?'':'none';
+  if(callerRow)callerRow.style.display= (origin==='field'||origin==='transfer')?'none':'';
+  if(addrLabel)addrLabel.textContent  = origin==='transfer'?'Scene / Patient Location *':'Location / Address *';
+  if(natLabel) natLabel.textContent   = origin==='transfer'?'Condition / Diagnosis *':'Nature of Call *';
+
+  // Switch steps
+  document.getElementById('cad-origin-step').style.display='none';
+  document.getElementById('cad-form-step').classList.add('open');
+  setTimeout(function(){var el=document.getElementById('cad-nature');if(el)el.focus();},60);
+}
+
+function openPsapPanel(){
+  var panel=document.getElementById('psap-side-panel');
+  var dim=document.getElementById('psap-panel-dim');
+  var frame=document.getElementById('psap-panel-frame');
+  if(!panel)return;
+  if(frame&&frame.src==='about:blank') frame.src='/psap';
+  panel.classList.add('open');
+  if(dim)dim.classList.add('open');
+}
+function closePsapPanel(){
+  var panel=document.getElementById('psap-side-panel');
+  var dim=document.getElementById('psap-panel-dim');
+  if(panel)panel.classList.remove('open');
+  if(dim)dim.classList.remove('open');
+}
+
+function initNewCallModal(){
+  var modal=document.getElementById('cad-new-modal');
+  if(!modal)return;
+
+  // New Call button
+  var btnNew=document.getElementById('btn-new-call');
+  if(btnNew)btnNew.onclick=openNewCallModal;
+
+  // Close / cancel
+  document.getElementById('cad-modal-close').onclick=function(){modal.classList.remove('open');};
+  document.getElementById('cad-modal-cancel').onclick=function(){modal.classList.remove('open');};
+  modal.addEventListener('click',function(e){if(e.target===modal)modal.classList.remove('open');});
+
+  // Back button (form → origin step)
+  document.getElementById('cad-form-back').onclick=function(){
+    document.getElementById('cad-origin-step').style.display='';
+    document.getElementById('cad-form-step').classList.remove('open');
+  };
+
+  // Origin cards
+  var cards=modal.querySelectorAll('.cad-origin-card');
+  for(var c=0;c<cards.length;c++){
+    (function(card){
+      card.onclick=function(){
+        var origin=card.getAttribute('data-origin');
+        if(origin==='psap'){
+          modal.classList.remove('open');
+          openPsapPanel();
+        } else {
+          _openFormStep(origin);
+        }
+      };
+    })(cards[c]);
+  }
+
+  // PSAP panel close
+  var psapClose=document.getElementById('psap-panel-close');
+  if(psapClose)psapClose.onclick=closePsapPanel;
+  var dim=document.getElementById('psap-panel-dim');
+  if(dim)dim.onclick=closePsapPanel;
+
+  // Priority pills
+  var pris=modal.querySelectorAll('.cad-pri');
+  for(var i=0;i<pris.length;i++){
+    (function(btn){
+      btn.onclick=function(){
+        for(var j=0;j<pris.length;j++)pris[j].classList.remove('on');
+        btn.classList.add('on');
+        _cadModalPri=parseInt(btn.getAttribute('data-pri'));
+        var alsEl=document.getElementById('cad-als');
+        if(alsEl&&_cadModalPri===1)alsEl.checked=true;
+      };
+    })(pris[i]);
+  }
+
+  // Auto-set ALS by nature
+  var natEl=document.getElementById('cad-nature');
+  if(natEl){
+    natEl.onchange=function(){
+      var alsNeeded=['Cardiac Arrest','Stroke / CVA','Road Traffic Accident','Obstetric Emergency','Respiratory Distress','ICU / HDU transfer'];
+      var alsEl=document.getElementById('cad-als');
+      if(alsEl)alsEl.checked=alsNeeded.indexOf(natEl.value)!==-1||_cadModalPri===1;
+    };
+  }
+
+  // Submit
+  document.getElementById('cad-modal-submit').onclick=function(){
+    var nature=document.getElementById('cad-nature').value.trim();
+    var addr=document.getElementById('cad-address').value.trim();
+    if(!nature){showToast('Please select a nature of call');return;}
+    if(!addr){showToast('Please enter an address / location');return;}
+    var data={
+      priority:    _cadModalPri,
+      complaint:   nature,
+      address:     addr,
+      w3w:         document.getElementById('cad-w3w').value.trim()||undefined,
+      requiresALS: document.getElementById('cad-als').checked,
+      notes:       document.getElementById('cad-notes').value.trim()||undefined,
+      originType:  _cadOrigin,
+      source:      'dispatcher'   // marks as manual — disables sim auto-dispatch
+    };
+    if(_cadOrigin==='manual'||_cadOrigin==='psap'){
+      var cn=document.getElementById('cad-caller-name').value.trim();
+      var cp=document.getElementById('cad-caller-phone').value.trim();
+      if(cn)data.callerName=cn;
+      if(cp)data.callerPhone=cp;
+    }
+    if(_cadOrigin==='field'){
+      var uid=document.getElementById('cad-unit-id').value.trim();
+      if(uid)data.notes=(data.notes?data.notes+' — ':'')+'Reported by '+uid;
+    }
+    if(_cadOrigin==='transfer'){
+      var ref=document.getElementById('cad-referring').value.trim();
+      if(ref)data.notes=(data.notes?data.notes+' — ':'')+'Transferred from '+ref;
+    }
+    var county=document.getElementById('cad-county').value;
+    if(county){
+      var zones=NACDState.getState()&&NACDState.getState().zones||[];
+      for(var z=0;z<zones.length;z++){
+        if(zones[z].county===county){
+          var oz=zones[z];
+          data.lat=oz.lat+(Math.random()-.5)*oz.radius*2;
+          data.lng=oz.lng+(Math.random()-.5)*oz.radius*2;
+          data.county=county;data.zone=oz.id;break;
+        }
+      }
+    }
+    var inc=NACDState.dispatch.createIncident(data);
+    modal.classList.remove('open');
+    if(inc){
+      showToast(inc.number+' logged · P'+inc.priority+' · '+nature);
+      setTimeout(function(){selectIncident(inc.id);},120);
+    }
+  };
+
+  // Keyboard: N → open new call
+  document.addEventListener('keydown',function(e){
+    if(e.key==='n'&&!e.ctrlKey&&!e.metaKey&&document.activeElement.tagName==='BODY'){
+      openNewCallModal();
+    }
+  });
+}
+
+/* ── More-options popup ───────────────────────────── */
+function initSecondaryBtns(){
+  var moreBtn=document.getElementById('dp-more-opts');
+  var pop=document.getElementById('more-opts-pop');
+  var altBtn=document.getElementById('dp-alt-route');
+  if(altBtn) altBtn.onclick=function(){showToast('Alternate route: auto-selected fastest route via Mapbox Directions');};
+  if(!moreBtn||!pop)return;
+  function closeMop(){pop.classList.remove('open');}
+  moreBtn.onclick=function(e){
+    e.stopPropagation();
+    if(pop.classList.contains('open')){closeMop();return;}
+    var rect=moreBtn.getBoundingClientRect();
+    pop.style.bottom=(window.innerHeight-rect.top+6)+'px';
+    pop.style.right=(window.innerWidth-rect.right)+'px';
+    pop.style.top='auto';
+    // Mark current priority
+    var inc=_selectedId?NACDState.findIncident(_selectedId):null;
+    var priBtns=pop.querySelectorAll('.mop-pri-btn');
+    for(var i=0;i<priBtns.length;i++){
+      var p=parseInt(priBtns[i].getAttribute('data-mop-pri'));
+      priBtns[i].classList.toggle('cur',inc&&inc.priority===p);
+    }
+    // Clear note
+    var noteTA=document.getElementById('mop-note-text');
+    if(noteTA)noteTA.value='';
+    pop.classList.add('open');
+    setTimeout(function(){
+      document.addEventListener('click',function _mopClose(){pop.classList.remove('open');document.removeEventListener('click',_mopClose);});
+    },0);
+  };
+  // Re-prioritise
+  var priBtns=pop.querySelectorAll('.mop-pri-btn');
+  for(var i=0;i<priBtns.length;i++){
+    (function(btn){
+      btn.onclick=function(e){
+        e.stopPropagation();
+        var inc=_selectedId?NACDState.findIncident(_selectedId):null;
+        if(!inc){showToast('Select an incident first');return;}
+        var np=parseInt(btn.getAttribute('data-mop-pri'));
+        inc.priority=np;
+        for(var j=0;j<priBtns.length;j++) priBtns[j].classList.remove('cur');
+        btn.classList.add('cur');
+        showToast(inc.number+' re-prioritised to P'+np);
+        renderDetail(inc);
+        closeMop();
+      };
+    })(priBtns[i]);
+  }
+  // Add note
+  document.getElementById('mop-note-send').onclick=function(e){
+    e.stopPropagation();
+    var inc=_selectedId?NACDState.findIncident(_selectedId):null;
+    var noteTA=document.getElementById('mop-note-text');
+    if(!inc||!noteTA||!noteTA.value.trim()){showToast('Select an incident and type a note');return;}
+    NACDState.dispatch.addNote(inc.id,noteTA.value.trim());
+    showToast('Note added to '+inc.number);
+    noteTA.value='';
+    closeMop();
+  };
+  // Cancel incident
+  document.getElementById('mop-cancel-inc').onclick=function(e){
+    e.stopPropagation();
+    var inc=_selectedId?NACDState.findIncident(_selectedId):null;
+    if(!inc){showToast('Select an incident first');return;}
+    if(!window.confirm('Cancel '+inc.number+' ('+inc.complaint+')? This cannot be undone.')){return;}
+    NACDState.dispatch.cancelIncident(inc.id);
+    showToast(inc.number+' cancelled');
+    _selectedId=null;
+    closeMop();
+  };
+}
+
+/* ── Notifications popover ─────────────────────── */
+function initNotifBtn(){
+  var btn=document.getElementById('dp-notif-btn');
+  if(!btn)return;
+  var pop=null;
+  function closePop(){if(pop){pop.remove();pop=null;}}
+  btn.onclick=function(e){
+    e.stopPropagation();
+    if(pop){closePop();return;}
+    var evts=(NACDState.getDispatchEvents?NACDState.getDispatchEvents():[]).slice(0,5);
+    pop=document.createElement('div');
+    pop.style.cssText='position:fixed;top:52px;right:120px;width:300px;background:#161C25;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px 0;z-index:2000;box-shadow:0 8px 32px rgba(0,0,0,.6)';
+    var h='<div style="padding:6px 14px 10px;font-size:11px;font-weight:700;color:rgba(255,255,255,.4);letter-spacing:.06em;text-transform:uppercase">Recent Events</div>';
+    if(!evts.length){h+='<div style="padding:8px 14px;color:rgba(255,255,255,.4);font-size:13px">No events yet</div>';}
+    evts.forEach(function(ev){
+      var typeChip='<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:999px;background:rgba(39,170,225,.15);color:#27AAE1;text-transform:uppercase">'+(ev.type||'event')+'</span>';
+      var ts=ev.ts?new Date(ev.ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
+      h+='<div style="padding:7px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.05)">'
+        +typeChip+'<span style="flex:1;font-size:12px;color:rgba(255,255,255,.75);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(ev.summary||ev.message||'—')+'</span>'
+        +'<span style="font-size:11px;color:rgba(255,255,255,.3);flex-shrink:0">'+ts+'</span></div>';
+    });
+    pop.innerHTML=h;
+    document.body.appendChild(pop);
+    setTimeout(function(){document.addEventListener('click',function _cl(){closePop();document.removeEventListener('click',_cl);});},0);
+  };
+}
+
+/* ── Help modal ────────────────────────────────── */
+function initHelpBtn(){
+  var btn=document.getElementById('dp-help-btn');
+  if(!btn)return;
+  btn.onclick=function(){
+    var ov=document.createElement('div');
+    ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:3000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px)';
+    ov.innerHTML='<div style="background:#11161D;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:28px 32px;width:420px;max-width:94vw">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">'
+        +'<span style="font-weight:700;font-size:16px">Dispatch Console — Shortcuts</span>'
+        +'<button onclick="this.closest(\'div[style*=fixed]\').remove()" style="background:none;border:none;color:rgba(255,255,255,.5);cursor:pointer;font-size:20px;line-height:1">×</button>'
+      +'</div>'
+      +'<table style="width:100%;border-collapse:collapse;font-size:13px">'
+        +'<tr><td style="padding:7px 0;color:rgba(255,255,255,.4)"><kbd style="background:rgba(255,255,255,.08);border-radius:5px;padding:2px 7px;font-family:monospace">⌘ K</kbd></td><td style="padding:7px 0">Focus search</td></tr>'
+        +'<tr><td style="padding:7px 0;color:rgba(255,255,255,.4)"><kbd style="background:rgba(255,255,255,.08);border-radius:5px;padding:2px 7px;font-family:monospace">Esc</kbd></td><td style="padding:7px 0">Clear search / close panel</td></tr>'
+        +'<tr><td style="padding:7px 0;color:rgba(255,255,255,.4)"><kbd style="background:rgba(255,255,255,.08);border-radius:5px;padding:2px 7px;font-family:monospace">1 – 4</kbd></td><td style="padding:7px 0">Priority filter pills (P1–All)</td></tr>'
+      +'</table>'
+      +'<div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.07);font-size:11px;color:rgba(255,255,255,.3)">Role: Senior Dispatcher · Station 201 · SHA NADC Nairobi</div>'
+      +'</div>';
+    ov.addEventListener('click',function(e){if(e.target===ov)ov.remove();});
+    document.body.appendChild(ov);
+  };
+}
+
+/* ── Main init ─────────────────────────────────── */
+initFilterPills();
+initNavPills();
+initLayersBtn();
+initLayerPills();
+initSearchPill();
+initSecondaryBtns();
+initNotifBtn();
+initHelpBtn();
+initNewCallModal();
+
+fetch('/api/config').then(function(r){return r.json();}).catch(function(){return{};})
+.then(function(cfg){
+  initMap(cfg.mapboxToken||MAPBOX_TOKEN);
+  NACDState.init({supabaseUrl:cfg.supabaseUrl||'',supabaseKey:cfg.supabaseAnonKey||'',seedIncidents:12,autoStart:true});
+  window._onNACDAuthReady=function(auth){
+    var ov=document.getElementById('nacd-auth-overlay');
+    if(ov){ov.style.opacity='0';setTimeout(function(){ov.style.display='none';},220);}
+    if(!auth.user)return;
+    var name=auth.user.fullName||auth.user.username||'User';
+    var role=(auth.user.publicMetadata&&auth.user.publicMetadata.role)||'dispatcher';
+    var ini=name.split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase();
+    var avEl=document.getElementById('user-av');
+    var nmEl=document.getElementById('user-nm');
+    var rlEl=document.getElementById('user-role');
+    if(avEl)avEl.textContent=ini;
+    if(nmEl)nmEl.textContent=name;
+    if(rlEl)rlEl.textContent=role.replace(/_/g,' ');
+  };
+  if(window.NACDAuth) NACDAuth.init({supabaseUrl:cfg.supabaseUrl,supabaseAnonKey:cfg.supabaseAnonKey,clerkPublishableKey:cfg.clerkPublishableKey},'dispatch');
+  NACDState.on('state:initialized',function(state){
+    dpPopulateCounty();
+
+    // Back-fill road waypoints for seeded EN_ROUTE / TRANSPORT incidents.
+    // incident:updated fires during NACDState init (before this handler is attached),
+    // so those incidents never got waypoints and would move in a straight line.
+    var seeded=state.incidents;
+    var fetchDelay=0;
+    for(var si=0;si<seeded.length;si++){
+      var sinc=seeded[si];
+      if(!sinc.unitId) continue;
+      var sunit=NACDState.findUnit(sinc.unitId);
+      if(!sunit) continue;
+      (function(u,i,delay){
+        setTimeout(function(){
+          if(i.status==='en_route'){
+            NACDRouting.fetchRoute(u.lng,u.lat,i.lng,i.lat,function(result){
+              if(result&&result.geometry&&result.geometry.coordinates&&result.geometry.coordinates.length>1){
+                var wps=result.geometry.coordinates.slice();
+                wps.push([i.lng,i.lat]);
+                NACDState.dispatch.setUnitWaypoints(u.id,wps);
+              }
+            });
+          } else if(i.status==='transport'&&i.hospitalId){
+            var hosp=NACDState.findHospital(i.hospitalId);
+            if(hosp){
+              NACDRouting.fetchRoute(u.lng,u.lat,hosp.lng,hosp.lat,function(result){
+                if(result&&result.geometry&&result.geometry.coordinates&&result.geometry.coordinates.length>1){
+                  var wps=result.geometry.coordinates.slice();
+                  wps.push([hosp.lng,hosp.lat]);
+                  NACDState.dispatch.setUnitWaypoints(u.id,wps);
+                }
+              });
+            }
+          }
+        },delay);
+      })(sunit,sinc,fetchDelay);
+      fetchDelay+=150; // stagger by 150ms to avoid burst
+    }
+
+    // Drain localStorage PSAP queue — incidents created before this iframe loaded
+    try{
+      var _q=JSON.parse(localStorage.getItem('nadc_psap_queue')||'[]');
+      var _fresh=_q.filter(function(e){return Date.now()-e._ts<300000;}); // keep last 5 min
+      localStorage.setItem('nadc_psap_queue','[]');
+      _fresh.forEach(function(e){
+        var d=e.incident;
+        var pinc=NACDState.dispatch.createIncident({
+          priority:d.priority||1,complaint:d.complaint||'Unknown',
+          icd11:d.icd11||'',address:d.address||'',
+          lat:d.lat,lng:d.lng,w3w:d.w3w||'',
+          county:d.county||'',zone:d.zone||'',
+          requiresALS:!!d.requiresALS,
+          notes:d.notes||(d.psapNumber?'Via PSAP '+d.psapNumber:''),
+          source:'psap'
+        });
+        if(pinc) showToast('Queued PSAP → '+pinc.number+' · P'+pinc.priority+' · '+pinc.complaint,3000);
+      });
+    }catch(_le){}
+  });
+  NACDState.on('state:tick',function(state){
+    updateKPIs(state.kpis);
+    renderIncList(state.incidents);
+    if(map&&_routeReady){
+      updateMarkers(state.fleet);
+      updateIncidentLayer(state.incidents);
+      updateHospitalLayer(state.hospitals||NACDState.getHospitals());
+      updateRealRoutes(state.incidents,state.fleet);
+    }
+    renderHospChips(state.hospitals);
+    // Refresh whichever tab view is open
+    if(document.getElementById('tab-ov-incidents').classList.contains('open')) _renderIncTab(state.incidents);
+    if(document.getElementById('tab-ov-fleet').classList.contains('open')) _renderFleetTab(state.fleet,state.incidents);
+    if(document.getElementById('tab-ov-hospitals').classList.contains('open')) _renderHospTab(state.hospitals);
+    if(_selectedId){
+      var inc=NACDState.findIncident(_selectedId);
+      if(inc){
+        renderDetail(inc);
+        var rk=inc.id+':'+inc.status+':'+(inc.hospitalId||'');
+        if(rk!==_lastSelRouteKey){_lastSelRouteKey=rk;drawSelectionRoute(inc);}
+        // Update bearing line + route progress split on every tick
+        var selUnit=inc.unitId?NACDState.findUnit(inc.unitId):null;
+        if(selUnit&&map){
+          var selCol=inc.priority===1?'#FF3B30':inc.priority===2?'#FF8C00':'#F5B100';
+          // Bearing line
+          if(map.getSource('bearing-a'))
+            map.getSource('bearing-a').setData({type:'FeatureCollection',features:[{type:'Feature',
+              properties:{color:selCol},
+              geometry:{type:'LineString',coordinates:[[selUnit.lng,selUnit.lat],[inc.lng,inc.lat]]}}]});
+          // Split route-leg-a into covered (grey) + remaining (priority color)
+          if(_routeACoords&&_routeACoords.length>1&&map.getSource('route-leg-a')){
+            var spl=splitRouteAtUnit(_routeACoords,selUnit.lng,selUnit.lat);
+            if(spl){
+              map.getSource('route-leg-a').setData({type:'FeatureCollection',features:[
+                {type:'Feature',properties:{color:'rgba(255,255,255,0.15)',trafficColor:'rgba(255,255,255,0.06)'},
+                  geometry:{type:'LineString',coordinates:spl.covered}},
+                {type:'Feature',properties:{color:_routeAPriCol,trafficColor:_routeATrafCol},
+                  geometry:{type:'LineString',coordinates:spl.remaining}}
+              ]});
+            }
+          }
+        }
+      } else {
+        clearSelectionRoute();_lastSelRouteKey=null;
+      }
+    }
+  });
+
+  // Immediate re-render on new incident (no waiting for next tick)
+  NACDState.on('incident:created',function(inc){
+    var state=NACDState.getState();
+    renderIncList(state.incidents);
+    if(map&&_routeReady) updateIncidentLayer(state.incidents);
+    // Broadcast to dashboard so new incidents appear immediately
+    if(inc&&typeof BroadcastChannel!=='undefined'){
+      try{
+        var _sb3=new BroadcastChannel('nadc-sync');
+        _sb3.postMessage({type:'incident:created',source:'dispatch',incident:{
+          id:inc.id,number:inc.number,status:inc.status,priority:inc.priority,
+          complaint:inc.complaint,icd11:inc.icd11||'',address:inc.address,
+          lat:inc.lat,lng:inc.lng,w3w:inc.w3w||'',county:inc.county||'',
+          unitId:inc.unitId||null,hospitalId:inc.hospitalId||null,
+          requiresALS:!!inc.requiresALS,notes:inc.notes||'',
+          createdAt:inc.createdAt,clearedAt:null
+        }});
+        _sb3.close();
+      }catch(e){}
+    }
+  });
+
+  // Set road waypoints when units go en_route or transport — makes units follow roads
+  NACDState.on('incident:updated',function(inc){
+    if(!inc||!inc.unitId) return;
+    var unit=NACDState.findUnit(inc.unitId);
+    if(!unit) return;
+    if(inc.status==='en_route'){
+      (function(u,i){
+        NACDRouting.fetchRoute(u.lng,u.lat,i.lng,i.lat,function(result){
+          if(result&&result.geometry&&result.geometry.coordinates&&result.geometry.coordinates.length>1){
+            var wps=result.geometry.coordinates.slice();
+            wps.push([i.lng,i.lat]); // exact scene point as final stop
+            NACDState.dispatch.setUnitWaypoints(u.id,wps);
+          }
+        });
+      })(unit,inc);
+    } else if(inc.status==='transport'&&inc.hospitalId){
+      var hosp=NACDState.findHospital(inc.hospitalId);
+      if(hosp){
+        (function(u,h){
+          NACDRouting.fetchRoute(u.lng,u.lat,h.lng,h.lat,function(result){
+            if(result&&result.geometry&&result.geometry.coordinates&&result.geometry.coordinates.length>1){
+              var wps=result.geometry.coordinates.slice();
+              wps.push([h.lng,h.lat]); // exact hospital point as final stop
+              NACDState.dispatch.setUnitWaypoints(u.id,wps);
+            }
+          });
+        })(unit,hosp);
+      }
+    }
+    // Broadcast status changes to other apps via nadc-sync
+    if(typeof BroadcastChannel!=='undefined'){
+      try{
+        var _sb2=new BroadcastChannel('nadc-sync');
+        _sb2.postMessage({type:'incident:updated',source:'dispatch',incident:{
+          id:inc.id,number:inc.number,status:inc.status,priority:inc.priority,
+          complaint:inc.complaint,icd11:inc.icd11||'',address:inc.address,
+          lat:inc.lat,lng:inc.lng,w3w:inc.w3w||'',county:inc.county||'',
+          unitId:inc.unitId||null,hospitalId:inc.hospitalId||null,
+          requiresALS:!!inc.requiresALS,notes:inc.notes||'',
+          createdAt:inc.createdAt,clearedAt:inc.clearedAt||null
+        }});
+        _sb2.close();
+      }catch(e){}
+    }
+  });
+
+  // nadc-sync: receive status updates from EMT and other apps
+  if(typeof BroadcastChannel!=='undefined'){
+    var _dpSyncBC=new BroadcastChannel('nadc-sync');
+    _dpSyncBC.onmessage=function(ev){
+      var d=ev.data;
+      if(!d||d.source==='dispatch') return;
+      if(d.type==='unit:status_update'&&d.incidentId&&d.newStatus){
+        NACDState.dispatch.updateStatus(d.incidentId,d.newStatus);
+        var _uLbl=d.unitId||'Unit';
+        if(d.newStatus==='at_hospital'){
+          showToast(_uLbl+' arrived at hospital \xb7 '+d.incidentId,3000);
+          try{NACDState.dispatch.addNote(d.incidentId,'EMT '+_uLbl+' arrived at hospital');}catch(e){}
+        } else if(d.newStatus==='cleared'){
+          showToast(_uLbl+' cleared'+(d.claimRef?' \xb7 '+d.claimRef:''),3000);
+          try{NACDState.dispatch.addNote(d.incidentId,'Incident cleared'+(d.claimRef?' \xb7 '+d.claimRef:''));}catch(e){}
+        }
+      }
+      if(d.type==='clinical:update'&&d.incidentId){
+        try{
+          // Emmanuel's Rescue Slice 4 contract: prefer top-level `vitals`, fall back to `observation`
+          var _obs=d.vitals||d.observation||{};
+          var _parts=[];
+          if(_obs.spo2!=null) _parts.push('SpO2 '+_obs.spo2+'%');
+          if(_obs.hr!=null) _parts.push('HR '+_obs.hr);
+          if(_obs.rr!=null) _parts.push('RR '+_obs.rr);
+          if(_obs.sys!=null&&_obs.dia!=null) _parts.push('BP '+_obs.sys+'/'+_obs.dia);
+          if(_obs.gcs!=null) _parts.push('GCS '+_obs.gcs);
+          if(_parts.length)   NACDState.dispatch.addNote(d.incidentId,'EMT vitals: '+_parts.join(' \xb7 '));
+        }catch(e){}
+      }
+    };
+  }
+
+  // BroadcastChannel: receive PSAP-created incidents from the call-taker iframe
+  if(typeof BroadcastChannel!=='undefined'){
+    var _psapBC=new BroadcastChannel('nadc-incident-sync');
+    _psapBC.onmessage=function(ev){
+      if(!ev.data||ev.data.type!=='psap:incident:created'||!ev.data.incident) return;
+      var d=ev.data.incident;
+      var inc=NACDState.dispatch.createIncident({
+        priority:    d.priority||1,
+        complaint:   d.complaint||'Unknown',
+        icd11:       d.icd11||'',
+        address:     d.address||'',
+        lat:         d.lat,
+        lng:         d.lng,
+        w3w:         d.w3w||'',
+        county:      d.county||'',
+        zone:        d.zone||'',
+        requiresALS: !!d.requiresALS,
+        notes:       d.notes||(d.psapNumber?'Via PSAP '+d.psapNumber:''),
+        source:      'psap'
+      });
+      if(!inc) return;
+      // Remove from localStorage queue so the state:initialized drain doesn't double-process
+      try{
+        var _q2=JSON.parse(localStorage.getItem('nadc_psap_queue')||'[]');
+        _q2=_q2.filter(function(e){return e.incident&&e.incident.psapNumber!==d.psapNumber;});
+        localStorage.setItem('nadc_psap_queue',JSON.stringify(_q2));
+      }catch(_le){}
+      showToast('PSAP → '+inc.number+' \xb7 P'+inc.priority+' \xb7 '+inc.complaint,3000);
+      setTimeout(function(){
+        var card=document.querySelector('.inc[data-id="'+inc.id+'"]');
+        if(card){card.classList.add('psap-flash');setTimeout(function(){card.classList.remove('psap-flash');},2000);}
+        selectIncident(inc.id);
+      },150);
+    };
+  }
+});
+</script>
+
+<script>
+(function(){
+  function toggleAppSw(){
+    var p=document.getElementById('app-sw-panel');
+    var b=document.querySelector('.app-sw-btn');
+    if(!p) return;
+    var willOpen = !p.classList.contains('open');
+    p.classList.toggle('open');
+    if(b) b.classList.toggle('open', willOpen);
+  }
+  document.addEventListener('click',function(e){
+    var p=document.getElementById('app-sw-panel');
+    if(!p||!p.classList.contains('open')) return;
+    if(p.contains(e.target)) return;
+    if(e.target.closest && e.target.closest('.app-sw-btn')) return;
+    p.classList.remove('open');
+    var b=document.querySelector('.app-sw-btn');
+    if(b) b.classList.remove('open');
+  });
+  // Expose as global so inline onclick can call it
+  window.toggleAppSw = toggleAppSw;
+})();
+</script>
+
+</body>
+</html>
