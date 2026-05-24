@@ -1,0 +1,100 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   SHA NADC platform — design tokens
+   Ported from sha-nadc v1 assets/tokens-v2.css, refined for v2.
+   Loaded once at the root layout; every app inherits.
+
+   Principles (from emil-design-eng + impeccable + design-taste audits):
+   - Tinted slate neutrals, never #000/#fff
+   - Solid surfaces; glassmorphism only on true overlays
+   - One accent (electric cyan) ≤10% surface; priority colours semantic
+   - Custom ease-out curves, durations <200ms
+   - Type ratio ≥1.3 between steps; 400 / 600 / 800 weights
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Neutrals (tinted slate, OKLCH) ────────────────────────────────── */
+  --bg:        oklch(0.135 0.010 230);
+  --bg-1:      oklch(0.175 0.012 230);   /* surface */
+  --bg-2:      oklch(0.215 0.014 230);   /* surface elevated */
+
+  /* ── Ink (warm-tinted whites) ──────────────────────────────────────── */
+  --t1:        oklch(0.965 0.005 80);
+  --t2:        oklch(0.720 0.008 80);
+  --t3:        oklch(0.500 0.010 80);
+  --t4:        oklch(0.340 0.012 80);
+
+  /* ── Hairlines ─────────────────────────────────────────────────────── */
+  --line:      oklch(0.28 0.012 230 / 0.55);
+  --line-2:    oklch(0.36 0.012 230 / 0.65);
+
+  /* ── Brand ─────────────────────────────────────────────────────────── */
+  --b:         oklch(0.45 0.160 230);    /* SHA blue */
+  --b2:        oklch(0.74 0.140 220);    /* SHA blue light → accent */
+  --g:         oklch(0.78 0.180 145);    /* operational green */
+  --g2:        oklch(0.70 0.180 145);
+
+  /* ── Priorities (semantic, separate from accent system) ───────────── */
+  --p1:        oklch(0.66 0.220 27);
+  --p2:        oklch(0.78 0.155 60);
+  --p3:        oklch(0.84 0.140 90);
+  --ok:        oklch(0.78 0.180 145);
+
+  /* ── Motion ────────────────────────────────────────────────────────── */
+  --ease-out:    cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-snap:   cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+  --d-press: 100ms;
+  --d-fast:  140ms;
+  --d-base:  180ms;
+  --d-modal: 240ms;
+
+  /* ── Radii ─────────────────────────────────────────────────────────── */
+  --r-sm:   6px;
+  --r-md:   10px;
+  --r-lg:   14px;
+  --r-xl:   20px;
+  --r-pill: 999px;
+
+  /* ── Shadows ───────────────────────────────────────────────────────── */
+  --shadow-1:     0 2px 10px oklch(0 0 0 / 0.50);
+  --shadow-2:     0 12px 30px oklch(0 0 0 / 0.55);
+  --shadow-modal: 0 24px 48px oklch(0 0 0 / 0.65);
+
+  /* ── Typography ────────────────────────────────────────────────────── */
+  --font-display: 'Exo 2', 'SF Pro Display', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, monospace;
+  --font-cond:    'Barlow Condensed', sans-serif;
+}
+
+/* Universal button feedback — Emil rule */
+button:active:not(:disabled),
+[role='button']:active {
+  transform: scale(0.97);
+}
+button,
+[role='button'] {
+  transition:
+    background var(--d-fast) var(--ease-out),
+    color var(--d-fast) var(--ease-out),
+    border-color var(--d-fast) var(--ease-out),
+    transform var(--d-press) var(--ease-out),
+    box-shadow var(--d-fast) var(--ease-out);
+}
+
+/* Scrollbars themed across browsers */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(1 0 0 / 0.18) transparent;
+}
+*::-webkit-scrollbar { width: 4px; height: 4px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: oklch(1 0 0 / 0.18); border-radius: 2px; }
+*::-webkit-scrollbar-thumb:hover { background: oklch(1 0 0 / 0.30); }
+
+/* Tabular numerals on data elements by convention */
+.tab,
+.mono {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
+}

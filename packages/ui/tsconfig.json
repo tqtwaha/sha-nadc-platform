@@ -1,0 +1,9 @@
+{
+  "extends": "@sha-nadc/config/tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "outDir": "./dist"
+  },
+  "include": ["src/**/*", "tailwind.config.ts"]
+}

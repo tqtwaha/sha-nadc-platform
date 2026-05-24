@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Builds
+.next/
+.expo/
+dist/
+build/
+.turbo/
+
+# Env
+.env
+.env.local
+.env.*.local
+.env.supabase
+.env.*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Coverage / tests
+coverage/
+playwright-report/
+test-results/
+.swc/
+
+# Vercel
+.vercel
+
+# Claude / agent state
+.claude/

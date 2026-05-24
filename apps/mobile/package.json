@@ -1,0 +1,9 @@
+{
+  "name": "@sha-nadc/mobile",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'Phase 7 — run: npx create-expo-app . --template tabs && set up EAS'",
+    "typecheck": "echo 'no-op until Phase 7'"
+  }
+}
