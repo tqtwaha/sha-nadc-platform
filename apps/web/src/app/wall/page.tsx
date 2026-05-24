@@ -5,6 +5,7 @@ import { fmtRelative } from '@/lib/format';
 import { AutoRefresh } from './AutoRefresh';
 import { Clock } from './Clock';
 import { RealtimeRefresh } from '@/components/RealtimeRefresh';
+import { DispatchMap } from '@/components/DispatchMap';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -29,7 +30,16 @@ const STATUS_DOT: Record<string, string> = {
 
 export default async function WallPage() {
   const sb = serviceClient();
-  const [kpis, counties, events, { data: active }, { data: hospitals }] = await Promise.all([
+  const [
+    kpis,
+    counties,
+    events,
+    { data: active },
+    { data: hospitals },
+    { data: mapIncidents },
+    { data: mapUnits },
+    { data: mapHospitals },
+  ] = await Promise.all([
     getKpis(),
     incidentsByCounty(8),
     recentEvents(10),
@@ -46,6 +56,20 @@ export default async function WallPage() {
       .order('level', { ascending: false })
       .order('ed_capacity_pct', { ascending: false })
       .limit(10),
+    sb
+      .from('incidents')
+      .select('id, display_id, priority, complaint, status, lat, lng, unit_id')
+      .in('status', ACTIVE_STATUSES as unknown as string[])
+      .limit(200),
+    sb
+      .from('fleet_units')
+      .select('id, type:unit_type, lat:current_lat, lng:current_lng, status')
+      .in('status', ['available', 'dispatched', 'en_route', 'on_scene', 'transport'])
+      .limit(300),
+    sb
+      .from('hospitals')
+      .select('id, name, level, lat, lng, ed_capacity_pct, diversion_status')
+      .limit(100),
   ]);
 
   const utilization =
@@ -95,35 +119,60 @@ export default async function WallPage() {
 
       {/* Body grid */}
       <div className="flex-1 grid grid-cols-12 gap-4 min-h-0">
-        {/* Active incidents (large) */}
-        <section className="col-span-7 border border-line rounded-lg bg-bg1 p-5 overflow-hidden flex flex-col">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-cond uppercase tracking-[0.2em] text-xs text-t3">
-              Active incidents
-            </h3>
-            <span className="font-mono text-[10px] text-t3">
-              top {active?.length ?? 0} by priority
-            </span>
+        {/* Map (centerpiece) */}
+        <section className="col-span-8 flex flex-col gap-4 min-h-0">
+          <div className="flex-1 min-h-0">
+            <DispatchMap
+              incidents={(mapIncidents ?? []).map((i) => ({
+                id: i.id,
+                display_id: i.display_id,
+                priority: i.priority as 1 | 2 | 3 | 4,
+                complaint: i.complaint,
+                status: i.status,
+                lat: i.lat,
+                lng: i.lng,
+                unit_id: i.unit_id,
+              }))}
+              units={(mapUnits ?? []).map((u) => ({
+                id: u.id,
+                type: u.type as 'ALS' | 'BLS',
+                lat: u.lat,
+                lng: u.lng,
+                status: u.status,
+              }))}
+              hospitals={(mapHospitals ?? []).map((h) => ({
+                id: h.id,
+                name: h.name,
+                level: h.level,
+                lat: h.lat,
+                lng: h.lng,
+                ed_capacity_pct: h.ed_capacity_pct,
+                diversion_status: h.diversion_status as 'open' | 'caution' | 'diverting' | 'bypass',
+              }))}
+              height="100%"
+            />
           </div>
-          <div className="grid grid-cols-2 gap-2 flex-1 overflow-hidden">
-            {(active ?? []).map((i) => (
+
+          {/* Bottom strip: top 4 active incidents */}
+          <div className="grid grid-cols-4 gap-2 max-h-32">
+            {(active ?? []).slice(0, 4).map((i) => (
               <div
                 key={i.id}
-                className={`border rounded-md p-3 ${PRIORITY_BG[i.priority] ?? 'border-line'}`}
+                className={`border rounded-md p-2.5 ${PRIORITY_BG[i.priority] ?? 'border-line'}`}
               >
                 <div className="flex items-center justify-between text-[10px] font-mono">
                   <span className="font-semibold text-base">P{i.priority}</span>
                   <span className="text-t3">{i.display_id}</span>
                 </div>
                 <div className="text-t1 font-display text-sm mt-1 truncate">{i.complaint}</div>
-                <div className="text-t3 font-mono text-[10px] mt-1 flex items-center gap-1.5">
-                  <span className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[i.status] ?? 'bg-t4'}`} />
-                  {i.status} · {i.zone} · {i.unit_id ?? 'no unit'} · {fmtRelative(i.created_at)}
+                <div className="text-t3 font-mono text-[10px] mt-1 flex items-center gap-1.5 truncate">
+                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${STATUS_DOT[i.status] ?? 'bg-t4'}`} />
+                  <span className="truncate">{i.status} · {i.zone} · {i.unit_id ?? '—'}</span>
                 </div>
               </div>
             ))}
             {(active?.length ?? 0) === 0 && (
-              <div className="col-span-2 text-center text-t3 font-mono py-12">
+              <div className="col-span-4 text-center text-t3 font-mono py-6 border border-line rounded-md">
                 Queue is clear.
               </div>
             )}
@@ -131,7 +180,7 @@ export default async function WallPage() {
         </section>
 
         {/* Right column */}
-        <section className="col-span-5 grid grid-rows-2 gap-4 min-h-0">
+        <section className="col-span-4 grid grid-rows-2 gap-4 min-h-0">
           {/* Fleet + county */}
           <div className="border border-line rounded-lg bg-bg1 p-5 grid grid-cols-2 gap-4">
             <div>
