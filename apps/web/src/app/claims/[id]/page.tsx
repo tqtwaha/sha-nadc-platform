@@ -66,9 +66,18 @@ export default async function ClaimDetailPage({ params }: PageProps) {
       />
 
       <section className="flex-1 px-6 py-6 max-w-screen-xl w-full mx-auto space-y-6">
-        <Link href="/claims" className="text-xs font-mono text-t3 hover:text-t1">
-          ← Back to claims
-        </Link>
+        <div className="flex items-center justify-between">
+          <Link href="/claims" className="text-xs font-mono text-t3 hover:text-t1">
+            ← Back to claims
+          </Link>
+          <Link
+            href={`/claims/${claim.id}/print`}
+            target="_blank"
+            className="text-xs font-mono text-t3 hover:text-g"
+          >
+            Print / PDF →
+          </Link>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left: claim facts + pricing */}
