@@ -3,6 +3,11 @@
   "framework": "nextjs",
   "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
   "buildCommand": "cd ../.. && pnpm turbo run build --filter=@sha-nadc/web",
-  "outputDirectory": ".next"
+  "outputDirectory": ".next",
+  "crons": [
+    {
+      "path": "/api/sim/spawn?n=3",
+      "schedule": "0 5 * * *"
+    }
+  ]
 }
-
