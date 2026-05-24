@@ -4,6 +4,7 @@ import { COMPLAINTS, NAIROBI_ZONES } from '@sha-nadc/domain';
 import { serviceClient } from '@/lib/supabase';
 import { fmtRelative } from '@/lib/format';
 import { createIncident } from './actions';
+import { RealtimeRefresh } from '@/components/RealtimeRefresh';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -41,6 +42,8 @@ export default async function PsapPage({
           </Chip>
         }
       />
+
+      <RealtimeRefresh tables={['incidents']} />
 
       <section className="flex-1 px-6 py-6 max-w-screen-2xl w-full mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

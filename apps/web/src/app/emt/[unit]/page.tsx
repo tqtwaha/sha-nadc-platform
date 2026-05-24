@@ -6,6 +6,7 @@ import { serviceClient } from '@/lib/supabase';
 import { fmtDateTime, fmtRelative } from '@/lib/format';
 import { ACTIVE_STATUSES, type IncidentStatus } from '@/lib/incidents';
 import { CrewActions } from './CrewActions';
+import { RealtimeRefresh } from '@/components/RealtimeRefresh';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -71,6 +72,8 @@ export default async function EmtUnitPage({
           </Chip>
         }
       />
+
+      <RealtimeRefresh tables={['incidents']} />
 
       <section className="flex-1 px-4 py-5 max-w-2xl w-full mx-auto space-y-4">
         <Link href="/emt" className="text-xs font-mono text-t3 hover:text-t1">

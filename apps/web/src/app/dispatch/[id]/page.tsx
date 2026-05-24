@@ -6,6 +6,7 @@ import { serviceClient } from '@/lib/supabase';
 import { fmtDateTime, fmtRelative } from '@/lib/format';
 import { type IncidentStatus } from '@/lib/incidents';
 import { IncidentActions } from './IncidentActions';
+import { RealtimeRefresh } from '@/components/RealtimeRefresh';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -100,6 +101,8 @@ export default async function DispatchDetailPage({
           </div>
         }
       />
+
+      <RealtimeRefresh tables={['incidents', 'dispatch_events', 'fleet_units']} />
 
       <section className="flex-1 px-6 py-6 max-w-screen-xl w-full mx-auto space-y-6">
         <Link href="/dispatch" className="text-xs font-mono text-t3 hover:text-t1">

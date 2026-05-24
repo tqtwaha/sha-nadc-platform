@@ -7,6 +7,7 @@ import {
   dispatcherPerformance,
 } from '@/lib/supervisor';
 import { fmtRelative } from '@/lib/format';
+import { RealtimeRefresh } from '@/components/RealtimeRefresh';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -37,6 +38,8 @@ export default async function SupervisorPage() {
           </Chip>
         }
       />
+
+      <RealtimeRefresh tables={['incidents', 'fleet_units', 'dispatch_events']} />
 
       <section className="flex-1 px-6 py-6 max-w-screen-2xl w-full mx-auto space-y-6">
         {/* KPI strip */}

@@ -5,6 +5,7 @@ import { serviceClient } from '@/lib/supabase';
 import { fmtRelative } from '@/lib/format';
 import { ACTIVE_STATUSES, type IncidentStatus } from '@/lib/incidents';
 import { QueueActions } from './QueueActions';
+import { RealtimeRefresh } from '@/components/RealtimeRefresh';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -78,6 +79,8 @@ export default async function DispatchPage({ searchParams }: PageProps) {
           </Chip>
         }
       />
+
+      <RealtimeRefresh tables={['incidents', 'fleet_units']} />
 
       <section className="flex-1 px-6 py-6 max-w-screen-2xl w-full mx-auto space-y-4">
         {/* Status chip strip */}

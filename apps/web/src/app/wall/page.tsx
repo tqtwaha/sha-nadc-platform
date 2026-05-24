@@ -4,6 +4,7 @@ import { ACTIVE_STATUSES } from '@/lib/incidents';
 import { fmtRelative } from '@/lib/format';
 import { AutoRefresh } from './AutoRefresh';
 import { Clock } from './Clock';
+import { RealtimeRefresh } from '@/components/RealtimeRefresh';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -54,7 +55,8 @@ export default async function WallPage() {
 
   return (
     <main className="min-h-screen bg-bg text-t1 px-6 py-5 flex flex-col gap-4">
-      <AutoRefresh intervalMs={10_000} />
+      <AutoRefresh intervalMs={30_000} />
+      <RealtimeRefresh tables={['incidents', 'fleet_units', 'dispatch_events']} />
 
       {/* Header */}
       <header className="flex items-center justify-between">
