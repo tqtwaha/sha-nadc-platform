@@ -4,5 +4,6 @@ packages:
 allowBuilds:
   '@clerk/shared': true
   esbuild: true
+  react-native-screens: false
   sharp: true
   unrs-resolver: true

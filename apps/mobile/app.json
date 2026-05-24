@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "SHA NADC EMT",
+    "slug": "sha-nadc-emt",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "scheme": "shanadc",
+    "splash": {
+      "backgroundColor": "#0B0F14",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "bundleIdentifier": "ke.go.sha.nadc.emt",
+      "supportsTablet": true,
+      "userInterfaceStyle": "dark"
+    },
+    "android": {
+      "package": "ke.go.sha.nadc.emt",
+      "adaptiveIcon": {
+        "backgroundColor": "#0B0F14"
+      },
+      "userInterfaceStyle": "dark"
+    },
+    "web": {
+      "bundler": "metro",
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": false
+    },
+    "extra": {
+      "supabaseUrl": null,
+      "supabaseAnonKey": null
+    }
+  }
+}
