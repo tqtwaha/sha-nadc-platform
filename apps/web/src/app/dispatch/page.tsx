@@ -73,11 +73,17 @@ export default async function DispatchPage({ searchParams }: PageProps) {
       unit_id: r.unit_id,
     }));
 
-  const { data: mapUnits } = await sb
-    .from('fleet_units')
-    .select('id, type:unit_type, lat:current_lat, lng:current_lng, status')
-    .in('status', ['available', 'dispatched', 'en_route', 'on_scene', 'transport'])
-    .limit(300);
+  const [{ data: mapUnits }, { data: mapHospitals }] = await Promise.all([
+    sb
+      .from('fleet_units')
+      .select('id, type:unit_type, lat:current_lat, lng:current_lng, status')
+      .in('status', ['available', 'dispatched', 'en_route', 'on_scene', 'transport'])
+      .limit(300),
+    sb
+      .from('hospitals')
+      .select('id, name, level, lat, lng, ed_capacity_pct, diversion_status')
+      .limit(100),
+  ]);
 
   const counts = rows.reduce<Record<string, number>>((acc, r) => {
     acc[r.status] = (acc[r.status] ?? 0) + 1;
@@ -134,6 +140,15 @@ export default async function DispatchPage({ searchParams }: PageProps) {
             lat: u.lat,
             lng: u.lng,
             status: u.status,
+          }))}
+          hospitals={(mapHospitals ?? []).map((h) => ({
+            id: h.id,
+            name: h.name,
+            level: h.level,
+            lat: h.lat,
+            lng: h.lng,
+            ed_capacity_pct: h.ed_capacity_pct,
+            diversion_status: h.diversion_status as 'open' | 'caution' | 'diverting' | 'bypass',
           }))}
           height="420px"
         />

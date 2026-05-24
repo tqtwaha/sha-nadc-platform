@@ -24,9 +24,20 @@ interface UnitMarker {
   status: string;
 }
 
+interface HospitalMarker {
+  id: string;
+  name: string;
+  level: number;
+  lat: number;
+  lng: number;
+  ed_capacity_pct: number;
+  diversion_status: 'open' | 'caution' | 'diverting' | 'bypass';
+}
+
 interface Props {
   incidents: IncidentMarker[];
   units?: UnitMarker[];
+  hospitals?: HospitalMarker[];
   height?: string;
 }
 
@@ -43,7 +54,7 @@ const PRIORITY_COLOR: Record<number, string> = {
 
 const NAIROBI_CENTER: [number, number] = [36.8219, -1.2921];
 
-export function DispatchMap({ incidents, units = [], height = '420px' }: Props) {
+export function DispatchMap({ incidents, units = [], hospitals = [], height = '420px' }: Props) {
   const router = useRouter();
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -113,6 +124,47 @@ export function DispatchMap({ incidents, units = [], height = '420px' }: Props) 
       markersRef.current.push(m);
     }
 
+    // Hospital plus-sign markers (color = diversion + capacity)
+    for (const h of hospitals) {
+      const el = document.createElement('button');
+      el.title = `${h.name} · L${h.level} · ${h.ed_capacity_pct}% · ${h.diversion_status}`;
+      const color =
+        h.diversion_status === 'bypass'
+          ? '#FF3B30'
+          : h.diversion_status === 'diverting'
+            ? '#FF8C00'
+            : h.diversion_status === 'caution'
+              ? '#F5B100'
+              : h.ed_capacity_pct >= 90
+                ? '#FF3B30'
+                : h.ed_capacity_pct >= 75
+                  ? '#FF8C00'
+                  : '#50C020';
+      el.style.cssText = `
+        width: 14px; height: 14px; padding: 0; border: 0; cursor: pointer;
+        background: ${color}; clip-path: polygon(
+          40% 0%, 60% 0%, 60% 40%, 100% 40%,
+          100% 60%, 60% 60%, 60% 100%, 40% 100%,
+          40% 60%, 0% 60%, 0% 40%, 40% 40%
+        );
+      `;
+      el.onclick = () => router.push(`/hospital/${h.id}`);
+      const m = new mapboxgl.Marker({ element: el })
+        .setLngLat([h.lng, h.lat])
+        .setPopup(
+          new mapboxgl.Popup({ offset: 12, closeButton: false }).setHTML(`
+            <div style="font-family: 'Exo 2', sans-serif; color: #111; padding: 4px 0;">
+              <div style="font-weight: 700;">${h.name}</div>
+              <div style="font-family: monospace; font-size: 10px; color: #555; margin-top: 2px;">
+                L${h.level} · ED ${h.ed_capacity_pct}% · ${h.diversion_status}
+              </div>
+            </div>
+          `),
+        )
+        .addTo(map);
+      markersRef.current.push(m);
+    }
+
     // Unit dots (smaller, green for available, blue for deployed)
     for (const u of units) {
       const el = document.createElement('div');
@@ -128,7 +180,7 @@ export function DispatchMap({ incidents, units = [], height = '420px' }: Props) 
         .addTo(map);
       markersRef.current.push(m);
     }
-  }, [incidents, units, router]);
+  }, [incidents, units, hospitals, router]);
 
   if (missingToken) {
     return (
