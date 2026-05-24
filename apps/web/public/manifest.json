@@ -1,0 +1,44 @@
+{
+  "name": "SHA NADC · EMT Crew",
+  "short_name": "NADC EMT",
+  "description": "National Ambulance Dispatch Centre — EMT field companion. Picks the crew's unit, shows active calls, walks them through the lifecycle, and bills SHIF on clear.",
+  "start_url": "/emt",
+  "scope": "/emt",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0B0F14",
+  "theme_color": "#00519B",
+  "lang": "en-KE",
+  "categories": ["medical", "productivity"],
+  "icons": [
+    {
+      "src": "/sha-social-health-authority-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/sha-social-health-authority-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/assets/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/favicon-32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Pick my unit",
+      "url": "/emt",
+      "icons": [{ "src": "/assets/apple-touch-icon.png", "sizes": "180x180" }]
+    }
+  ]
+}

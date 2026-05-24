@@ -69,6 +69,12 @@ export default function CrewScreen() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [distance, setDistance] = useState('8');
+  const [hr, setHr] = useState('');
+  const [bpSys, setBpSys] = useState('');
+  const [bpDia, setBpDia] = useState('');
+  const [spo2, setSpo2] = useState('');
+  const [rr, setRr] = useState('');
+  const [gcs, setGcs] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -95,6 +101,24 @@ export default function CrewScreen() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Realtime — re-fetch whenever this unit's incidents change
+  useEffect(() => {
+    if (!id) return;
+    const channel = supabase
+      .channel(`mobile-unit-${id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'incidents', filter: `unit_id=eq.${id}` },
+        () => {
+          load();
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [id, load]);
 
   async function advance(next: Status) {
     if (!incident) return;
@@ -151,6 +175,20 @@ export default function CrewScreen() {
           }
           const claimNumber = `CLM-${today}-${String(next).padStart(4, '0')}`;
 
+          const numOrUndef = (v: string) => (v === '' ? undefined : Number(v));
+          const vitalsRaw: Record<string, number | undefined> = {
+            hr: numOrUndef(hr),
+            bp_sys: numOrUndef(bpSys),
+            bp_dia: numOrUndef(bpDia),
+            spo2: numOrUndef(spo2),
+            rr: numOrUndef(rr),
+            gcs: numOrUndef(gcs),
+          };
+          const vitals: Record<string, number> = {};
+          for (const [k, v] of Object.entries(vitalsRaw)) {
+            if (v !== undefined && !Number.isNaN(v)) vitals[k] = v;
+          }
+
           const { error: cErr } = await supabase.from('claims').insert({
             claim_number: claimNumber,
             incident_id: incident.id,
@@ -167,6 +205,7 @@ export default function CrewScreen() {
             total_kes: total,
             status: 'draft',
             notes: '',
+            vitals: Object.keys(vitals).length > 0 ? vitals : null,
           });
           if (cErr) {
             Alert.alert('Claim insert failed', cErr.message);
@@ -297,6 +336,19 @@ export default function CrewScreen() {
                     placeholder="km"
                     placeholderTextColor="#FFFFFF40"
                   />
+
+                  <Text style={[styles.section, { marginTop: 16 }]}>Vitals at handoff (optional)</Text>
+                  <View style={styles.vitalsRow}>
+                    <VitalInput label="HR" unit="bpm" value={hr} onChange={setHr} />
+                    <VitalInput label="BP sys" unit="mmHg" value={bpSys} onChange={setBpSys} />
+                    <VitalInput label="BP dia" unit="mmHg" value={bpDia} onChange={setBpDia} />
+                  </View>
+                  <View style={styles.vitalsRow}>
+                    <VitalInput label="SpO₂" unit="%" value={spo2} onChange={setSpo2} />
+                    <VitalInput label="RR" unit="/min" value={rr} onChange={setRr} />
+                    <VitalInput label="GCS" unit="/15" value={gcs} onChange={setGcs} />
+                  </View>
+
                   <Pressable
                     onPress={clearAndBill}
                     disabled={busy}
@@ -311,6 +363,35 @@ export default function CrewScreen() {
         )}
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+function VitalInput({
+  label,
+  unit,
+  value,
+  onChange,
+}: {
+  label: string;
+  unit: string;
+  value: string;
+  onChange: (s: string) => void;
+}) {
+  return (
+    <View style={styles.vitalCell}>
+      <View style={styles.vitalLabelRow}>
+        <Text style={styles.vitalLabel}>{label}</Text>
+        <Text style={styles.vitalUnit}>{unit}</Text>
+      </View>
+      <TextInput
+        value={value}
+        onChangeText={onChange}
+        keyboardType="numeric"
+        placeholder="—"
+        placeholderTextColor="#FFFFFF40"
+        style={styles.vitalInput}
+      />
+    </View>
   );
 }
 
@@ -358,5 +439,21 @@ const styles = StyleSheet.create({
     padding: 10,
     color: '#FFFFFFF2',
     fontSize: 16,
+  },
+  vitalsRow: { flexDirection: 'row', gap: 8, marginTop: 6 },
+  vitalCell: { flex: 1 },
+  vitalLabelRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 3 },
+  vitalLabel: { color: '#FFFFFF66', fontSize: 9, textTransform: 'uppercase', letterSpacing: 1 },
+  vitalUnit: { color: '#FFFFFF40', fontSize: 9 },
+  vitalInput: {
+    backgroundColor: '#161C25',
+    borderColor: '#FFFFFF10',
+    borderWidth: 1,
+    borderRadius: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    color: '#FFFFFFF2',
+    fontSize: 15,
+    textAlign: 'center',
   },
 });
