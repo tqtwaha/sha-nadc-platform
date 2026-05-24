@@ -1,3 +1,14 @@
 // @sha-nadc/supabase — typed Supabase client wrappers.
-// Phase 0 placeholder. Phase 1 fills this with auth-aware factories.
-export const VERSION = '0.0.0';
+//
+// Three flavours of client, picked by what's calling:
+//   - browserClient()      — anon key, browser-safe, respects RLS
+//   - serverClient()       — anon key, used in Next.js server components
+//   - serviceClient()      — service-role key, SERVER ONLY, bypasses RLS
+//
+// All three are typed against packages/types domain schemas. Reads return
+// validated rows; writes accept Zod-validated input.
+
+export { browserClient } from './browser';
+export { serverClient }  from './server';
+export { serviceClient } from './service';
+export * from './assertEnv';

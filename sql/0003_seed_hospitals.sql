@@ -1,0 +1,75 @@
+-- ═══════════════════════════════════════════════════════════════════════
+-- 0003_seed_hospitals.sql — 60 Kenyan referral & district hospitals
+-- ═══════════════════════════════════════════════════════════════════════
+-- Ported from sha-nadc v1 sql/02_seed.sql. Coordinates verified for v1
+-- demo use; level-5 county referrals + level-6 nationals + sample
+-- level-4 district hospitals across all 47 counties.
+-- ═══════════════════════════════════════════════════════════════════════
+
+INSERT INTO hospitals (id, name, full_name, level, lat, lng, county, ed_capacity_pct, diversion_status, is_national_referral, specialties) VALUES
+-- ── Level 6 National Referral ─────────────────────────────────────
+('h001', 'KNH',                'Kenyatta National Hospital',                  6, -1.3019, 36.8061, 'Nairobi',        82, 'caution',  TRUE,  ARRAY['cardiac','trauma','burns','neuro','peds']),
+('h002', 'MTRH',               'Moi Teaching & Referral Hospital',            6,  0.5167, 35.2833, 'Uasin Gishu',    75, 'open',     TRUE,  ARRAY['cardiac','trauma','peds','onc']),
+('h003', 'KUTRRH',             'Kenyatta University Teaching, Referral & Research Hospital', 6, -1.1839, 36.9319, 'Kiambu', 71, 'open', TRUE, ARRAY['cardiac','onc','trauma']),
+('h004', 'Mathari',            'Mathari National Teaching & Referral Hospital', 6, -1.2630, 36.8420, 'Nairobi',     65, 'open',     TRUE,  ARRAY['psych']),
+('h005', 'NSIPH',              'National Spinal Injury Referral Hospital',    6, -1.2870, 36.8083, 'Nairobi',        70, 'open',     TRUE,  ARRAY['spinal','neuro','trauma']),
+-- ── Level 5 County Referrals (sample of largest) ──────────────────
+('h011', 'Coast GH',           'Coast General Teaching & Referral Hospital',  5, -4.0506, 39.6663, 'Mombasa',        78, 'open',     FALSE, ARRAY['trauma','peds','obs']),
+('h012', 'JOOTRH',             'Jaramogi Oginga Odinga T&R Hospital',         5, -0.0917, 34.7689, 'Kisumu',         73, 'open',     FALSE, ARRAY['trauma','obs','onc']),
+('h013', 'PGH Nakuru',         'Nakuru Provincial General Hospital',          5, -0.3031, 36.0800, 'Nakuru',         80, 'caution',  FALSE, ARRAY['trauma','obs']),
+('h014', 'Nyeri PGH',          'Nyeri Provincial General Hospital',           5, -0.4209, 36.9483, 'Nyeri',          68, 'open',     FALSE, ARRAY['trauma','obs']),
+('h015', 'Garissa CRH',        'Garissa County Referral Hospital',            5, -0.4536, 39.6401, 'Garissa',        62, 'open',     FALSE, ARRAY['trauma','peds']),
+('h016', 'Embu Level 5',       'Embu Level 5 Hospital',                       5, -0.5270, 37.4579, 'Embu',           69, 'open',     FALSE, ARRAY['obs','peds']),
+('h017', 'Kakamega PGH',       'Kakamega County Referral Hospital',           5,  0.2825, 34.7519, 'Kakamega',       74, 'open',     FALSE, ARRAY['trauma','obs']),
+('h018', 'Kisii Level 5',      'Kisii Teaching & Referral Hospital',          5, -0.6788, 34.7763, 'Kisii',          70, 'open',     FALSE, ARRAY['trauma','obs','peds']),
+('h019', 'Machakos Level 5',   'Machakos Level 5 Hospital',                   5, -1.5167, 37.2667, 'Machakos',       66, 'open',     FALSE, ARRAY['trauma','obs']),
+('h020', 'Murang''a Level 5',  'Murang''a Level 5 Hospital',                  5, -0.7167, 37.1500, 'Murang''a',      68, 'open',     FALSE, ARRAY['obs','peds']),
+('h021', 'Meru Teaching',      'Meru Teaching & Referral Hospital',           5,  0.0500, 37.6500, 'Meru',           71, 'open',     FALSE, ARRAY['trauma','obs']),
+('h022', 'Kitui Level 5',      'Kitui County Referral Hospital',              5, -1.3756, 38.0096, 'Kitui',          65, 'open',     FALSE, ARRAY['obs','peds']),
+('h023', 'Kakamega CGRH',      'Kakamega Provincial General Hospital',        5,  0.2843, 34.7519, 'Kakamega',       72, 'open',     FALSE, ARRAY['obs','peds']),
+('h024', 'Nyanza PGH',         'Migori County Referral Hospital',             5, -1.0667, 34.4667, 'Migori',         63, 'open',     FALSE, ARRAY['obs','peds']),
+('h025', 'Bungoma County',     'Bungoma County Referral Hospital',            5,  0.5635, 34.5606, 'Bungoma',        67, 'open',     FALSE, ARRAY['obs','peds']),
+('h026', 'Kericho County',     'Kericho County Referral Hospital',            5, -0.3667, 35.2833, 'Kericho',        69, 'open',     FALSE, ARRAY['obs','trauma']),
+('h027', 'Eldoret Town',       'Eldoret Town Hospital',                       5,  0.5204, 35.2700, 'Uasin Gishu',    70, 'open',     FALSE, ARRAY['obs','peds']),
+('h028', 'Tharaka-Nithi',      'Chuka County Referral Hospital',              5, -0.3289, 37.6486, 'Tharaka-Nithi',  64, 'open',     FALSE, ARRAY['obs','peds']),
+('h029', 'Nyandarua',          'Nyandarua County Hospital',                   5, -0.3833, 36.3833, 'Nyandarua',      63, 'open',     FALSE, ARRAY['obs','peds']),
+('h030', 'Laikipia',           'Nanyuki County Referral Hospital',            5,  0.0192, 37.0731, 'Laikipia',       66, 'open',     FALSE, ARRAY['trauma','obs']),
+('h031', 'Trans Nzoia',        'Kitale County Hospital',                      5,  1.0167, 35.0000, 'Trans Nzoia',    65, 'open',     FALSE, ARRAY['obs','peds']),
+('h032', 'Vihiga',             'Vihiga County Referral Hospital',             5,  0.0795, 34.7223, 'Vihiga',         62, 'open',     FALSE, ARRAY['obs','peds']),
+('h033', 'Bomet',              'Longisa County Referral Hospital',            5, -0.7833, 35.3500, 'Bomet',          64, 'open',     FALSE, ARRAY['obs','peds']),
+('h034', 'Busia',              'Busia County Referral Hospital',              5,  0.4602, 34.1115, 'Busia',          61, 'open',     FALSE, ARRAY['obs','peds']),
+('h035', 'Siaya',              'Siaya County Referral Hospital',              5,  0.0608, 34.2880, 'Siaya',          63, 'open',     FALSE, ARRAY['obs','peds']),
+('h036', 'Homa Bay',           'Homa Bay County Referral Hospital',           5, -0.5273, 34.4571, 'Homa Bay',       62, 'open',     FALSE, ARRAY['obs','peds']),
+('h037', 'Nyamira',            'Nyamira County Referral Hospital',            5, -0.5667, 34.9333, 'Nyamira',        60, 'open',     FALSE, ARRAY['obs','peds']),
+('h038', 'Narok',              'Narok County Referral Hospital',              5, -1.0833, 35.8667, 'Narok',          64, 'open',     FALSE, ARRAY['trauma','obs']),
+('h039', 'Kajiado',            'Kajiado County Referral Hospital',            5, -1.8500, 36.7833, 'Kajiado',        66, 'open',     FALSE, ARRAY['obs','peds']),
+('h040', 'Kilifi',             'Kilifi County Hospital',                      5, -3.6307, 39.8499, 'Kilifi',         68, 'open',     FALSE, ARRAY['trauma','obs','peds']),
+('h041', 'Kwale',              'Msambweni Hospital',                          5, -4.4667, 39.4833, 'Kwale',          63, 'open',     FALSE, ARRAY['obs','peds']),
+('h042', 'Lamu',               'King Fahd County Hospital',                   5, -2.2716, 40.9020, 'Lamu',           60, 'open',     FALSE, ARRAY['obs','peds']),
+('h043', 'Taita-Taveta',       'Moi County Referral Hospital Voi',            5, -3.3960, 38.5564, 'Taita-Taveta',   61, 'open',     FALSE, ARRAY['obs','peds']),
+('h044', 'Tana River',         'Hola Hospital',                               5, -1.5000, 40.0333, 'Tana River',     58, 'open',     FALSE, ARRAY['obs','peds']),
+('h045', 'Wajir',              'Wajir County Referral Hospital',              5,  1.7471, 40.0573, 'Wajir',          60, 'open',     FALSE, ARRAY['obs','peds']),
+('h046', 'Mandera',            'Mandera County Referral Hospital',            5,  3.9366, 41.8669, 'Mandera',        59, 'open',     FALSE, ARRAY['obs','peds']),
+('h047', 'Isiolo',             'Isiolo County Referral Hospital',             5,  0.3556, 37.5833, 'Isiolo',         62, 'open',     FALSE, ARRAY['obs','peds']),
+('h048', 'Marsabit',           'Marsabit County Referral Hospital',           5,  2.3333, 37.9833, 'Marsabit',       58, 'open',     FALSE, ARRAY['obs','peds']),
+('h049', 'Samburu',            'Maralal County Referral Hospital',            5,  1.0975, 36.6986, 'Samburu',        60, 'open',     FALSE, ARRAY['obs','peds']),
+('h050', 'Turkana',            'Lodwar County Referral Hospital',             5,  3.1167, 35.6000, 'Turkana',        62, 'open',     FALSE, ARRAY['obs','peds']),
+('h051', 'West Pokot',         'Kapenguria County Referral Hospital',         5,  1.2333, 35.1167, 'West Pokot',     61, 'open',     FALSE, ARRAY['obs','peds']),
+('h052', 'Baringo',            'Kabarnet County Referral Hospital',           5,  0.4915, 35.7460, 'Baringo',        63, 'open',     FALSE, ARRAY['obs','peds']),
+('h053', 'Elgeyo-Marakwet',    'Iten County Referral Hospital',               5,  0.6727, 35.5085, 'Elgeyo-Marakwet',62, 'open',     FALSE, ARRAY['obs','peds']),
+('h054', 'Nandi',              'Kapsabet County Referral Hospital',           5,  0.2024, 35.1056, 'Nandi',          64, 'open',     FALSE, ARRAY['obs','peds']),
+('h055', 'Kirinyaga',          'Kerugoya County Referral Hospital',           5, -0.4983, 37.2792, 'Kirinyaga',      67, 'open',     FALSE, ARRAY['obs','peds']),
+('h056', 'Makueni',            'Makueni County Referral Hospital',            5, -1.8044, 37.6253, 'Makueni',        65, 'open',     FALSE, ARRAY['obs','peds']),
+-- ── Level 4 Nairobi district + private sample ─────────────────────
+('h060', 'Mama Lucy',          'Mama Lucy Kibaki Hospital',                   4, -1.2861, 36.9128, 'Nairobi',        85, 'caution',  FALSE, ARRAY['obs','peds','trauma']),
+('h061', 'Mbagathi',           'Mbagathi County Hospital',                    4, -1.3041, 36.7853, 'Nairobi',        77, 'open',     FALSE, ARRAY['obs','peds','tb']),
+('h062', 'Pumwani Maternity',  'Pumwani Maternity Hospital',                  4, -1.2772, 36.8453, 'Nairobi',        81, 'caution',  FALSE, ARRAY['obs','neonatal']),
+('h063', 'Mutuini',            'Mutuini Sub-County Hospital',                 4, -1.3217, 36.7322, 'Nairobi',        72, 'open',     FALSE, ARRAY['obs','peds']),
+('h064', 'Karen Hospital',     'Karen Hospital (Private)',                    4, -1.3232, 36.7234, 'Nairobi',        68, 'open',     FALSE, ARRAY['cardiac','trauma','obs']),
+('h065', 'Aga Khan UH',        'Aga Khan University Hospital, Nairobi',       4, -1.2614, 36.8181, 'Nairobi',        70, 'open',     FALSE, ARRAY['cardiac','trauma','onc','neuro']),
+('h066', 'Nairobi Hospital',   'The Nairobi Hospital',                        4, -1.2941, 36.8053, 'Nairobi',        73, 'caution',  FALSE, ARRAY['cardiac','trauma','onc']),
+('h067', 'MP Shah',            'M.P. Shah Hospital',                          4, -1.2624, 36.8133, 'Nairobi',        69, 'open',     FALSE, ARRAY['cardiac','obs']),
+('h068', 'Gertrude''s',        'Gertrude''s Children''s Hospital',            4, -1.2603, 36.8047, 'Nairobi',        66, 'open',     FALSE, ARRAY['peds']),
+('h069', 'Avenue Hospital',    'Avenue Hospital',                             4, -1.2772, 36.8125, 'Nairobi',        65, 'open',     FALSE, ARRAY['obs','peds']),
+('h070', 'AAR Hospital',       'AAR Hospital Kiambu Rd',                      4, -1.2103, 36.8500, 'Nairobi',        62, 'open',     FALSE, ARRAY['cardiac','trauma'])
+ON CONFLICT (id) DO NOTHING;

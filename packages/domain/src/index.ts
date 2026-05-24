@@ -1,4 +1,8 @@
 // @sha-nadc/domain — pure business logic. No DOM, no fetch.
-// Phase 0 placeholder. Phase 0 capability 0.5 (sim engine port) lands here.
+// Port of sha-nadc v1 lib/nadc-state.js, refactored into typed modules.
 
-export const VERSION = '0.0.0';
+export * from './zones';
+export * from './fleet';
+export * from './incidents';
+export * from './priority';
+export const DOMAIN_VERSION = '0.1.0';
