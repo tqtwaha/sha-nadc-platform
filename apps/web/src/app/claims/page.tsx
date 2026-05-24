@@ -3,6 +3,7 @@ import { Topbar, Chip } from '@sha-nadc/ui';
 import { APPS } from '@/lib/apps';
 import { listClaims, statusCounts, type ClaimStatus } from '@/lib/claims';
 import { fmtKes, fmtRelative } from '@/lib/format';
+import { BulkActionsBar } from './BulkActionsBar';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -104,6 +105,24 @@ export default async function ClaimsPage({ searchParams }: PageProps) {
           <div className="ml-auto text-t3 font-mono text-[11px] tracking-wide uppercase">
             Total visible: <span className="text-t1">{fmtKes(totalKes)}</span>
           </div>
+        </div>
+
+        {/* Bulk actions bar */}
+        <div className="mb-4">
+          <BulkActionsBar
+            draftCount={counts.draft ?? 0}
+            submittedCount={counts.submitted ?? 0}
+            approvedCount={counts.approved ?? 0}
+            exportHref={`/claims/export${
+              status !== 'all' || search
+                ? '?' +
+                  new URLSearchParams({
+                    ...(status !== 'all' ? { status } : {}),
+                    ...(search ? { q: search } : {}),
+                  }).toString()
+                : ''
+            }`}
+          />
         </div>
 
         {/* Table */}
