@@ -14,6 +14,10 @@ const PUBLIC = createRouteMatcher([
   '/sign-up(.*)',
   '/api/sim/(.*)',
   '/api/health(.*)',
+  '/api/config(.*)',     // v1 NACDState boot needs this even when gated
+  '/legacy/(.*)',         // v1 prototype HTML + assets
+  '/lib/(.*)',            // v1 NACDState scripts
+  '/assets/(.*)',         // v1 token + favicon assets
 ]);
 
 const clerkConfigured = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;

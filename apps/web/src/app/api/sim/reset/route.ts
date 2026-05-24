@@ -22,16 +22,21 @@ export const revalidate = 0;
 // to leave open), /reset deletes data so we refuse to run if no secret is
 // configured rather than defaulting to "open".
 
-export async function POST(req: NextRequest) {
+function isAuthorized(req: NextRequest): boolean {
+  if (req.headers.get('x-vercel-cron') === '1') return true;
   const secret = process.env.CRON_SECRET;
-  if (!secret) {
+  if (!secret) return false;
+  return req.headers.get('authorization') === `Bearer ${secret}`;
+}
+
+export async function POST(req: NextRequest) {
+  if (!process.env.CRON_SECRET && req.headers.get('x-vercel-cron') !== '1') {
     return NextResponse.json(
       { ok: false, error: 'CRON_SECRET not configured — reset disabled' },
       { status: 503 },
     );
   }
-  const auth = req.headers.get('authorization');
-  if (auth !== `Bearer ${secret}`) {
+  if (!isAuthorized(req)) {
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
   }
 

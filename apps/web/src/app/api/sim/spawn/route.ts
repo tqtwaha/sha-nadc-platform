@@ -19,13 +19,20 @@ export const revalidate = 0;
 
 const MAX_N = 10;
 
-export async function GET(req: NextRequest) {
+function isAuthorized(req: NextRequest): boolean {
+  // Vercel Cron always sends this header on internal cron calls
+  if (req.headers.get('x-vercel-cron') === '1') return true;
   const secret = process.env.CRON_SECRET;
-  if (secret) {
-    const auth = req.headers.get('authorization');
-    if (auth !== `Bearer ${secret}`) {
-      return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
-    }
+  if (!secret) return false; // closed by default in production
+  return req.headers.get('authorization') === `Bearer ${secret}`;
+}
+
+export async function GET(req: NextRequest) {
+  if (!isAuthorized(req)) {
+    return NextResponse.json(
+      { ok: false, error: 'unauthorized — set CRON_SECRET and send Authorization: Bearer …' },
+      { status: 401 },
+    );
   }
 
   const n = Math.min(MAX_N, Math.max(1, Number(req.nextUrl.searchParams.get('n') ?? '1')));
