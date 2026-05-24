@@ -37,14 +37,14 @@ async function pickAvailableUnit(zone: string, requiresAls: boolean) {
   const sb = serviceClient();
   let { data } = await sb
     .from('fleet_units')
-    .select('id, type, zone')
+    .select('id, type:unit_type, zone')
     .eq('status', 'available')
     .eq('zone', zone)
     .limit(20);
   if (!data || data.length === 0) {
     ({ data } = await sb
       .from('fleet_units')
-      .select('id, type, zone')
+      .select('id, type:unit_type, zone')
       .eq('status', 'available')
       .limit(20));
   }
@@ -152,7 +152,7 @@ async function advanceOne(): Promise<AdvanceResult | null> {
   if (inc.status === 'transport') {
     const { data: unit } = await sb
       .from('fleet_units')
-      .select('id, type, provider_id')
+      .select('id, type:unit_type, provider_id')
       .eq('id', inc.unit_id as string)
       .single();
     const tariffType = (unit?.type as 'ALS' | 'BLS') ?? 'BLS';

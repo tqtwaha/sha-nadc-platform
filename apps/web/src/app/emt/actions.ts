@@ -50,7 +50,7 @@ export async function clearAndBill(opts: ClearOpts): Promise<void> {
   // Unit type drives tariff
   const { data: unitRow, error: uErr } = await sb
     .from('fleet_units')
-    .select('type, provider_id')
+    .select('type:unit_type, provider_id')
     .eq('id', inc.unit_id ?? opts.unit)
     .single();
   if (uErr || !unitRow) redirect(`/emt/${opts.unit}?error=` + encodeURIComponent(uErr?.message ?? 'Unit missing'));

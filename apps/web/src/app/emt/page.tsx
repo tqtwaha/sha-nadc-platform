@@ -13,7 +13,11 @@ export const revalidate = 0;
 export default async function EmtPickerPage() {
   const sb = serviceClient();
   const [{ data: units, error: uErr }, { data: incidents, error: iErr }] = await Promise.all([
-    sb.from('fleet_units').select('id, type, status, zone, provider_id').order('id').limit(300),
+    sb
+      .from('fleet_units')
+      .select('id, type:unit_type, status, zone, provider_id')
+      .order('id')
+      .limit(300),
     sb
       .from('incidents')
       .select('id, unit_id, priority, complaint, status')

@@ -22,7 +22,7 @@ export interface ProviderRow {
 export async function listProviders(): Promise<ProviderRow[]> {
   const sb = serviceClient();
   const [{ data: units, error: uErr }, { data: claims, error: cErr }] = await Promise.all([
-    sb.from('fleet_units').select('provider_id, type, status'),
+    sb.from('fleet_units').select('provider_id, type:unit_type, status'),
     sb.from('claims').select('provider_id, status, total_kes'),
   ]);
   if (uErr) throw uErr;
@@ -41,7 +41,7 @@ export async function listProviders(): Promise<ProviderRow[]> {
       totalUnits: pUnits.length,
       alsUnits: pUnits.filter((u) => u.type === 'ALS').length,
       blsUnits: pUnits.filter((u) => u.type === 'BLS').length,
-      activeUnits: pUnits.filter((u) => u.status !== 'out_of_service').length,
+      activeUnits: pUnits.filter((u) => !['off_duty', 'maintenance'].includes(u.status)).length,
       totalClaims: pClaims.length,
       paidClaims: paid.length,
       totalKesPaid: paid.reduce((a, c) => a + (c.total_kes ?? 0), 0),

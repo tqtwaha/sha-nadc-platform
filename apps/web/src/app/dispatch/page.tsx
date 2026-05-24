@@ -6,6 +6,7 @@ import { fmtRelative } from '@/lib/format';
 import { ACTIVE_STATUSES, type IncidentStatus } from '@/lib/incidents';
 import { QueueActions } from './QueueActions';
 import { RealtimeRefresh } from '@/components/RealtimeRefresh';
+import { DispatchMap } from '@/components/DispatchMap';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -49,7 +50,7 @@ export default async function DispatchPage({ searchParams }: PageProps) {
   let q = sb
     .from('incidents')
     .select(
-      'id, display_id, priority, complaint, status, county, zone, unit_id, hospital_id, address, created_at, dispatched_at',
+      'id, display_id, priority, complaint, status, county, zone, unit_id, hospital_id, address, lat, lng, created_at, dispatched_at',
     )
     .order('priority', { ascending: true })
     .order('created_at', { ascending: true });
@@ -57,6 +58,26 @@ export default async function DispatchPage({ searchParams }: PageProps) {
   const { data, error } = await q.limit(200);
   if (error) throw error;
   const rows = data ?? [];
+
+  // Map markers — only active incidents that have GPS, plus all available units
+  const mapIncidents = rows
+    .filter((r) => ACTIVE_STATUSES.includes(r.status as (typeof ACTIVE_STATUSES)[number]))
+    .map((r) => ({
+      id: r.id,
+      display_id: r.display_id,
+      priority: r.priority as 1 | 2 | 3 | 4,
+      complaint: r.complaint,
+      status: r.status,
+      lat: r.lat,
+      lng: r.lng,
+      unit_id: r.unit_id,
+    }));
+
+  const { data: mapUnits } = await sb
+    .from('fleet_units')
+    .select('id, type:unit_type, lat:current_lat, lng:current_lng, status')
+    .in('status', ['available', 'dispatched', 'en_route', 'on_scene', 'transport'])
+    .limit(300);
 
   const counts = rows.reduce<Record<string, number>>((acc, r) => {
     acc[r.status] = (acc[r.status] ?? 0) + 1;
@@ -103,6 +124,19 @@ export default async function DispatchPage({ searchParams }: PageProps) {
             </Link>
           </div>
         </div>
+
+        {/* Live map */}
+        <DispatchMap
+          incidents={mapIncidents}
+          units={(mapUnits ?? []).map((u) => ({
+            id: u.id,
+            type: u.type as 'ALS' | 'BLS',
+            lat: u.lat,
+            lng: u.lng,
+            status: u.status,
+          }))}
+          height="420px"
+        />
 
         {/* Queue table */}
         <div className="border border-line rounded-lg overflow-hidden bg-bg1">

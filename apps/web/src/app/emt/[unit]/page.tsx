@@ -31,7 +31,7 @@ export default async function EmtUnitPage({
 
   const { data: unitRow, error: uErr } = await sb
     .from('fleet_units')
-    .select('id, type, status, zone, provider_id')
+    .select('id, type:unit_type, status, zone, provider_id')
     .eq('id', unit)
     .single();
   if (uErr || !unitRow) notFound();

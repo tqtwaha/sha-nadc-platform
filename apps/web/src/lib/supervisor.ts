@@ -87,7 +87,7 @@ export async function getKpis(): Promise<SupervisorKpis> {
     deployedUnits: u.filter((x) =>
       ['dispatched', 'en_route', 'on_scene', 'transport'].includes(x.status),
     ).length,
-    oosUnits: u.filter((x) => x.status === 'out_of_service').length,
+    oosUnits: u.filter((x) => ['off_duty', 'maintenance', 'standby'].includes(x.status)).length,
     slaCompliancePct,
     medianDispatchSecs,
   };

@@ -66,7 +66,11 @@ export default async function DispatchDetailPage({
       .eq('incident_id', id)
       .order('created_at', { ascending: true }),
     inc.unit_id
-      ? sb.from('fleet_units').select('id, type, provider_id, zone, status').eq('id', inc.unit_id).single()
+      ? sb
+          .from('fleet_units')
+          .select('id, type:unit_type, provider_id, zone, status')
+          .eq('id', inc.unit_id)
+          .single()
       : Promise.resolve({ data: null }),
   ]);
 

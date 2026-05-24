@@ -53,7 +53,7 @@ export async function assignNearestUnit(incidentId: string): Promise<Result> {
   // 1) try in-zone available units, preferring ALS when required
   let { data: candidates, error: uErr } = await sb
     .from('fleet_units')
-    .select('id, type, status, zone')
+    .select('id, type:unit_type, status, zone')
     .eq('status', 'available')
     .eq('zone', inc.zone);
   if (uErr) return { ok: false, message: uErr.message };
@@ -62,7 +62,7 @@ export async function assignNearestUnit(incidentId: string): Promise<Result> {
     // fallback: any available unit
     const { data: anyAvail, error: aErr } = await sb
       .from('fleet_units')
-      .select('id, type, status, zone')
+      .select('id, type:unit_type, status, zone')
       .eq('status', 'available')
       .limit(20);
     if (aErr) return { ok: false, message: aErr.message };
