@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Topbar, Chip } from '@sha-nadc/ui';
-import { Users, Hospital, ScrollText } from 'lucide-react';
+import { Users, Hospital, ScrollText, Beaker, Activity } from 'lucide-react';
 import { APPS } from '@/lib/apps';
 import { serviceClient } from '@/lib/supabase';
 
@@ -45,6 +45,18 @@ export default async function AdminIndexPage() {
             Icon={ScrollText}
             title="Audit log"
             caption={`${events ?? 0} dispatch events (filterable, compliance review)`}
+          />
+          <AdminCard
+            href="/admin/sim"
+            Icon={Beaker}
+            title="Sim controls"
+            caption="Spawn, advance, reset — push the demo without curl"
+          />
+          <AdminCard
+            href="/status"
+            Icon={Activity}
+            title="Status page"
+            caption="Public uptime + ops dashboard, env config check"
           />
         </div>
 
