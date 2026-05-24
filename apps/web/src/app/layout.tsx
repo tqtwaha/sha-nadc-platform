@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { ClerkProvider } from '@clerk/nextjs';
 import { AuthSlot } from '@/components/AuthSlot';
+import { CommandPalette } from '@/components/CommandPalette';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen">
         {children}
         <AuthSlot />
+        <CommandPalette />
       </body>
     </html>
   );
