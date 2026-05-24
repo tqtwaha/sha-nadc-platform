@@ -8,13 +8,13 @@ import type { AppSwitcherItem } from '@sha-nadc/ui';
 // list can be defined in a server component and passed to <AppSwitcher>
 // (a client component) without crossing the function-prop boundary.
 export const APPS: AppSwitcherItem[] = [
-  { slug: 'dashboard',  label: 'Wall',       href: '/dashboard',  iconName: 'Tv' },
-  { slug: 'psap',       label: 'PSAP',       href: '/psap',       iconName: 'Phone' },
-  { slug: 'dispatch',   label: 'Dispatch',   href: '/dispatch',   iconName: 'Radar' },
-  { slug: 'supervisor', label: 'Supervisor', href: '/supervisor', iconName: 'UserCog' },
-  { slug: 'emt',        label: 'EMT',        href: '/emt',        iconName: 'Truck' },
-  { slug: 'hospital',   label: 'Hospital',   href: '/hospital',   iconName: 'Hospital' },
-  { slug: 'claims',     label: 'Claims',     href: '/claims',     iconName: 'ReceiptText' },
-  { slug: 'providers',  label: 'Providers',  href: '/providers',  iconName: 'Building2' },
-  { slug: 'admin',      label: 'Admin',      href: '/admin',      iconName: 'Shield' },
+  { slug: 'wall',       label: 'Wall',       href: '/wall',             iconName: 'Tv' },
+  { slug: 'psap',       label: 'PSAP',       href: '/psap',             iconName: 'Phone' },
+  { slug: 'dispatch',   label: 'Dispatch',   href: '/dispatch',         iconName: 'Radar' },
+  { slug: 'supervisor', label: 'Supervisor', href: '/supervisor',       iconName: 'UserCog' },
+  { slug: 'emt',        label: 'EMT',        href: '/emt',              iconName: 'Truck' },
+  { slug: 'hospital',   label: 'Hospital',   href: '/hospital',         iconName: 'Hospital' },
+  { slug: 'claims',     label: 'Claims',     href: '/claims',           iconName: 'ReceiptText' },
+  { slug: 'providers',  label: 'Providers',  href: '/providers',        iconName: 'Building2' },
+  { slug: 'admin',      label: 'Admin',      href: '/admin/users',      iconName: 'Shield' },
 ];
