@@ -7,6 +7,7 @@ import { ACTIVE_STATUSES, type IncidentStatus } from '@/lib/incidents';
 import { QueueActions } from './QueueActions';
 import { RealtimeRefresh } from '@/components/RealtimeRefresh';
 import { DispatchMap } from '@/components/DispatchMap';
+import { P1Alert } from '@/components/P1Alert';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -108,6 +109,7 @@ export default async function DispatchPage({ searchParams }: PageProps) {
       />
 
       <RealtimeRefresh tables={['incidents', 'fleet_units']} />
+      <P1Alert />
 
       <section className="flex-1 px-6 py-6 max-w-screen-2xl w-full mx-auto space-y-4">
         {/* Status chip strip */}
