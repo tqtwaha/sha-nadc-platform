@@ -23,6 +23,17 @@ export async function emtCancel(incidentId: string, reason: string, unit: string
   revalidatePath(`/emt/${unit}`);
 }
 
+interface Vitals {
+  hr?: number;
+  bp_sys?: number;
+  bp_dia?: number;
+  spo2?: number;
+  rr?: number;
+  gcs?: number;
+  temp_c?: number;
+  bgl?: number;
+}
+
 interface ClearOpts {
   incidentId: string;
   unit: string;
@@ -30,6 +41,7 @@ interface ClearOpts {
   consumablesKes: number;
   hospitalId: string | null;
   notes: string;
+  vitals?: Vitals;
 }
 
 export async function clearAndBill(opts: ClearOpts): Promise<void> {
@@ -96,6 +108,7 @@ export async function clearAndBill(opts: ClearOpts): Promise<void> {
       total_kes: tariff.totalKes,
       status: 'draft',
       notes: opts.notes,
+      vitals: opts.vitals && Object.keys(opts.vitals).length > 0 ? opts.vitals : null,
     })
     .select('id')
     .single();

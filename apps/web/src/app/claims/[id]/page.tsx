@@ -121,6 +121,30 @@ export default async function ClaimDetailPage({ params }: PageProps) {
               </table>
             </div>
 
+            {/* Vitals (if recorded) */}
+            {claim.vitals && Object.keys(claim.vitals).length > 0 && (
+              <div className="border border-line rounded-lg bg-bg1 p-5">
+                <h3 className="font-cond uppercase tracking-wider text-[11px] text-t3 mb-3">
+                  Vitals at handoff
+                </h3>
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+                  {claim.vitals.hr !== undefined && <Vital label="HR" value={String(claim.vitals.hr)} unit="bpm" />}
+                  {(claim.vitals.bp_sys !== undefined || claim.vitals.bp_dia !== undefined) && (
+                    <Vital
+                      label="BP"
+                      value={`${claim.vitals.bp_sys ?? '—'}/${claim.vitals.bp_dia ?? '—'}`}
+                      unit="mmHg"
+                    />
+                  )}
+                  {claim.vitals.spo2 !== undefined && <Vital label="SpO₂" value={String(claim.vitals.spo2)} unit="%" />}
+                  {claim.vitals.rr !== undefined && <Vital label="RR" value={String(claim.vitals.rr)} unit="/min" />}
+                  {claim.vitals.gcs !== undefined && <Vital label="GCS" value={String(claim.vitals.gcs)} unit="/15" />}
+                  {claim.vitals.temp_c !== undefined && <Vital label="Temp" value={String(claim.vitals.temp_c)} unit="°C" />}
+                  {claim.vitals.bgl !== undefined && <Vital label="BGL" value={String(claim.vitals.bgl)} unit="mmol/L" />}
+                </div>
+              </div>
+            )}
+
             {/* Linked entities */}
             <div className="border border-line rounded-lg bg-bg1 p-5">
               <h3 className="font-cond uppercase tracking-wider text-[11px] text-t3 mb-3">
@@ -245,6 +269,16 @@ function RowKV({
         {value}
       </td>
     </tr>
+  );
+}
+
+function Vital({ label, value, unit }: { label: string; value: string; unit: string }) {
+  return (
+    <div className="bg-bg2 border border-line rounded-md px-3 py-2 text-center">
+      <div className="font-mono text-[9px] text-t3 uppercase tracking-wider">{label}</div>
+      <div className="font-display text-lg font-semibold text-t1 mt-0.5">{value}</div>
+      <div className="font-mono text-[9px] text-t4">{unit}</div>
+    </div>
   );
 }
 

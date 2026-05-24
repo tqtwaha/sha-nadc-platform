@@ -16,6 +16,17 @@ export type ClaimStatus =
   | 'paid'
   | 'invoiced';
 
+export interface Vitals {
+  hr?: number;
+  bp_sys?: number;
+  bp_dia?: number;
+  spo2?: number;
+  rr?: number;
+  gcs?: number;
+  temp_c?: number;
+  bgl?: number;
+}
+
 export interface ClaimRow {
   id: string;
   claim_number: string;
@@ -39,6 +50,7 @@ export interface ClaimRow {
   paid_at: string | null;
   invoice_number: string | null;
   mpesa_ref: string | null;
+  vitals: Vitals | null;
   created_at: string;
   updated_at: string;
 }

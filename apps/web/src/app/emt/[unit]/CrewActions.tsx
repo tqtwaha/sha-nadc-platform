@@ -38,6 +38,12 @@ export function CrewActions({ incidentId, status, unit, unitType, hospitalId, ho
   const [consumablesKes, setConsumablesKes] = useState(0);
   const [hospitalSel, setHospitalSel] = useState(hospitalId ?? '');
   const [notes, setNotes] = useState('');
+  const [hr, setHr] = useState('');
+  const [bpSys, setBpSys] = useState('');
+  const [bpDia, setBpDia] = useState('');
+  const [spo2, setSpo2] = useState('');
+  const [rr, setRr] = useState('');
+  const [gcs, setGcs] = useState('');
 
   const next = NEXT_STATUSES[status].filter((s) => s !== 'cancelled');
 
@@ -50,6 +56,18 @@ export function CrewActions({ incidentId, status, unit, unitType, hospitalId, ho
 
   const finalize = () => {
     if (!window.confirm(`Clear incident and create draft claim for KES ${expectedTotal()}?`)) return;
+    const numOrUndef = (v: string) => (v === '' ? undefined : Number(v));
+    const vitals = {
+      hr: numOrUndef(hr),
+      bp_sys: numOrUndef(bpSys),
+      bp_dia: numOrUndef(bpDia),
+      spo2: numOrUndef(spo2),
+      rr: numOrUndef(rr),
+      gcs: numOrUndef(gcs),
+    };
+    const filtered: Record<string, number> = {};
+    for (const [k, v] of Object.entries(vitals)) if (v !== undefined && !Number.isNaN(v)) filtered[k] = v;
+
     startTransition(async () => {
       await clearAndBill({
         incidentId,
@@ -58,6 +76,7 @@ export function CrewActions({ incidentId, status, unit, unitType, hospitalId, ho
         consumablesKes,
         hospitalId: hospitalSel || null,
         notes,
+        vitals: filtered,
       });
     });
   };
@@ -117,6 +136,21 @@ export function CrewActions({ incidentId, status, unit, unitType, hospitalId, ho
             step={50}
             hint="O2, drugs, dressings"
           />
+
+          {/* Vitals snapshot */}
+          <div className="border border-line rounded-md p-3 bg-bg2/40">
+            <div className="font-cond uppercase tracking-wider text-[10px] text-t3 mb-2">
+              Vitals at handoff (optional)
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <VitalField label="HR" value={hr} onChange={setHr} unit="bpm" />
+              <VitalField label="BP sys" value={bpSys} onChange={setBpSys} unit="mmHg" />
+              <VitalField label="BP dia" value={bpDia} onChange={setBpDia} unit="mmHg" />
+              <VitalField label="SpO₂" value={spo2} onChange={setSpo2} unit="%" />
+              <VitalField label="RR" value={rr} onChange={setRr} unit="/min" />
+              <VitalField label="GCS" value={gcs} onChange={setGcs} unit="/15" />
+            </div>
+          </div>
 
           <div>
             <div className="font-mono text-[10px] text-t3 uppercase tracking-wider mb-1">
@@ -179,6 +213,34 @@ export function CrewActions({ incidentId, status, unit, unitType, hospitalId, ho
         </button>
       </div>
     </div>
+  );
+}
+
+function VitalField({
+  label,
+  value,
+  onChange,
+  unit,
+}: {
+  label: string;
+  value: string;
+  onChange: (s: string) => void;
+  unit: string;
+}) {
+  return (
+    <label className="block">
+      <div className="flex items-baseline justify-between">
+        <span className="font-mono text-[9px] text-t3 uppercase tracking-wider">{label}</span>
+        <span className="font-mono text-[9px] text-t4">{unit}</span>
+      </div>
+      <input
+        type="number"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        inputMode="numeric"
+        className="w-full bg-bg2 border border-line rounded-md px-2 py-1 text-t1 text-sm font-mono mt-0.5"
+      />
+    </label>
   );
 }
 
