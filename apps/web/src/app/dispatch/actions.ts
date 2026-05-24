@@ -8,6 +8,7 @@
 import { revalidatePath } from 'next/cache';
 import { serviceClient } from '@/lib/supabase';
 import { NEXT_STATUSES, STATUS_TIMESTAMP, type IncidentStatus } from '@/lib/incidents';
+import { currentAgent } from '@/lib/auth';
 
 interface Result {
   ok: boolean;
@@ -23,9 +24,11 @@ async function logEvent(
   payload: Record<string, unknown> = {},
 ) {
   const sb = serviceClient();
+  const agent = actor === 'system' ? null : await currentAgent();
   await sb.from('dispatch_events').insert({
     incident_id: incidentId,
     unit_id: unitId,
+    agent_id: agent?.id ?? null,
     event_type: eventType,
     event_note: note,
     actor_type: actor,

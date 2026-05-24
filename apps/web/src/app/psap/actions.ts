@@ -9,6 +9,7 @@ import { redirect } from 'next/navigation';
 import { COMPLAINTS, NAIROBI_ZONES, randomInZone } from '@sha-nadc/domain';
 import { serviceClient } from '@/lib/supabase';
 import { nextDisplayId } from '@/lib/incidents-server';
+import { currentAgent } from '@/lib/auth';
 
 const DETERMINANT_TO_PRIORITY: Record<string, 1 | 2 | 3 | 4> = {
   E: 1,
@@ -51,6 +52,7 @@ export async function createIncident(formData: FormData): Promise<void> {
 
   const ageVal = patientAgeRaw === '' ? null : Number(patientAgeRaw);
   const sexVal = ['M', 'F'].includes(patientSex) ? patientSex : null;
+  const agent = await currentAgent();
 
   const insertRow = {
     display_id: displayId,
@@ -74,6 +76,7 @@ export async function createIncident(formData: FormData): Promise<void> {
     status: 'pending',
     notes,
     source: 'psap',
+    dispatcher_id: agent?.id ?? null,
   };
 
   const { data, error } = await sb
