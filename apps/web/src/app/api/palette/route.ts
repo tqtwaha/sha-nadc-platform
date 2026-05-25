@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { PROVIDERS } from '@sha-nadc/domain';
 import { serviceClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
@@ -45,13 +46,26 @@ export async function GET(req: NextRequest) {
     ]);
 
   type Result = {
-    kind: 'incident' | 'claim' | 'unit' | 'hospital';
+    kind: 'incident' | 'claim' | 'unit' | 'hospital' | 'provider';
     href: string;
     title: string;
     subtitle: string;
     badge?: string;
   };
   const results: Result[] = [];
+
+  // Provider matches are local-only (10 entries), no DB call needed
+  const qLower = q.toLowerCase();
+  for (const p of PROVIDERS) {
+    if (p.name.toLowerCase().includes(qLower) || p.id.toLowerCase().includes(qLower)) {
+      results.push({
+        kind: 'provider',
+        href: `/providers/${p.id}`,
+        title: p.name,
+        subtitle: p.id,
+      });
+    }
+  }
 
   for (const i of incidents ?? []) {
     results.push({

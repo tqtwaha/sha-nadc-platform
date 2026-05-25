@@ -10,7 +10,7 @@ import { APPS } from '@/lib/apps';
 // Live search is debounced 180ms so we don't hammer Supabase per keystroke.
 
 type Result = {
-  kind: 'incident' | 'claim' | 'unit' | 'hospital' | 'app';
+  kind: 'incident' | 'claim' | 'unit' | 'hospital' | 'provider' | 'app';
   href: string;
   title: string;
   subtitle: string;
@@ -201,6 +201,7 @@ function KindTag({ kind }: { kind: Result['kind'] }) {
     claim: 'bg-b2/15 text-b2',
     unit: 'bg-p2/15 text-p2',
     hospital: 'bg-p3/15 text-p3',
+    provider: 'bg-bg2 text-t2',
   }[kind];
   return (
     <span
