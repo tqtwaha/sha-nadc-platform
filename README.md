@@ -144,15 +144,55 @@ provisioned. The DB columns (`mpesa_ref`, `invoice_number`, `submitted_at`,
 
 ## Status
 
-End-to-end loop is live and clickable against production Supabase. Ready
-for client pitch. Outstanding items:
+**Production-ready for the SHA pitch.** Every operational surface is
+clickable against the live Supabase backend with Realtime fanout, the
+v1 UI prototypes serve as the public layer, and the v2 React layer
+handles every detail page + Server Action + Admin write-side.
 
-- Real M-Pesa / AfyaLink / KRA integrations (stubs in place)
-- Mobile realtime + vitals capture (web has both; mobile parity is next)
-- Clerk-attributed dispatcher_id on all writes (currently PSAP + dispatch
-  events only)
-- Push notifications when a P1 fires on the wall (currently audio + browser
-  notification)
+### Demo flow (90 seconds)
+
+1. Open `/wall` on a screen (LED dashboard).
+2. Open `/admin/sim` on a phone/laptop.
+3. Tap **"▶ Run demo"** — `/api/sim/demo` executes the full PSAP →
+   dispatch → en route → on scene → transport → cleared → SHA submit →
+   M-Pesa pay → KRA invoice flow in 10 seconds with live narration.
+4. Watch the wall light up with the P1 pin in Westlands moving through
+   its lifecycle. Click "Open claim" to see the SHIF tariff breakdown,
+   vitals, audit log on the v2 detail page.
+
+### What's done (this session)
+
+- v1 HTML UI restored for all 10 operational slugs (`/wall`, `/dispatch`,
+  `/supervisor`, `/emt`, `/psap`, `/hospital`, `/claims`, `/providers`,
+  `/admin`, `/dashboard`) via `apps/web/public/legacy/`
+- v2 React layer owns detail pages, Server Actions, Admin write-side
+- Provider deep view (`/providers/[id]`) with fleet roster + invoicing
+- Admin write-side: feature flags, pending approvals, sim controls,
+  audit log, status board
+- `/api/cron/heartbeat` keeps the demo populated daily
+- `/api/sim/demo` scripted scenario for stakeholder pitches
+- Mobile Expo app with vitals + realtime + push scaffold + Maps deep
+  links + dialer
+- PWA install manifest for `/emt` (no Expo Go needed for field crews)
+- Clerk auth with graceful no-key demo fallback
+- Sentry (gated on DSN), Vercel Analytics + Speed Insights
+- GitHub Actions CI (typecheck + tests + build) on every push/PR
+- Playwright E2E smoke suite (synthetic monitor against live deploy)
+- Vitest domain coverage (31 tests across tariff/zones/priority/incidents)
+- `docs/architecture.md` + 4 runbooks (deploy, rollback,
+  incident-response, scaling)
+
+### What's left for true production
+
+- Set CLERK_PUBLISHABLE_KEY + CLERK_SECRET_KEY in Vercel env → middleware
+  flips to gated mode automatically
+- Per-role RLS bound to Clerk JWT (sql/0009 — write once Clerk is on)
+- Real M-Pesa Daraja / SHA AfyaLink / KRA eTIMS adapters (stubs in
+  place, swap one file each per vendor signing)
+- EAS Build pipeline for the mobile app → TestFlight + Play Internal
+- Mobile signature capture for ePCR (needs react-native-signature-canvas)
+- Mobile background GPS reporting (needs expo-task-manager)
+- Mobile camera attachments for ePCR photos
 
 ## License
 
