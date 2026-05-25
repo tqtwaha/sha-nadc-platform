@@ -71,3 +71,29 @@ export async function simReset(): Promise<Result> {
   if (r.ok) rev();
   return r;
 }
+
+export interface DemoStep {
+  at: number;
+  label: string;
+  detail: string;
+  link?: string;
+}
+export interface DemoResult extends Result {
+  steps?: DemoStep[];
+  durationMs?: number;
+  incident?: { id: string; display_id: string };
+  claim?: { id: string; claim_number: string; total_kes: number };
+}
+
+export async function simDemoReplay(): Promise<DemoResult> {
+  const r = await callSim('/api/sim/demo');
+  if (r.ok) rev();
+  const payload = (r.payload ?? {}) as Record<string, unknown>;
+  return {
+    ...r,
+    steps: payload.steps as DemoStep[] | undefined,
+    durationMs: payload.durationMs as number | undefined,
+    incident: payload.incident as DemoResult['incident'],
+    claim: payload.claim as DemoResult['claim'],
+  };
+}
