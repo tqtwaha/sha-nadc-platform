@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Topbar, Chip } from '@sha-nadc/ui';
-import { Users, Hospital, ScrollText, Beaker, Activity } from 'lucide-react';
+import { Users, Hospital, ScrollText, Beaker, Activity, ToggleRight, ShieldAlert } from 'lucide-react';
 import { APPS } from '@/lib/apps';
 import { serviceClient } from '@/lib/supabase';
 
@@ -9,10 +9,23 @@ export const revalidate = 0;
 
 export default async function AdminIndexPage() {
   const sb = serviceClient();
-  const [{ count: agents }, { count: hospitals }, { count: events }] = await Promise.all([
+  const [
+    { count: agents },
+    { count: hospitals },
+    { count: events },
+    { count: flagsOn },
+    { count: flagsTotal },
+    { count: pendingCount },
+  ] = await Promise.all([
     sb.from('agents').select('id', { count: 'exact', head: true }),
     sb.from('hospitals').select('id', { count: 'exact', head: true }),
     sb.from('dispatch_events').select('id', { count: 'exact', head: true }),
+    sb.from('feature_flags').select('key', { count: 'exact', head: true }).eq('enabled', true),
+    sb.from('feature_flags').select('key', { count: 'exact', head: true }),
+    sb
+      .from('pending_approvals')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'pending'),
   ]);
 
   return (
@@ -58,6 +71,19 @@ export default async function AdminIndexPage() {
             title="Status page"
             caption="Public uptime + ops dashboard, env config check"
           />
+          <AdminCard
+            href="/admin/flags"
+            Icon={ToggleRight}
+            title="Feature flags"
+            caption={`${flagsOn ?? 0}/${flagsTotal ?? 0} enabled — stub↔real cutover controls`}
+          />
+          <AdminCard
+            href="/admin/pending"
+            Icon={ShieldAlert}
+            title="Pending approvals"
+            caption={`${pendingCount ?? 0} awaiting supervisor decision`}
+            tone={(pendingCount ?? 0) > 0 ? 'warn' : 'default'}
+          />
         </div>
 
         <p className="text-xs font-mono text-t3 pt-6 border-t border-line">
@@ -75,18 +101,22 @@ function AdminCard({
   Icon,
   title,
   caption,
+  tone = 'default',
 }: {
   href: string;
   Icon: typeof Users;
   title: string;
   caption: string;
+  tone?: 'default' | 'warn';
 }) {
+  const iconTone = tone === 'warn' ? 'text-p2' : 'text-g';
+  const borderTone = tone === 'warn' ? 'border-p2/40 bg-p2/5 hover:bg-p2/10' : 'border-line bg-bg1 hover:bg-bg2';
   return (
     <Link
       href={href}
-      className="flex items-start gap-4 p-5 rounded-lg border border-line bg-bg1 hover:bg-bg2 transition-colors"
+      className={`flex items-start gap-4 p-5 rounded-lg border transition-colors ${borderTone}`}
     >
-      <Icon className="size-7 text-g shrink-0 mt-0.5" />
+      <Icon className={`size-7 shrink-0 mt-0.5 ${iconTone}`} />
       <div>
         <div className="font-display font-semibold text-t1 text-base">{title}</div>
         <div className="font-mono text-[11px] text-t3 mt-1">{caption}</div>
