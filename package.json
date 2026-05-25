@@ -18,13 +18,16 @@
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
     "test": "turbo test",
-    "test:e2e": "turbo test:e2e",
+    "test:e2e": "playwright test",
+    "test:e2e:local": "PLAYWRIGHT_BASE_URL=http://localhost:3000 playwright test",
+    "test:e2e:install": "playwright install --with-deps chromium",
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
     "clean": "turbo clean && rm -rf node_modules",
     "check-env": "tsx scripts/check-env.ts",
     "seed": "tsx scripts/seed-db.ts"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@supabase/supabase-js": "^2.106.1",
     "@types/node": "^22.10.0",
     "dotenv": "^17.4.2",
