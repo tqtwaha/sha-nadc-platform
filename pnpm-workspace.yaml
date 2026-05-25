@@ -3,6 +3,7 @@ packages:
   - "packages/*"
 allowBuilds:
   '@clerk/shared': true
+  '@sentry/cli': true
   esbuild: true
   react-native-screens: false
   sharp: true

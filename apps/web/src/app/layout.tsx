@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { ClerkProvider } from '@clerk/nextjs';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import { AuthSlot } from '@/components/AuthSlot';
 import { CommandPalette } from '@/components/CommandPalette';
 import './globals.css';
@@ -34,6 +36,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <AuthSlot />
         <CommandPalette />
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

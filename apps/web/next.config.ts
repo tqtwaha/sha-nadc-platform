@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next';
+import { withSentryConfig } from '@sentry/nextjs';
 
 const config: NextConfig = {
   reactStrictMode: true,
@@ -27,4 +28,16 @@ const config: NextConfig = {
   },
 };
 
-export default config;
+// Sentry wrapper — uses NEXT_PUBLIC_SENTRY_DSN when set. Doesn't break
+// builds when DSN is absent (the SDK no-ops).
+export default withSentryConfig(config, {
+  org: process.env.SENTRY_ORG ?? '',
+  project: process.env.SENTRY_PROJECT ?? '',
+  silent: !process.env.CI,
+  widenClientFileUpload: true,
+  disableLogger: true,
+  sourcemaps: {
+    // Skip source-map upload when there's no auth token (local dev, fresh CI)
+    disable: !process.env.SENTRY_AUTH_TOKEN,
+  },
+});
