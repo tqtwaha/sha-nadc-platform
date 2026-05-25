@@ -150,11 +150,37 @@ export default async function DispatchDetailPage({
                 <KV label="Address" value={inc.address} />
                 <KV label="County / zone" value={`${inc.county} · ${inc.zone}`} />
                 {inc.landmark && <KV label="Landmark" value={inc.landmark} />}
-                <KV label="GPS" value={`${inc.lat.toFixed(5)}, ${inc.lng.toFixed(5)}`} mono />
+                <div className="flex items-center justify-between py-1 gap-3">
+                  <div className="font-mono text-[10px] text-t3 uppercase tracking-wider w-28 flex-shrink-0">GPS</div>
+                  <div className="text-t1 text-sm font-mono text-[12px] flex-1">
+                    {inc.lat.toFixed(5)}, {inc.lng.toFixed(5)}
+                  </div>
+                  <a
+                    href={`https://www.google.com/maps?q=${inc.lat},${inc.lng}`}
+                    target="_blank"
+                    rel="noopener"
+                    className="px-2 py-1 rounded-md bg-b2/15 hover:bg-b2/25 text-b2 border border-b2/40 text-[10px] font-mono"
+                  >
+                    Maps ↗
+                  </a>
+                </div>
               </Panel>
               <Panel title="Caller & patient">
                 <KV label="Caller" value={inc.caller_name ?? '—'} />
-                <KV label="Phone" value={inc.caller_phone ?? '—'} mono />
+                {inc.caller_phone ? (
+                  <div className="flex items-center justify-between py-1 gap-3">
+                    <div className="font-mono text-[10px] text-t3 uppercase tracking-wider w-28 flex-shrink-0">Phone</div>
+                    <div className="text-t1 font-mono text-[12px] flex-1">{inc.caller_phone}</div>
+                    <a
+                      href={`tel:${inc.caller_phone}`}
+                      className="px-2 py-1 rounded-md bg-g/15 hover:bg-g/25 text-g border border-g/40 text-[10px] font-mono"
+                    >
+                      Call ↗
+                    </a>
+                  </div>
+                ) : (
+                  <KV label="Phone" value="—" mono />
+                )}
                 <KV label="Relation" value={inc.caller_relation ?? '—'} />
                 <KV
                   label="Patient"

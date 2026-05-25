@@ -8,10 +8,26 @@ import {
   ActivityIndicator,
   Alert,
   TextInput,
+  Linking,
+  Platform,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase, ACTIVE_STATUSES } from '../../lib/supabase';
+import { registerForPushAndStore, listenTapped } from '../../lib/push';
+
+function openInMaps(lat: number, lng: number, label?: string) {
+  const q = label ? encodeURIComponent(label) : `${lat},${lng}`;
+  // Apple Maps on iOS, Google Maps on Android via geo: scheme
+  const url = Platform.select({
+    ios: `http://maps.apple.com/?ll=${lat},${lng}&q=${q}`,
+    android: `geo:${lat},${lng}?q=${lat},${lng}(${q})`,
+    default: `https://www.google.com/maps?q=${lat},${lng}`,
+  });
+  Linking.openURL(url!).catch(() => {
+    Linking.openURL(`https://www.google.com/maps?q=${lat},${lng}`);
+  });
+}
 
 type Status = 'pending' | 'dispatched' | 'en_route' | 'on_scene' | 'transport' | 'cleared' | 'cancelled';
 
@@ -118,6 +134,19 @@ export default function CrewScreen() {
     return () => {
       supabase.removeChannel(channel);
     };
+  }, [id, load]);
+
+  // Register for push notifications + handle taps
+  useEffect(() => {
+    if (!id) return;
+    void registerForPushAndStore(String(id));
+    const unsub = listenTapped((response) => {
+      const data = response.notification.request.content.data;
+      if (data?.incidentId && typeof data.incidentId === 'string') {
+        load();
+      }
+    });
+    return unsub;
   }, [id, load]);
 
   async function advance(next: Status) {
@@ -289,16 +318,32 @@ export default function CrewScreen() {
               </View>
               <View style={styles.kv}>
                 <Text style={styles.kvLabel}>GPS</Text>
-                <Text style={[styles.kvVal, styles.mono]}>
-                  {incident.lat.toFixed(5)}, {incident.lng.toFixed(5)}
-                </Text>
+                <View style={styles.gpsRow}>
+                  <Text style={[styles.kvVal, styles.mono, { flex: 1 }]}>
+                    {incident.lat.toFixed(5)}, {incident.lng.toFixed(5)}
+                  </Text>
+                  <Pressable
+                    onPress={() => openInMaps(incident.lat, incident.lng, incident.address)}
+                    style={styles.mapsBtn}
+                  >
+                    <Text style={styles.mapsBtnText}>Open in Maps →</Text>
+                  </Pressable>
+                </View>
               </View>
               {incident.caller_phone && (
                 <View style={styles.kv}>
                   <Text style={styles.kvLabel}>Caller</Text>
-                  <Text style={styles.kvVal}>
-                    {incident.caller_name ?? '—'} · {incident.caller_phone}
-                  </Text>
+                  <View style={styles.gpsRow}>
+                    <Text style={[styles.kvVal, { flex: 1 }]}>
+                      {incident.caller_name ?? '—'} · {incident.caller_phone}
+                    </Text>
+                    <Pressable
+                      onPress={() => Linking.openURL(`tel:${incident.caller_phone}`)}
+                      style={styles.mapsBtn}
+                    >
+                      <Text style={styles.mapsBtnText}>Call →</Text>
+                    </Pressable>
+                  </View>
                 </View>
               )}
               {(incident.patient_age || incident.patient_sex) && (
@@ -440,6 +485,16 @@ const styles = StyleSheet.create({
     color: '#FFFFFFF2',
     fontSize: 16,
   },
+  gpsRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  mapsBtn: {
+    backgroundColor: '#27AAE125',
+    borderColor: '#27AAE166',
+    borderWidth: 1,
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  mapsBtnText: { color: '#27AAE1', fontSize: 11, fontWeight: '600' },
   vitalsRow: { flexDirection: 'row', gap: 8, marginTop: 6 },
   vitalCell: { flex: 1 },
   vitalLabelRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 3 },
