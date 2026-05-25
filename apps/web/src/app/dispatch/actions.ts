@@ -53,6 +53,13 @@ export async function assignNearestUnit(incidentId: string): Promise<Result> {
   if (inc.unit_id) return { ok: false, message: 'Already assigned' };
   if (inc.status !== 'pending') return { ok: false, message: 'Not in pending status' };
 
+  // Pull richer fields for the push notification
+  const { data: incFull } = await sb
+    .from('incidents')
+    .select('complaint, priority, address')
+    .eq('id', incidentId)
+    .single();
+
   // 1) try in-zone available units, preferring ALS when required
   let { data: candidates, error: uErr } = await sb
     .from('fleet_units')
@@ -95,8 +102,41 @@ export async function assignNearestUnit(incidentId: string): Promise<Result> {
     { in_zone: pick.zone === inc.zone },
   );
 
+  // Best-effort push notification to the crew's mobile device.
+  // Fire-and-forget — don't block the dispatcher if push fails.
+  if (incFull) {
+    void notifyUnit(pick.id, {
+      title: `P${incFull.priority} · ${incFull.complaint}`,
+      body: `${inc.display_id} · ${incFull.address.slice(0, 60)}${incFull.address.length > 60 ? '…' : ''}`,
+      data: { incidentId, displayId: inc.display_id, priority: incFull.priority },
+    });
+  }
+
   revalidateDispatch(incidentId);
   return { ok: true, message: `Dispatched ${pick.id}` };
+}
+
+async function notifyUnit(
+  unitId: string,
+  payload: { title: string; body: string; data: Record<string, unknown> },
+): Promise<void> {
+  const secret = process.env.CRON_SECRET;
+  if (!secret) return; // push disabled until CRON_SECRET is set
+  const base = process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : 'http://localhost:3000';
+  try {
+    await fetch(`${base}/api/notify/push`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${secret}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ unitId, ...payload }),
+    });
+  } catch {
+    // silent — surface in audit log via /api/notify/push instead
+  }
 }
 
 const UNIT_STATUS_FOR_INCIDENT: Record<IncidentStatus, string | null> = {
