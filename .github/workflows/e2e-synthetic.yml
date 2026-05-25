@@ -1,0 +1,48 @@
+name: E2E synthetic monitor
+
+# Hits the live deployment with the Playwright smoke suite every 30 min.
+# Use as a poor-man's uptime monitor + regression alarm. Failures show
+# up in GitHub Actions as red runs, easy to wire to Slack/email later.
+
+on:
+  schedule:
+    - cron: '*/30 * * * *' # every 30 minutes
+  workflow_dispatch:        # manual trigger from Actions tab
+  push:
+    branches: [main]
+    paths:
+      - 'tests/e2e/**'
+      - 'playwright.config.ts'
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.2.2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: pnpm test:e2e:install
+
+      - name: Smoke test (live)
+        run: pnpm test:e2e
+        env:
+          PLAYWRIGHT_BASE_URL: https://sha-nadc-platform-web.vercel.app
+
+      - name: Upload report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
