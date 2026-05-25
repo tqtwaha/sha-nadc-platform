@@ -13,6 +13,7 @@ const PUBLIC = createRouteMatcher([
   '/sign-in(.*)',
   '/sign-up(.*)',
   '/api/sim/(.*)',
+  '/api/cron/(.*)',       // Vercel cron internal hits
   '/api/health(.*)',
   '/api/config(.*)',     // v1 NACDState boot needs this even when gated
   '/status(.*)',          // public uptime/ops dashboard
