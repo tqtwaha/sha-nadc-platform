@@ -1279,9 +1279,13 @@ function _persistVitals(incNumber, vitals) {
   }).catch(function(e){ console.warn('[EMT] vitals persist exception:', e && e.message); });
 }
 
-// Persist ePCR submission to dispatch_events; always broadcasts via BroadcastChannel first.
+// Persist ePCR submission: writes dispatch_event, broadcasts to same-tab
+// claims namespace, AND directly mints a claim row in the v2 claims
+// table so the /claims screen sees it without needing a tab open.
 function _persistEPCR(incNumber, claimRef, icdCode, distKm) {
   var uuid = NACDState.getIncidentUuid && NACDState.getIncidentUuid(incNumber);
+
+  // 1. Same-browser BroadcastChannel — fast path for the local /claims tab
   if(typeof BroadcastChannel!=='undefined'){
     try{
       var _epcrBC=new BroadcastChannel('nadc-sync');
@@ -1291,19 +1295,100 @@ function _persistEPCR(incNumber, claimRef, icdCode, distKm) {
       _epcrBC.close();
     }catch(e){}
   }
-  if (!_emtSb) return; // BroadcastChannel above is sufficient for same-browser claims
+
+  if (!_emtSb) return;
+
+  // Resolve the unit's tariff type + provider for the claim row
+  var unitObj = NACDState.findUnit ? NACDState.findUnit(EMT_UNIT) : null;
+  var tariffType = (unitObj && unitObj.type === 'ALS') ? 'ALS' : 'BLS';
+  var rate = tariffType === 'ALS'
+    ? { base: 3500, perKm: 120, freeKm: 25 }
+    : { base: 2000, perKm: 80,  freeKm: 25 };
+  var kmCharged = Math.max(0, (distKm || 0) - rate.freeKm);
+  var totalKes  = rate.base + Math.round(kmCharged * rate.perKm);
+
+  // Resolve incident details so the claim is self-contained
+  var inc = (NACDState.findIncident && incNumber) ? NACDState.findIncident(incNumber) : null;
+  // findIncident matches by inc.id; search by number too
+  if (!inc && incNumber && NACDState.getIncidents) {
+    var allInc = NACDState.getIncidents();
+    for (var i = 0; i < allInc.length; i++) {
+      if (allInc[i].number === incNumber) { inc = allInc[i]; break; }
+    }
+  }
+
+  // 2. Append a clinical_observations row from the form vitals (if any)
+  if (uuid) {
+    try {
+      var hrVal   = document.getElementById('vit-hr')   && parseInt(document.getElementById('vit-hr').value, 10);
+      var bpSys   = document.getElementById('vit-sys')  && parseInt(document.getElementById('vit-sys').value, 10);
+      var bpDia   = document.getElementById('vit-dia')  && parseInt(document.getElementById('vit-dia').value, 10);
+      var spo2Val = document.getElementById('vit-spo2') && parseInt(document.getElementById('vit-spo2').value, 10);
+      var rrVal   = document.getElementById('vit-rr')   && parseInt(document.getElementById('vit-rr').value, 10);
+      var anyVital = [hrVal, bpSys, bpDia, spo2Val, rrVal].some(function(v){ return v && !isNaN(v); });
+      if (anyVital) {
+        _emtSb.from('clinical_observations').insert({
+          incident_id:      uuid,
+          recorded_by:      EMT_UNIT,
+          heart_rate:       isNaN(hrVal)   ? null : hrVal,
+          bp_systolic:      isNaN(bpSys)   ? null : bpSys,
+          bp_diastolic:     isNaN(bpDia)   ? null : bpDia,
+          spo2:             isNaN(spo2Val) ? null : spo2Val,
+          respiratory_rate: isNaN(rrVal)   ? null : rrVal,
+          icd11:            icdCode || null
+        }).then(function(){});
+      }
+    } catch(e){}
+  }
+
+  // 3. dispatch_events row (audit trail)
   _emtSb.from('dispatch_events').insert({
     incident_id: uuid || null,
     unit_id:     EMT_UNIT,
     event_type:  'epcr_submitted',
     event_note:  'ePCR submitted for '+(incNumber||'unknown')+' · '+(claimRef||''),
     actor_type:  'emt',
-    payload:     { claimRef: claimRef, icdCode: icdCode, distanceKm: distKm, unitId: EMT_UNIT,
-                   incidentNumber: incNumber }
+    payload:     { claimRef: claimRef, icdCode: icdCode, distanceKm: distKm,
+                   unitId: EMT_UNIT, incidentNumber: incNumber, totalKes: totalKes }
   }).then(function(r){
     if(r.error) console.warn('[EMT] ePCR dispatch_event failed:', r.error.message);
-    else console.info('[EMT] ePCR persisted to dispatch_events:', claimRef);
   }).catch(function(e){ console.warn('[EMT] ePCR persist exception:', e && e.message); });
+
+  // 4. Mint the claim row in v2 claims table
+  if (uuid) {
+    _emtSb.from('claims').upsert({
+      claim_number:    claimRef,
+      incident_id:     uuid,
+      provider_id:     (unitObj && unitObj.providerId) || null,
+      unit_id:         EMT_UNIT,
+      hospital_id:     inc ? inc.hospitalId : null,
+      icd11:           icdCode || null,
+      chief_complaint: inc ? (inc.complaint || 'Ambulance transport') : 'Ambulance transport',
+      tariff_type:     tariffType,
+      base_kes:        rate.base,
+      distance_km:     distKm || 0,
+      per_km_kes:      rate.perKm,
+      free_km:         rate.freeKm,
+      consumables_kes: 0,
+      total_kes:       totalKes,
+      status:          'draft',
+      notes:           'Submitted from EMT field app',
+      submitted_at:    new Date().toISOString()
+    }, { onConflict: 'claim_number' }).then(function(r){
+      if(r.error) console.warn('[EMT] claim mint failed:', r.error.message);
+      else console.info('[EMT] claim minted:', claimRef);
+    }).catch(function(e){ console.warn('[EMT] claim exception:', e && e.message); });
+  }
+
+  // 5. Mark incident cleared so the wall/dispatch see it close out
+  if (uuid) {
+    _emtSb.from('incidents').update({
+      status:     'cleared',
+      cleared_at: new Date().toISOString()
+    }).eq('id', uuid).then(function(){});
+    // Free the unit
+    _emtSb.from('fleet_units').update({ status: 'available' }).eq('id', EMT_UNIT).then(function(){});
+  }
 }
 
 function ft(s){var m=Math.floor(s/60),x=s%60;return String(m).padStart(2,'0')+':'+String(x).padStart(2,'0');}
