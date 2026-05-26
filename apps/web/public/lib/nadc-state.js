@@ -1081,9 +1081,57 @@
       _sb.channel('nadc-rt')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'incidents' },   _onDbIncident)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'fleet_units' }, _onDbUnit)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'claims' },      _onDbClaim)
         .subscribe(function (status) {
           console.info('[NACDState] Realtime:', status);
         });
+    }
+
+    // Realtime claim updates — fold into _state.claims so the v1 claims
+    // screen reflects M-Pesa / AfyaLink / KRA transitions made via v2
+    // Server Actions in /claims, and demo replay.
+    function _onDbClaim(payload) {
+      var row = payload.new || payload.old;
+      if (!row || !row.claim_number || !_state.claims) return;
+      var displayId = row.incident_id ? (_incDisplayByUuid[row.incident_id] || row.incident_id) : null;
+      var jsStatus  = _dbToJsClaim(row.status);
+      var found = false;
+      for (var i = 0; i < _state.claims.length; i++) {
+        if (_state.claims[i].id === row.claim_number) {
+          var c = _state.claims[i];
+          c.status      = jsStatus;
+          if (row.submitted_at) c.submittedAt = new Date(row.submitted_at).getTime();
+          if (row.approved_at)  c.approvedAt  = new Date(row.approved_at).getTime();
+          if (row.paid_at)      c.paidAt      = new Date(row.paid_at).getTime();
+          c.tariff      = row.total_kes      || c.tariff;
+          c.distanceKm  = row.distance_km    || c.distanceKm;
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        _state.claims.unshift({
+          id:            row.claim_number,
+          incidentId:    displayId,
+          providerId:    row.provider_id || 'PRV001',
+          providerName:  '',
+          unitId:        row.unit_id || '—',
+          unitType:      row.tariff_type || 'BLS',
+          distanceKm:    row.distance_km || 0,
+          tariff:        row.total_kes || 0,
+          status:        jsStatus,
+          icd11Code:     row.icd11 || '—',
+          icd11Label:    row.chief_complaint || '—',
+          chiefComplaint: row.chief_complaint || '',
+          hospitalId:    row.hospital_id || null,
+          submittedAt:   row.submitted_at ? new Date(row.submitted_at).getTime() : null,
+          approvedAt:    row.approved_at  ? new Date(row.approved_at).getTime()  : null,
+          paidAt:        row.paid_at      ? new Date(row.paid_at).getTime()      : null,
+          createdAt:     row.created_at   ? new Date(row.created_at).getTime()   : Date.now(),
+          fromDb:        true
+        });
+      }
+      _emit('claims:updated', _state.claims.slice());
     }
 
     function _onDbIncident(payload) {
@@ -1476,35 +1524,79 @@
     // All writes are fire-and-forget (warn-only). Demo works without DB.
     // ─────────────────────────────────────────────────────────────────────
 
-    // Upsert a claim record into case_invoices.
-    // Only fires when the incident has a real DB UUID (skips seeded/offline claims).
+    // Upsert a claim record into the v2 'claims' table (was case_invoices
+    // in v1). Only fires when the incident has a real DB UUID (skips
+    // seeded/offline claims that haven't been written through yet).
     function _pushCaseInvoice(claim) {
       if (!_sb || !_mapsReady) return;
       var incKey  = claim.incidentId || claim.id;
-      var incUuid = _incUuidByDisplay[incKey]; // only real DB incidents
-      if (!incUuid) return; // seeded/offline claim — skip silently
-      var dbStatus = _CLAIM_STATUS_DB[claim.status] || 'queued';
-      _sb.from('case_invoices').upsert({
-        incident_id:    incUuid,
-        invoice_number: claim.id         || null,
-        distance_km:    claim.distanceKm || null,
-        total_kes:      claim.tariff     || null,
-        status:         dbStatus,
-        submitted_at:   claim.submittedAt ? new Date(claim.submittedAt).toISOString() : new Date().toISOString(),
-        paid_at:        claim.paidAt      ? new Date(claim.paidAt).toISOString()      : null
-      }, { onConflict: 'incident_id' })
-      .then(function (r) {
-        if (r.error) console.warn('[NACDState] case_invoices upsert failed:', r.error.message);
-        else console.info('[NACDState] case_invoices upserted for', incKey, '→', dbStatus);
-      })
-      .catch(function (e) { console.warn('[NACDState] case_invoices exception:', e && e.message); });
+      var incUuid = _incUuidByDisplay[incKey];
+      if (!incUuid) return;
+
+      // Map v1 claim status labels → v2 claims.status enum
+      var v2Status = ({
+        QUEUED:       'draft',
+        UNDER_REVIEW: 'submitted',
+        APPROVED:     'approved',
+        DISPUTED:     'disputed',
+        REJECTED:     'rejected',
+        PAID:         'paid'
+      })[claim.status] || 'draft';
+
+      // claim_number = v1 claim.id, fall back to CLM-YYYYMMDD-{number}
+      var claimNumber = claim.id;
+      if (!claimNumber) {
+        var today = new Date().toISOString().slice(0,10).replace(/-/g, '');
+        claimNumber = 'CLM-' + today + '-' + (claim.number || Math.floor(Math.random() * 9000 + 1000));
+      }
+
+      var row = {
+        claim_number:    claimNumber,
+        incident_id:     incUuid,
+        provider_id:     claim.providerId || null,
+        unit_id:         claim.unitId || null,
+        hospital_id:     claim.hospitalId || null,
+        icd11:           claim.icd11 || null,
+        chief_complaint: claim.complaint || claim.chiefComplaint || 'Ambulance transport',
+        tariff_type:     claim.tariffType || (claim.requiresAls ? 'ALS' : 'BLS'),
+        base_kes:        claim.baseKes != null ? claim.baseKes : ((claim.tariffType === 'ALS' || claim.requiresAls) ? 3500 : 2000),
+        distance_km:     claim.distanceKm || 0,
+        per_km_kes:      claim.perKmKes != null ? claim.perKmKes : ((claim.tariffType === 'ALS' || claim.requiresAls) ? 120 : 80),
+        free_km:         25,
+        consumables_kes: claim.consumablesKes || 0,
+        total_kes:       claim.tariff || claim.totalKes || 0,
+        status:          v2Status,
+        notes:           claim.notes || '',
+        submitted_at:    claim.submittedAt ? new Date(claim.submittedAt).toISOString() : null,
+        approved_at:     claim.approvedAt  ? new Date(claim.approvedAt).toISOString()  : null,
+        paid_at:         claim.paidAt      ? new Date(claim.paidAt).toISOString()      : null,
+        updated_at:      new Date().toISOString()
+      };
+
+      _sb.from('claims').upsert(row, { onConflict: 'claim_number' })
+        .then(function (r) {
+          if (r.error) console.warn('[NACDState] claims upsert failed:', r.error.message);
+        })
+        .catch(function (e) { console.warn('[NACDState] claims exception:', e && e.message); });
     }
 
-    // Map DB case_invoices.status back to JS claim status label.
+    // Map DB claims.status back to JS claim status label (v2 schema has
+    // 8 statuses: draft, submitted, approved, disputed, rejected,
+    // pending_payment, paid, invoiced).
     function _dbToJsClaim(dbStatus) {
-      return ({ queued: 'QUEUED', submitted: 'UNDER_REVIEW', approved: 'APPROVED',
-                rejected: 'REJECTED', payment_completed: 'PAID', draft: 'QUEUED'
-              })[dbStatus] || 'QUEUED';
+      return ({
+        draft:            'QUEUED',
+        submitted:        'UNDER_REVIEW',
+        approved:         'APPROVED',
+        disputed:         'DISPUTED',
+        rejected:         'REJECTED',
+        pending_payment:  'APPROVED',
+        paid:             'PAID',
+        invoiced:         'PAID',
+        // legacy v1 fallbacks
+        queued:            'QUEUED',
+        payment_completed: 'PAID'
+      })[dbStatus] || 'QUEUED';
     }
 
     // Resolve an in-memory agent ID to its DB UUID (needed for NOT NULL FKs).
@@ -1652,68 +1744,73 @@
         });
     }
 
-    // Back-fill claims queue from DB: case_invoices (status updates) +
-    // dispatch_events (epcr_submitted, for claims that have no invoice row yet).
+    // Back-fill claims queue from the v2 'claims' table + dispatch_events
+    // (epcr_submitted, for claims that haven't been written through yet).
     // Fires claims:updated if any new items are injected.
     function _loadClaimsFromDb() {
       if (!_sb || _claimsDbLoaded) return;
       _claimsDbLoaded = true;
       if (!_state.claims) return;
-      var since = new Date(Date.now() - 86400000).toISOString(); // last 24 h
 
-      // Path 1: case_invoices — load rows with known incident UUIDs
-      _sb.from('case_invoices')
-        .select('incident_id, invoice_number, total_kes, distance_km, status, submitted_at, paid_at')
-        .neq('status', 'draft')
-        .gte('submitted_at', since)
+      // Path 1: v2 claims table — pull recent rows
+      _sb.from('claims')
+        .select('claim_number, incident_id, provider_id, unit_id, hospital_id, ' +
+                'chief_complaint, icd11, tariff_type, base_kes, distance_km, ' +
+                'per_km_kes, consumables_kes, total_kes, status, submitted_at, ' +
+                'approved_at, paid_at, created_at')
+        .order('created_at', { ascending: false })
+        .limit(100)
         .then(function (result) {
           if (result.error) {
-            console.warn('[NACDState] _loadClaimsFromDb:case_invoices failed:', result.error.message);
+            console.warn('[NACDState] _loadClaimsFromDb:claims failed:', result.error.message);
             return;
           }
           var rows = result.data || [];
           var injected = 0;
           for (var i = 0; i < rows.length; i++) {
             var row = rows[i];
-            var displayId = _incDisplayByUuid[row.incident_id];
-            if (!displayId) continue;
-            // Dedup: skip if already in queue
+            var displayId = _incDisplayByUuid[row.incident_id] || row.incident_id;
+            // Dedup by claim_number
             var alreadyIn = false;
             for (var ci = 0; ci < _state.claims.length; ci++) {
               var c = _state.claims[ci];
-              if (c.incidentId === displayId ||
-                  (row.invoice_number && c.id === row.invoice_number)) {
-                alreadyIn = true; break;
-              }
+              if (c.id === row.claim_number) { alreadyIn = true; break; }
             }
             if (alreadyIn) continue;
             _state.claims.unshift({
-              id:           row.invoice_number || _fmtClaimId(_claimCounter++),
+              id:           row.claim_number,
               incidentId:   displayId,
-              providerId:   'PRV001',
-              providerName: 'DB Backfill',
-              unitId:       '—',
-              unitType:     'ALS',
-              distanceKm:   row.distance_km || 15,
-              tariff:       row.total_kes   || 3500,
+              providerId:   row.provider_id || 'PRV001',
+              providerName: '',
+              unitId:       row.unit_id || '—',
+              unitType:     row.tariff_type || 'BLS',
+              distanceKm:   row.distance_km || 0,
+              tariff:       row.total_kes   || 0,
+              baseKes:      row.base_kes    || 0,
+              perKmKes:     row.per_km_kes  || 0,
+              consumablesKes: row.consumables_kes || 0,
               status:       _dbToJsClaim(row.status),
-              icd11Code: '—', icd11Label: 'Case invoice (DB)',
+              icd11Code:    row.icd11 || '—',
+              icd11Label:   row.chief_complaint || '—',
+              chiefComplaint: row.chief_complaint || '',
               fhirValid: true, eligibilityValid: true, fraudScore: 0,
               hospitalName: '—', priority: 2,
-              submittedAt: row.submitted_at ? new Date(row.submitted_at).getTime() : Date.now(),
-              approvedAt:  null,
-              paidAt:      row.paid_at ? new Date(row.paid_at).getTime() : null,
-              paymentRef:  null, deductions: 0, deductionReason: '', fromDb: true
+              hospitalId:   row.hospital_id || null,
+              submittedAt:  row.submitted_at ? new Date(row.submitted_at).getTime() : null,
+              approvedAt:   row.approved_at  ? new Date(row.approved_at).getTime()  : null,
+              paidAt:       row.paid_at      ? new Date(row.paid_at).getTime()      : null,
+              createdAt:    row.created_at   ? new Date(row.created_at).getTime()   : Date.now(),
+              paymentRef:   null, deductions: 0, deductionReason: '', fromDb: true
             });
             injected++;
           }
           if (injected > 0) {
-            console.info('[NACDState] Claims backfilled from case_invoices:', injected);
+            console.info('[NACDState] Claims backfilled from claims table:', injected);
             _emit('claims:updated', _state.claims.slice());
           }
         })
         .catch(function (e) {
-          console.warn('[NACDState] _loadClaimsFromDb:case_invoices exception:', e && e.message);
+          console.warn('[NACDState] _loadClaimsFromDb:claims exception:', e && e.message);
         });
 
       // Path 2: dispatch_events epcr_submitted — catches ePCR claims with no invoice row
