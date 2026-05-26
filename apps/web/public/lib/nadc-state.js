@@ -1145,7 +1145,15 @@
       // Maintain the ID mapping for future writes
       _incUuidByDisplay[displayNum] = row.id;
       _incDisplayByUuid[row.id]     = displayNum;
-      var inc = _findIncident(displayNum);
+      // _findIncident matches by inc.id (local 'inc_N' form); for hydration
+      // we need to match by inc.number (display_id form), so search directly
+      var inc = null;
+      for (var ii = 0; ii < _state.incidents.length; ii++) {
+        if (_state.incidents[ii].number === displayNum) {
+          inc = _state.incidents[ii];
+          break;
+        }
+      }
       if (!inc) {
         // New incident from another tab/screen — hydrate locally so this
         // screen shows it without a page reload
@@ -1172,7 +1180,14 @@
     // Used both by the realtime listener and by the initial DB hydration.
     function _hydrateIncidentFromRow(row) {
       if (!row || !row.display_id) return null;
+      // Derive a local id from the display_id tail (matches _buildIncident's
+      // 'inc_' + counter form so dispatch detail / EMT incidentId lookups
+      // work).
+      var parts = (row.display_id || '').split('-');
+      var tail  = parseInt(parts[parts.length - 1], 10);
+      var localId = !isNaN(tail) ? ('inc_' + tail) : ('inc_db_' + row.id.slice(0, 8));
       var inc = {
+        id:            localId,
         number:        row.display_id,
         priority:      row.priority,
         status:        row.status || STATUS.PENDING,
@@ -1381,11 +1396,25 @@
           }
         }
 
+        // Seed _state.incCounter from DB so this tab's locally-created
+        // incidents don't collide with display_ids from other tabs.
+        // Parse the numeric tail out of 'INC-2026-009999' style ids.
+        var maxCounter = _state.incCounter;
+        for (var p = 0; p < incRows.length; p++) {
+          var dispId = incRows[p].display_id || '';
+          var parts = dispId.split('-');
+          var tail = parseInt(parts[parts.length - 1], 10);
+          if (!isNaN(tail) && tail > maxCounter) maxCounter = tail;
+        }
+        if (maxCounter > _state.incCounter) {
+          _state.incCounter = maxCounter;
+        }
+
         _mapsReady = true;
         console.info('[NACDState] hydrated:',
           hospRows.length, 'hospitals,',
           incRows.length, 'incidents (', hydrated, 'newly local),',
-          unitsUpdated, 'unit status updates');
+          unitsUpdated, 'unit status updates · incCounter=', _state.incCounter);
         if (hydrated > 0) _emit('state:initialized', _publicState());
 
         var q = _writeQueue.splice(0);
