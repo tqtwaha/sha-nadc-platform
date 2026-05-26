@@ -934,15 +934,18 @@
     function _simTick() {
       var now = Date.now();
 
-      // ── Generate new incidents ──────────────────────────────────────────
-      var active = _state.incidents.filter(function (i) {
-        return i.status !== STATUS.CLEARED && i.status !== STATUS.CANCELLED;
-      }).length;
-
-      // Maintain 8–16 active incidents; probability per tick scales with gap
-      var gap = 14 - active;
-      if (gap > 0 && Math.random() < (0.04 * gap)) {
-        _buildIncident();
+      // ── Generate new incidents (LOCAL/offline mode only) ────────────────
+      // When Supabase is wired, /api/cron/heartbeat is the single source
+      // for new incidents — otherwise N open tabs would race-spawn into
+      // the same DB and create a write storm.
+      if (!_sb) {
+        var active = _state.incidents.filter(function (i) {
+          return i.status !== STATUS.CLEARED && i.status !== STATUS.CANCELLED;
+        }).length;
+        var gap = 14 - active;
+        if (gap > 0 && Math.random() < (0.04 * gap)) {
+          _buildIncident();
+        }
       }
 
       // ── Progress existing incidents ─────────────────────────────────────
@@ -1088,16 +1091,68 @@
       if (!row) return;
       // Echo prevention — skip rows we pushed ourselves
       if (_localRequestIds.indexOf(row.id) !== -1) return;
-      // Translate UUID → display number for local state lookup
-      var displayNum = _incDisplayByUuid[row.id] || null;
-      var inc = displayNum ? _findIncident(displayNum) : null;
-      if (!inc) return;
-      inc.status     = row.status   || inc.status;
-      inc.unitId     = row.unit_id  || inc.unitId;  // unit_id is VARCHAR — already display form
-      inc.hospitalId = (row.hospital_id && _hospExtIdByUuid[row.hospital_id])
-                        ? _hospExtIdByUuid[row.hospital_id]
-                        : (row.hospital_id || inc.hospitalId);
+      // Resolve display_id → local incident, or hydrate a NEW one if unseen
+      var displayNum = row.display_id || _incDisplayByUuid[row.id] || null;
+      if (!displayNum) return;
+      // Maintain the ID mapping for future writes
+      _incUuidByDisplay[displayNum] = row.id;
+      _incDisplayByUuid[row.id]     = displayNum;
+      var inc = _findIncident(displayNum);
+      if (!inc) {
+        // New incident from another tab/screen — hydrate locally so this
+        // screen shows it without a page reload
+        inc = _hydrateIncidentFromRow(row);
+        if (inc) {
+          _state.incidents.push(inc);
+          _emit('incident:created', inc);
+        }
+        return;
+      }
+      // Apply update — v2 schema column names
+      inc.status      = row.status     || inc.status;
+      inc.unitId      = row.unit_id    || inc.unitId;
+      inc.hospitalId  = row.hospital_id || inc.hospitalId;
+      if (row.dispatched_at) inc.dispatchedAt = new Date(row.dispatched_at).getTime();
+      if (row.en_route_at)   inc.enRouteAt    = new Date(row.en_route_at).getTime();
+      if (row.on_scene_at)   inc.onSceneAt    = new Date(row.on_scene_at).getTime();
+      if (row.transport_at)  inc.transportAt  = new Date(row.transport_at).getTime();
+      if (row.cleared_at)    inc.clearedAt    = new Date(row.cleared_at).getTime();
       _emit('incident:updated', inc);
+    }
+
+    // Build a local incident object from a v2-schema incidents row.
+    // Used both by the realtime listener and by the initial DB hydration.
+    function _hydrateIncidentFromRow(row) {
+      if (!row || !row.display_id) return null;
+      var inc = {
+        number:        row.display_id,
+        priority:      row.priority,
+        status:        row.status || STATUS.PENDING,
+        complaint:     row.complaint,
+        icd11:         row.icd11,
+        requiresALS:   !!row.requires_als,
+        lat:           row.lat,
+        lng:           row.lng,
+        address:       row.address,
+        w3w:           row.w3w,
+        county:        row.county,
+        zone:          row.zone,
+        callerName:    row.caller_name,
+        callerPhone:   row.caller_phone,
+        callerRelation: row.caller_relation,
+        patientAge:    row.patient_age,
+        patientSex:    row.patient_sex,
+        unitId:        row.unit_id,
+        hospitalId:    row.hospital_id,
+        source:        row.source || 'sim',
+        createdAt:     row.created_at  ? new Date(row.created_at).getTime()  : Date.now(),
+        dispatchedAt:  row.dispatched_at ? new Date(row.dispatched_at).getTime() : null,
+        enRouteAt:     row.en_route_at   ? new Date(row.en_route_at).getTime()   : null,
+        onSceneAt:     row.on_scene_at   ? new Date(row.on_scene_at).getTime()   : null,
+        transportAt:   row.transport_at  ? new Date(row.transport_at).getTime()  : null,
+        clearedAt:     row.cleared_at    ? new Date(row.cleared_at).getTime()    : null
+      };
+      return inc;
     }
 
     function _onDbUnit(payload) {
@@ -1115,29 +1170,40 @@
       if (!_sb) return;
       if (!_mapsReady) { _writeQueue.push(function () { _pushIncident(inc); }); return; }
       var uuid     = _toUuid('incident', inc.number);
-      var hospUuid = inc.hospitalId ? _toUuid('hospital', inc.hospitalId) : null;
+      // v2 hospitals.id IS the human-readable id (e.g. 'h001'), no UUID mapping
+      var hospId   = inc.hospitalId || null;
       _tagLocalRequest(uuid);
+      // v2 schema column names: complaint, icd11, lat, lng, address, w3w,
+      // requires_als, patient_age, patient_sex, caller_*, source
       _sb.from('incidents').upsert({
-        id:               uuid,
-        display_id:       inc.number,
-        incident_number:  inc.number,
-        priority:         inc.priority,
-        status:           inc.status,
-        chief_complaint:  inc.complaint,
-        icd11_code:       inc.icd11,
-        location_lat:     inc.lat,
-        location_lng:     inc.lng,
-        location_address: inc.address,
-        location_w3w:     inc.w3w,
-        county:           inc.county,
-        zone:             inc.zone,
-        unit_id:          inc.unitId   || null,
-        hospital_id:      hospUuid,
-        dispatched_at:    inc.dispatchedAt ? new Date(inc.dispatchedAt).toISOString() : null,
-        on_scene_at:      inc.onSceneAt   ? new Date(inc.onSceneAt).toISOString()   : null,
-        cleared_at:       inc.clearedAt   ? new Date(inc.clearedAt).toISOString()   : null,
-        updated_at:       new Date().toISOString()
-      }).then(function (r) {
+        id:                uuid,
+        display_id:        inc.number,
+        priority:          inc.priority,
+        status:            inc.status,
+        complaint:         inc.complaint,
+        icd11:             inc.icd11 || null,
+        requires_als:      !!inc.requiresALS,
+        lat:               inc.lat,
+        lng:               inc.lng,
+        address:           inc.address || (inc.zone ? inc.zone + ', ' + (inc.county || 'Nairobi') : 'Unknown'),
+        w3w:               inc.w3w || null,
+        county:            inc.county || 'Nairobi',
+        zone:              inc.zone || 'CBD',
+        caller_name:       inc.callerName  || null,
+        caller_phone:      inc.callerPhone || null,
+        caller_relation:   inc.callerRelation || null,
+        patient_age:       inc.patientAge ? Number(inc.patientAge) : null,
+        patient_sex:       inc.patientSex || null,
+        unit_id:           inc.unitId   || null,
+        hospital_id:       hospId,
+        source:            inc.source || 'sim',
+        dispatched_at:     inc.dispatchedAt ? new Date(inc.dispatchedAt).toISOString() : null,
+        en_route_at:       inc.enRouteAt   ? new Date(inc.enRouteAt).toISOString()   : null,
+        on_scene_at:       inc.onSceneAt   ? new Date(inc.onSceneAt).toISOString()   : null,
+        transport_at:      inc.transportAt ? new Date(inc.transportAt).toISOString() : null,
+        cleared_at:        inc.clearedAt   ? new Date(inc.clearedAt).toISOString()   : null,
+        updated_at:        new Date().toISOString()
+      }, { onConflict: 'id' }).then(function (r) {
         if (r.error) console.warn('[NACDState] incident push error:', r.error.message);
       });
     }
@@ -1188,23 +1254,37 @@
       if (_localRequestIds.length > 100) _localRequestIds.shift();
     }
 
-    // Hydrate _hosp* and _inc* maps from Supabase after auth resolves.
-    // Assigned here as a var so setSupabaseClient can call it after _sb is patched.
+    // Hydrate _hosp* and _inc* maps + load existing incidents/fleet from
+    // Supabase. v2 hospitals.id IS the human-readable id so the ext_id
+    // mapping is identity. Assigned as a var so setSupabaseClient can
+    // call it after _sb is patched.
     _hydrateIdMaps = function () {
       if (!_sb) return;
       Promise.all([
-        _sb.from('hospitals').select('id, ext_id'),
-        _sb.from('incidents').select('id, display_id')
+        _sb.from('hospitals').select('id'),
+        _sb.from('incidents')
+          .select('*')
+          .in('status', ['pending','dispatched','en_route','on_scene','transport'])
+          .order('created_at', { ascending: false })
+          .limit(200),
+        _sb.from('fleet_units')
+          .select('id, status, current_lat, current_lng, current_incident_id')
+          .limit(300)
       ]).then(function (results) {
         var hospRows = (results[0] && results[0].data) ? results[0].data : [];
         var incRows  = (results[1] && results[1].data) ? results[1].data : [];
+        var unitRows = (results[2] && results[2].data) ? results[2].data : [];
+
+        // hospitals.id is identity in v2 — no UUID mapping needed
         for (var i = 0; i < hospRows.length; i++) {
           var h = hospRows[i];
-          if (h.id && h.ext_id) {
-            _hospUuidByExtId[h.ext_id] = h.id;
-            _hospExtIdByUuid[h.id]     = h.ext_id;
+          if (h.id) {
+            _hospUuidByExtId[h.id] = h.id;
+            _hospExtIdByUuid[h.id] = h.id;
           }
         }
+
+        // Build the display↔uuid map from any existing incidents
         for (var j = 0; j < incRows.length; j++) {
           var r = incRows[j];
           if (r.id && r.display_id) {
@@ -1212,10 +1292,54 @@
             _incDisplayByUuid[r.id]         = r.display_id;
           }
         }
+
+        // HYDRATE active incidents into local state so every page sees the
+        // SAME pool (cross-screen consistency).
+        // Skip if we already have the same display_id locally.
+        var existingNumbers = {};
+        for (var k = 0; k < _state.incidents.length; k++) {
+          existingNumbers[_state.incidents[k].number] = true;
+        }
+        var hydrated = 0;
+        for (var m = 0; m < incRows.length; m++) {
+          if (existingNumbers[incRows[m].display_id]) continue;
+          var inc = _hydrateIncidentFromRow(incRows[m]);
+          if (inc) {
+            _state.incidents.push(inc);
+            hydrated += 1;
+          }
+        }
+
+        // HYDRATE fleet status from DB — preserves dispatcher decisions
+        // across page reloads
+        var unitsByDisplay = {};
+        for (var u = 0; u < _state.fleet.length; u++) {
+          unitsByDisplay[_state.fleet[u].id] = _state.fleet[u];
+        }
+        var unitsUpdated = 0;
+        for (var n = 0; n < unitRows.length; n++) {
+          var uRow = unitRows[n];
+          var local = unitsByDisplay[uRow.id];
+          if (!local) continue;
+          if (uRow.status && uRow.status !== local.status) {
+            local.status = uRow.status;
+            unitsUpdated += 1;
+          }
+          if (uRow.current_lat != null) local.lat = uRow.current_lat;
+          if (uRow.current_lng != null) local.lng = uRow.current_lng;
+          if (uRow.current_incident_id) {
+            // Translate DB uuid → display number so other code paths work
+            local.incidentId = _incDisplayByUuid[uRow.current_incident_id] || null;
+          }
+        }
+
         _mapsReady = true;
-        console.info('[NACDState] ID maps hydrated:',
-          Object.keys(_hospUuidByExtId).length, 'hospitals,',
-          Object.keys(_incUuidByDisplay).length, 'incidents');
+        console.info('[NACDState] hydrated:',
+          hospRows.length, 'hospitals,',
+          incRows.length, 'incidents (', hydrated, 'newly local),',
+          unitsUpdated, 'unit status updates');
+        if (hydrated > 0) _emit('state:initialized', _publicState());
+
         var q = _writeQueue.splice(0);
         for (var k = 0; k < q.length; k++) { q[k](); }
         // Rescue Slice 4 — load persisted incidents now that UUID maps are ready
@@ -1856,8 +1980,13 @@
         _initSupabase(config.supabaseUrl, config.supabaseKey);
       }
 
-      // Seed incidents at various lifecycle stages for a realistic opening state
-      var seedCount = config.seedIncidents !== undefined ? config.seedIncidents : 12;
+      // Seed incidents at various lifecycle stages for a realistic opening state.
+      // When Supabase is configured, default to 0 — _hydrateIdMaps will load the
+      // shared pool from DB (so every screen shows the SAME incidents) and the
+      // heartbeat cron tops them up. Pages can still opt in to local seed via
+      // seedIncidents: N if they want offline-only behavior.
+      var defaultSeed = (_sb && config.supabaseKey) ? 0 : 12;
+      var seedCount = config.seedIncidents !== undefined ? config.seedIncidents : defaultSeed;
       var now = Date.now();
 
       for (var i = 0; i < seedCount; i++) {
