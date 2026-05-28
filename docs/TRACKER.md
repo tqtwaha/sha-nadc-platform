@@ -1,185 +1,174 @@
 # SHA NADC v2 — Production tracker
 
-_Last updated: 2026-05-25_
+_Last updated: 2026-05-28_
 
-Legend: ✅ done · 🔧 needs your config · 🚀 nice-to-have post-launch
+Legend: ✅ done · 🟡 partial · 🔧 needs YOUR config · 🚀 nice-to-have post-launch
 
----
-
-## Phase 0 — Foundation
-| ID | Capability | Status |
-|---|---|---|
-| 0.1 | GitHub repo sha-nadc-platform | ✅ |
-| 0.2 | pnpm + Turborepo monorepo | ✅ |
-| 0.3 | Strict TS, shared eslint/prettier | ✅ |
-| 0.4 | Zod schemas in packages/types | ✅ |
-| 0.5 | Sim engine port (`packages/domain` + v1 NACDState in `/public/lib/`) | ✅ |
-| 0.6 | Design tokens (Tailwind v4 @theme) | ✅ |
-| 0.7 | Shared components (BrandMark, Topbar, Chip, AppSwitcher) | ✅ |
-| 0.8 | Storybook | 🚀 |
-| 0.9 | Vitest + Playwright in Turborepo | ✅ |
-| 0.10 | Vercel project + auto-deploy | ✅ |
-| 0.11 | Supabase v2 project | ✅ |
-
-## Phase 1 — Auth & data foundation
-| ID | Capability | Status |
-|---|---|---|
-| 1.1 | Schema migrated (sql/0001 → 0008) | ✅ |
-| 1.2 | Production RLS (Clerk JWT, role-based) | 🔧 needs Clerk keys first |
-| 1.3 | Clerk roles + middleware | ✅ (no-op until keys set) |
-| 1.4 | Typed Supabase client (browser/server/service) | ✅ |
-| 1.5 | Sim engine seeder + heartbeat cron | ✅ |
-| 1.6 | apps/web boots with shared chrome | ✅ |
-| 1.7 | apps/mobile Expo boots | ✅ |
-| 1.8 | EAS Build → TestFlight | 🚀 needs Apple Dev + Play Console |
-
-## Phase 2 — Claims
-| ID | Capability | Status |
-|---|---|---|
-| 2.1 | Claims list + filters | ✅ |
-| 2.2 | Claim detail (tariff, timeline, vitals, integrations) | ✅ |
-| 2.3 | Approve / Reject / Dispute actions | ✅ |
-| 2.4 | Batch approve | ✅ |
-| 2.5 | CSV export | ✅ |
-| 2.6 | SHIF tariff engine | ✅ |
-| 2.7 | M-Pesa stub | ✅ (real: 🔧 needs Daraja creds) |
-| 2.8 | AfyaLink stub | ✅ (real: 🔧 needs SHA endpoint) |
-| 2.9 | KRA eTIMS stub | ✅ (real: 🔧 needs KRA creds) |
-| 2.10 | Print/PDF view | ✅ (Cmd+P → save as PDF) |
-
-## Phase 3 — Providers + Admin
-| ID | Capability | Status |
-|---|---|---|
-| 3.1 | Providers list with KPIs | ✅ |
-| 3.2 | Provider detail with fleet table | ✅ |
-| 3.3 | Crew roster | 🚀 (needs crew table) |
-| 3.4 | Provider onboarding wizard | 🚀 |
-| 3.5 | Provider invoicing summary | ✅ |
-| 3.6 | Admin user management | ✅ (read; invite: 🔧 needs Clerk) |
-| 3.7 | Pending approvals queue | ✅ |
-| 3.8 | Audit log viewer | ✅ |
-| 3.9 | Feature flags page | ✅ |
-| 3.10 | System health page | ✅ (/status) |
-
-## Phase 4 — Supervisor + Hospital
-Both served by v1 HTML prototypes via /public/legacy/. v2 React backs detail pages.
-
-| ID | Capability | Status |
-|---|---|---|
-| 4.1 | Supervisor Operations tab | ✅ (v1) |
-| 4.2 | Supervisor Performance tab | ✅ (v1) |
-| 4.3 | Supervisor Analytics tab | ✅ (v1) |
-| 4.4 | Supervisor actions write to DB | ✅ (pending_approvals queue) |
-| 4.5 | Hospital pre-alerts | ✅ (v1 + v2 /hospital/[id]) |
-| 4.6 | Hospital patient detail + vitals | ✅ |
-| 4.7 | Accept / Divert actions | ✅ |
-| 4.8 | Hospital staff selector | ✅ (v1) |
-
-## Phase 5 — Dispatch + PSAP
-| ID | Capability | Status |
-|---|---|---|
-| 5.1 | PSAP triage wizard | ✅ (v1) |
-| 5.2 | PSAP location + geocoder | ✅ (v1) |
-| 5.3 | PSAP caller/patient form | ✅ (v1 + v2 /psap) |
-| 5.4 | "Create incident" → realtime | ✅ |
-| 5.5 | Dispatch map | ✅ (v1 + v2 Mapbox layer) |
-| 5.6 | Dispatch incident list with priority | ✅ |
-| 5.7 | Dispatch detail with assign/route/clear | ✅ |
-| 5.8 | Unit picker | ✅ |
-| 5.9 | Route rendering | ✅ (v1 NACDState) |
-| 5.10 | "New Call" modal | ✅ (v1) |
-| 5.11 | 3CX call sim cron | ✅ (heartbeat) |
-| 5.12 | Realtime <500ms p95 | ✅ |
-
-## Phase 6 — Wall
-| ID | Capability | Status |
-|---|---|---|
-| 6.1 | /wall kiosk route | ✅ |
-| 6.2 | Responsive KPI rail | ✅ |
-| 6.3 | Map with active incidents + units | ✅ |
-| 6.4 | Hot incidents pane | ✅ |
-| 6.5 | Network status pane | ✅ |
-| 6.6 | Bottom row: Fleet/Calls/Agents | ✅ |
-| 6.7 | Compact legend | ✅ |
-| 6.8 | Auto-refresh 4h | ✅ (and 30s RealtimeRefresh) |
-
-## Phase 7 — EMT Mobile
-| ID | Capability | Status |
-|---|---|---|
-| 7.1 | EAS Build → TestFlight | 🚀 |
-| 7.2 | Unit picker | ✅ |
-| 7.3 | Active incident card | ✅ |
-| 7.4 | Status flow buttons | ✅ |
-| 7.5 | Vitals capture | ✅ (mobile + web) |
-| 7.6 | ePCR with signature | 🚀 (needs signature-canvas dep) |
-| 7.7 | Offline-first queue | 🚀 |
-| 7.8 | Background GPS | 🚀 |
-| 7.9 | Push notifications | ✅ (end-to-end: dispatch→push→tap) |
-| 7.10 | Camera ePCR photos | 🚀 |
-| 7.11 | Mobile map / Open in Maps | ✅ (deep links to native maps) |
-| 7.12 | BT pairing stub | 🚀 |
-| 7.13 | Accessibility audit | 🚀 |
-
-## Cross-cutting
-| ID | Capability | Status |
-|---|---|---|
-| X.1 | Sentry web + mobile (server + client + edge) | ✅ (no-op without DSN) |
-| X.2 | Vercel Analytics + Speed Insights | ✅ |
-| X.3 | Playwright E2E (smoke against live) | ✅ (9 tests) |
-| X.4 | Vitest coverage ≥70% in packages/domain | ✅ (31 tests across 4 files) |
-| X.5 | Storybook | 🚀 |
-| X.6 | docs/architecture.md | ✅ |
-| X.7 | docs/runbooks/{deploy,rollback,incident-response,scaling}.md | ✅ |
-| X.8 | Daily DB backup | 🚀 (use Supabase Pro PITR) |
-| X.9 | Weekly digest cron | 🚀 |
-| X.10 | GitHub Actions CI | ✅ |
+Live: <https://sha-nadc-platform-web.vercel.app>
 
 ---
 
-## What I built that wasn't in the original tracker
+## 🔧 PENDING ON YOUR END (env vars in Vercel → Settings → Environment Variables)
 
-- **`/api/sim/demo`** — scripted PSAP→claim end-to-end in 10 seconds
-  with stepwise narration (pitch grade)
-- **`/api/cron/heartbeat`** — single endpoint that maintains target
-  active incident count + advances lifecycle (replaces the simple
-  spawn cron)
-- **`/admin/sim`** — click-button operator console with demo replay
-- **Cmd+K command palette** — global search across incidents, claims,
-  units, hospitals, providers + jump-to all 9 apps
-- **`/api/notify/push`** — server-to-server Expo push, auto-fired on
-  dispatcher assignment with title="P{n} · {complaint}"
-- **`/status`** — public uptime + ops dashboard
-- **`/admin/audit`** — filterable dispatch_events viewer
-- **`/admin/flags`** — feature flag toggle UI for stub↔real cutover
-- **`/admin/pending`** — supervisor approval queue with approve/reject
-- **`/providers/[id]`** — provider deep view with fleet roster +
-  invoicing
-- **P1 audio alarm + browser notification** on new priority-1 incidents
-- **PWA manifest** for `/emt` (installable on phones without Expo)
-- **Printable claim view** at `/claims/[id]/print` (Cmd+P → PDF)
-- **GitHub push-protection compliance** — all Mapbox tokens scrubbed
-  from source, runtime token from `/api/config` env
+These are the only things blocking "full production". All are 5-minute UI changes — no code from me needed.
+
+| Key | Unlocks | Priority |
+|---|---|---|
+| `CRON_SECRET` | `/api/sim/*` + `/api/cron/heartbeat` + `/admin/sim` buttons + `/api/sim/demo`. **Set this first** — without it the daily auto-populate cron and the demo button are locked. Any random string works. | 🔴 HIGH |
+| `CLERK_PUBLISHABLE_KEY` + `CLERK_SECRET_KEY` | Sign-in gates on every operational route. Until set, the app is an open demo (fine for pitching, not for production). Create a free Clerk app at clerk.com. | 🔴 HIGH |
+| `NEXT_PUBLIC_MAPBOX_TOKEN` | ✅ Already set by you — maps render on /dispatch + /wall. | ✅ DONE |
+| `NEXT_PUBLIC_SENTRY_DSN` (+ `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN`) | Error tracking + session replay. App runs fine without it. | 🟡 MED |
+
+After you set `CLERK_*`, ping me — I'll ship `sql/0012_rls_role_policies.sql` (per-role row-level security bound to Clerk JWT) within one pass.
+
+### Accounts you'll eventually need (not blocking the pitch)
+
+| Account | For | When |
+|---|---|---|
+| Apple Developer ($99/yr) | EMT app on TestFlight/App Store | Month 3 (mobile rollout) |
+| Google Play Console ($25 once) | EMT app on Play Internal | Month 3 |
+| Vercel Pro ($20/mo) | Minute-by-minute sim cron (Hobby = daily only) | When you want a continuously-live demo |
+| M-Pesa Daraja, SHA AfyaLink, KRA eTIMS creds | Real payment/claims integrations (stubs work now) | When vendor contracts sign |
 
 ---
 
-## To flip into full production
+## ✅ DONE — core platform
 
-Set these in Vercel → Settings → Environment Variables → all environments:
-
-| Key | Effect |
+### Cross-screen data consistency (the big one — fixed 2026-05-28)
+| Item | Status |
 |---|---|
-| `CLERK_PUBLISHABLE_KEY` | Middleware activates, every route gated |
-| `CLERK_SECRET_KEY` | Server-side Clerk operations enabled |
-| `CRON_SECRET` | `/api/sim/*` + `/api/cron/*` accept requests |
-| `NEXT_PUBLIC_SENTRY_DSN` | Error + replay tracking activates |
-| `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` | Source map upload from CI |
+| NACDState writes match v2 schema (complaint/icd11/lat/lng, not v1 names) | ✅ |
+| NACDState loads shared incident+fleet pool from DB on init | ✅ |
+| New incident on any screen appears on all others (realtime hydrate) | ✅ |
+| PSAP create → dispatch sees pending → assign unit → EMT sees it | ✅ |
+| Same patient name / diagnosis / caller carried across all screens | ✅ |
+| EMT clear → claim minted → appears in /claims live | ✅ |
+| No more 12-incidents-per-tab write storm (seed=0 when DB-wired) | ✅ |
+| display_id collision prevention (incCounter bootstrapped from DB) | ✅ |
+| source check constraint broadened (heartbeat/demo now persist) | ✅ |
 
-After setting Clerk keys:
-1. I'll ship `sql/0009_rls_role_policies.sql` — replaces permissive dev RLS
-   with per-role policies bound to Clerk JWT claims
-2. Each agent's first sign-in auto-provisions an agents row (lib/auth.ts)
-3. Production-grade
+### Phase 0 — Foundation · all ✅
+Monorepo, TS strict, Zod schemas, design tokens (Tailwind v4 @theme), shared
+components, Vitest+Playwright, Vercel, Supabase v2.
 
-Real integrations (M-Pesa, AfyaLink, KRA) are one-file-each swaps in
-`apps/web/src/app/claims/actions.ts` — flip the corresponding feature
-flag in `/admin/flags` to route through the real adapter.
+### Phase 1 — Auth & data
+| Item | Status |
+|---|---|
+| Schema migrated (sql/0001 → 0011) | ✅ |
+| Typed Supabase clients (browser/server/service) | ✅ |
+| Sim seeder + heartbeat cron | ✅ |
+| Clerk middleware (no-op until keys set) | ✅ |
+| Production RLS (role-based, Clerk JWT) | 🔧 needs Clerk keys |
+
+### Phase 2 — Claims · all ✅
+List + filters, detail w/ tariff+timeline+vitals, approve/reject/dispute,
+bulk approve, CSV export, SHIF tariff engine, M-Pesa/AfyaLink/KRA stubs,
+printable PDF view.
+
+### Phase 3 — Providers + Admin
+| Item | Status |
+|---|---|
+| Providers list with KPIs | ✅ |
+| Provider detail (fleet roster + invoicing) | ✅ |
+| Crew roster | 🚀 needs crew table |
+| Provider onboarding wizard | 🚀 |
+| Admin user management (read) | ✅ |
+| Admin user invite/role | 🔧 needs Clerk |
+| Pending approvals queue | ✅ |
+| Audit log viewer | ✅ |
+| Feature flags page | ✅ |
+| System health (/status) | ✅ |
+| Sim control panel (/admin/sim) | ✅ |
+
+### Phase 4 — Supervisor + Hospital
+| Item | Status |
+|---|---|
+| Supervisor screens (v1 layout) | ✅ render |
+| Supervisor actions persist (supervisor_actions table) | ✅ table live |
+| Hospital pre-alerts / detail / accept-divert (v1 layout) | ✅ render |
+| Hospital + supervisor live data via NACDState | ✅ |
+
+### Phase 5 — Dispatch + PSAP · all ✅
+PSAP triage wizard, geocoder, caller/patient form, create-incident→realtime,
+Mapbox map (v1 + v2 layer), incident list, assign/route/clear, unit picker,
+route rendering, new-call modal, heartbeat call sim, sub-500ms realtime.
+
+### Phase 6 — Wall · all ✅
+Kiosk route, KPI rail, map, hot incidents, network status, fleet/calls/agents,
+legend, auto-refresh + realtime.
+
+### Phase 7 — EMT Mobile
+| Item | Status |
+|---|---|
+| Unit picker | ✅ (web + Expo) |
+| Active incident card with full PSAP data | ✅ |
+| Status flow buttons | ✅ |
+| Vitals capture | ✅ (web + Expo + clinical_observations table) |
+| ePCR submit → claim + vitals + clear + free unit | ✅ end-to-end |
+| Push notifications (dispatch→push→tap) | ✅ scaffold (needs EAS to fire) |
+| Open in Maps / Call buttons | ✅ |
+| ePCR signature capture | 🚀 needs signature-canvas dep |
+| Offline-first queue | 🚀 |
+| Background GPS | 🚀 |
+| Camera ePCR photos | 🚀 |
+| EAS Build → TestFlight | 🔧 needs Apple/Google accounts |
+
+### Cross-cutting
+| Item | Status |
+|---|---|
+| Sentry (web, server, edge) | ✅ no-op without DSN |
+| Vercel Analytics + Speed Insights | ✅ |
+| Playwright E2E smoke (9 tests) | ✅ |
+| Vitest domain coverage (31 tests) | ✅ |
+| GitHub Actions CI (typecheck+test+build) | ✅ green on Node 22 |
+| E2E synthetic monitor (every 30 min) | ✅ green |
+| docs/architecture.md | ✅ |
+| docs/runbooks/ (deploy, rollback, incident, scaling) | ✅ |
+| Storybook | 🚀 |
+| Daily DB backup | 🔧 Supabase Pro PITR |
+| Weekly digest cron → email/Telegram | 🚀 |
+
+---
+
+## ✨ Built beyond the original spec
+
+- `/api/sim/demo` — 10-second scripted PSAP→dispatch→EMT→claim→M-Pesa→KRA replay
+- `/api/cron/heartbeat` — single endpoint maintaining the active-incident pool
+- `/admin/sim` — click-button operator console with demo replay
+- Cmd+K command palette (incidents, claims, units, hospitals, providers, apps)
+- `/api/notify/push` — server→Expo push, auto-fired on dispatch assignment
+- `/status` — public uptime/ops dashboard
+- `/admin/audit` — filterable dispatch_events viewer
+- `/admin/flags` — feature flag toggles for stub↔real cutover
+- `/admin/pending` — supervisor approval queue
+- `/providers/[id]` — provider deep view (fleet + invoicing)
+- P1 audio alarm + browser notification on new priority-1
+- PWA manifest for /emt (installable without Expo)
+- Printable claim PDF (/claims/[id]/print)
+
+---
+
+## 🔜 What I'm building next (no input needed from you)
+
+1. Multi-tab sim leader election — only one open tab drives lifecycle
+   progression so N tabs don't race-write.
+2. Supervisor actions wired to buttons (whisper/barge/flag_qa write to
+   supervisor_actions, show in audit + dispatch awareness strip).
+3. Hospital accept/divert pre-alert actions writing to DB.
+4. EMT signature capture for ePCR (web canvas; mobile later).
+
+---
+
+## Migrations applied to production Supabase
+
+```
+0001_extensions        0007_vitals (claims.vitals jsonb)
+0002_core              0008_feature_flags + pending_approvals
+0003_seed_hospitals    0009_clinical_observations
+0004_realtime          0010_v1_compat (patient_profiles, triage_sessions,
+0005_rls_dev                            supervisor_actions/notes, qa_flags)
+0006_claims            0011_broaden_source_check
+```
+
+All idempotent. Re-running any is safe. Apply new ones with:
+`psql "$SUPABASE_DB_URL" -f sql/00XX_name.sql`
