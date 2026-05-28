@@ -109,9 +109,18 @@ export default async function DispatchDetailPage({
       <RealtimeRefresh tables={['incidents', 'dispatch_events', 'fleet_units']} />
 
       <section className="flex-1 px-6 py-6 max-w-screen-xl w-full mx-auto space-y-6">
-        <Link href="/dispatch" className="text-xs font-mono text-t3 hover:text-t1">
-          ← Back to queue
-        </Link>
+        <div className="flex items-center justify-between">
+          <Link href="/dispatch" className="text-xs font-mono text-t3 hover:text-t1">
+            ← Back to queue
+          </Link>
+          <Link
+            href={`/dispatch/${inc.id}/print`}
+            target="_blank"
+            className="text-xs font-mono text-t3 hover:text-g"
+          >
+            Case record / PDF →
+          </Link>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
