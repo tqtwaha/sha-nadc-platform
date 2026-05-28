@@ -16,5 +16,6 @@ export const APPS: AppSwitcherItem[] = [
   { slug: 'hospital',   label: 'Hospital',   href: '/hospital',         iconName: 'Hospital' },
   { slug: 'claims',     label: 'Claims',     href: '/claims',           iconName: 'ReceiptText' },
   { slug: 'providers',  label: 'Providers',  href: '/providers',        iconName: 'Building2' },
+  { slug: 'reports',    label: 'Reports',    href: '/reports',          iconName: 'ChartColumn' },
   { slug: 'admin',      label: 'Admin',      href: '/admin/users',      iconName: 'Shield' },
 ];
