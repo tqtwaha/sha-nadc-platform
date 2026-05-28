@@ -1690,18 +1690,16 @@
       if (!isDbType) return; // force_break, message_agent not in DB enum
       var inc         = row.incidentId ? _findIncident(row.incidentId) : null;
       var incUuid     = inc ? _incUuidByDisplay[inc.number] : null;
+      // created_by_agent is nullable in v2 — persist even if the agent
+      // can't be resolved to a DB UUID (the action still has audit value).
       var agentUuid   = _resolveAgentDbUuid(row.createdByAgent);
-      if (!agentUuid) {
-        console.info('[NACDState] supervisor_action skip — no DB agent UUID (action:', row.actionType + ')');
-        return;
-      }
       _sb.from('supervisor_actions').insert({
         incident_id:      incUuid          || null,
         unit_id:          row.unitId       || null,
         action_type:      row.actionType,
         action_status:    row.actionStatus || 'active',
         action_note:      row.actionNote   || null,
-        created_by_agent: agentUuid
+        created_by_agent: agentUuid        || null
       })
       .then(function (r) {
         if (r.error) console.warn('[NACDState] supervisor_actions insert failed:', r.error.message);
@@ -1734,19 +1732,16 @@
     // Insert a supervisor_notes row. created_by_agent is NOT NULL in the schema.
     function _pushSupervisorNote(row) {
       if (!_sb || !_mapsReady) return;
+      // created_by_agent is nullable in v2 — persist regardless.
       var agentUuid = _resolveAgentDbUuid(row.createdByAgent);
-      if (!agentUuid) {
-        console.info('[NACDState] supervisor_note skip — no DB agent UUID (type:', row.noteType + ')');
-        return;
-      }
       var inc     = row.incidentId ? _findIncident(row.incidentId) : null;
       var incUuid = inc ? _incUuidByDisplay[inc.number] : null;
       _sb.from('supervisor_notes').insert({
         incident_id:      incUuid   || null,
         unit_id:          row.unitId || null,
-        note_type:        row.noteType,
-        note_text:        row.noteText,
-        created_by_agent: agentUuid
+        note_type:        row.noteType || 'private',
+        note_text:        row.noteText || '',
+        created_by_agent: agentUuid || null
       })
       .then(function (r) {
         if (r.error) console.warn('[NACDState] supervisor_notes insert failed:', r.error.message);
