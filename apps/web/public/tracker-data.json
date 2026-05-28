@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-28T18:30:00Z",
+  "updatedAt": "2026-05-28T19:10:00Z",
   "summary": "Cross-screen data wiring complete. Platform fully functional end-to-end. Two env vars pending on your side to flip into production.",
   "lanes": [
     { "id": "blocked", "label": "Needs You", "hint": "5-min Vercel env changes — no code from me" },
@@ -19,7 +19,7 @@
     { "id": "rls-policies", "lane": "backlog", "tag": "SECURITY", "title": "Per-role RLS bound to Clerk JWT", "note": "Replaces dev-permissive RLS. Blocked until CLERK_* is set." },
     { "id": "real-mpesa", "lane": "backlog", "tag": "INTEGRATION", "title": "Real M-Pesa / AfyaLink / KRA adapters", "note": "Stubs work now. One-file swap each when vendor creds land." },
     { "id": "offline-queue", "lane": "done", "tag": "EMT", "title": "Mobile offline-first queue", "note": "AsyncStorage write queue + NetInfo flush-on-reconnect; status updates queue offline w/ optimistic UI + 'N queued' badge. Needs device QA." },
-    { "id": "bg-gps", "lane": "backlog", "tag": "EMT", "title": "Background GPS reporting", "note": "Expo TaskManager — unit position every 10s on a job." },
+    { "id": "bg-gps", "lane": "done", "tag": "EMT", "title": "GPS position reporting", "note": "Foreground watchPositionAsync → fleet_units.current_lat/lng (throttled 8s, via offline queue). Unit dot moves on wall/dispatch from real device GPS. True background needs expo-task-manager + dev build." },
     { "id": "storybook", "lane": "backlog", "tag": "INFRA", "title": "Storybook for packages/ui", "note": "Visual component review surface." },
 
     { "id": "tracker-html", "lane": "done", "tag": "DX", "title": "Live HTML Kanban tracker", "note": "This board — auto-refreshing, cards flash green as they move lanes." },

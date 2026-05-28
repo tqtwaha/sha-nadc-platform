@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase, ACTIVE_STATUSES } from '../../lib/supabase';
 import { registerForPushAndStore, listenTapped } from '../../lib/push';
 import { enqueueWrite } from '../../lib/queue';
+import { startUnitLocationReporting, stopUnitLocationReporting } from '../../lib/location';
 
 function openInMaps(lat: number, lng: number, label?: string) {
   const q = label ? encodeURIComponent(label) : `${lat},${lng}`;
@@ -149,6 +150,16 @@ export default function CrewScreen() {
     });
     return unsub;
   }, [id, load]);
+
+  // Foreground GPS — report this unit's real device position while the
+  // crew screen is open (drives the dot on the wall + dispatch maps).
+  useEffect(() => {
+    if (!id) return;
+    void startUnitLocationReporting(String(id));
+    return () => {
+      void stopUnitLocationReporting();
+    };
+  }, [id]);
 
   async function advance(next: Status) {
     if (!incident) return;
