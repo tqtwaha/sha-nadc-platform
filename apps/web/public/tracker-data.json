@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-28T15:10:00Z",
+  "updatedAt": "2026-05-28T15:40:00Z",
   "summary": "Cross-screen data wiring complete. Platform fully functional end-to-end. Two env vars pending on your side to flip into production.",
   "lanes": [
     { "id": "blocked", "label": "Needs You", "hint": "5-min Vercel env changes — no code from me" },
@@ -13,7 +13,7 @@
     { "id": "sentry-dsn", "lane": "blocked", "tag": "ENV", "title": "Set NEXT_PUBLIC_SENTRY_DSN (optional)", "note": "Error tracking + session replay. App runs fine without it." },
     { "id": "apple-dev", "lane": "blocked", "tag": "ACCOUNT", "title": "Apple Developer + Google Play accounts", "note": "Only for EMT app store builds — month 3, not blocking the pitch." },
 
-    { "id": "epcr-sig", "lane": "doing", "tag": "EMT", "title": "ePCR signature capture", "note": "Canvas signature pad on the EMT clear form, stored with the claim. No new deps." },
+    { "id": "epcr-sig", "lane": "done", "tag": "EMT", "title": "ePCR signature capture", "note": "Canvas signature pad — submit blocked until signed; PNG stored on claim + vitals + audit event." },
     { "id": "crew-roster", "lane": "backlog", "tag": "PROVIDER", "title": "Provider crew roster", "note": "Add/remove crew, assign to unit/shift. Needs a crew table." },
     { "id": "onboard-wizard", "lane": "backlog", "tag": "PROVIDER", "title": "Provider onboarding wizard", "note": "Company info, fleet upload, crew bulk-add, contract upload." },
     { "id": "rls-policies", "lane": "backlog", "tag": "SECURITY", "title": "Per-role RLS bound to Clerk JWT", "note": "Replaces dev-permissive RLS. Blocked until CLERK_* is set." },
