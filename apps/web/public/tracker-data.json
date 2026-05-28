@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-28T19:10:00Z",
+  "updatedAt": "2026-05-28T19:55:00Z",
   "summary": "Cross-screen data wiring complete. Platform fully functional end-to-end. Two env vars pending on your side to flip into production.",
   "lanes": [
     { "id": "blocked", "label": "Needs You", "hint": "5-min Vercel env changes — no code from me" },
@@ -24,6 +24,7 @@
 
     { "id": "tracker-html", "lane": "done", "tag": "DX", "title": "Live HTML Kanban tracker", "note": "This board — auto-refreshing, cards flash green as they move lanes." },
     { "id": "reports", "lane": "done", "tag": "OPS", "title": "SLA + analytics reports", "note": "/reports — dispatch/scene response-time percentiles, SLA compliance by priority, hourly volume chart, claims throughput, provider leaderboard. 24h/3d/7d windows." },
+    { "id": "incident-pdf", "lane": "done", "tag": "COMPLIANCE", "title": "Incident case-record PDF", "note": "/dispatch/[id]/print — full SHA case review: encounter, location, lifecycle, vitals table, complete event log, linked claim w/ M-Pesa/KRA refs. Cmd+P → PDF." },
 
     { "id": "xscreen", "lane": "done", "tag": "CORE", "title": "Cross-screen data consistency", "note": "PSAP→dispatch→EMT→claims share one Supabase pool. Same patient/diagnosis everywhere." },
     { "id": "nacd-schema", "lane": "done", "tag": "CORE", "title": "NACDState aligned to v2 schema", "note": "Writes/reads use complaint/icd11/lat/lng + claims table. Was silently failing." },
