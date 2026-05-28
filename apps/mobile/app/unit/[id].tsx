@@ -15,6 +15,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase, ACTIVE_STATUSES } from '../../lib/supabase';
 import { registerForPushAndStore, listenTapped } from '../../lib/push';
+import { enqueueWrite } from '../../lib/queue';
 
 function openInMaps(lat: number, lng: number, label?: string) {
   const q = label ? encodeURIComponent(label) : `${lat},${lng}`;
@@ -155,21 +156,29 @@ export default function CrewScreen() {
     const ts = STATUS_TS[next];
     const update: Record<string, unknown> = { status: next };
     if (ts) update[ts] = new Date().toISOString();
-    const { error } = await supabase.from('incidents').update(update).eq('id', incident.id);
-    if (error) {
-      Alert.alert('Update failed', error.message);
-    } else {
-      if (unit) await supabase.from('fleet_units').update({ status: next }).eq('id', unit.id);
-      await supabase.from('dispatch_events').insert({
+
+    // Route through the offline queue — runs now if online, else persists
+    // and replays on reconnect. Optimistically update the UI either way.
+    const online = await enqueueWrite({ kind: 'update', table: 'incidents', match: { id: incident.id }, values: update });
+    if (unit) {
+      await enqueueWrite({ kind: 'update', table: 'fleet_units', match: { id: unit.id }, values: { status: next } });
+    }
+    await enqueueWrite({
+      kind: 'insert',
+      table: 'dispatch_events',
+      values: {
         incident_id: incident.id,
         unit_id: incident.unit_id,
         event_type: next,
         event_note: `${incident.display_id} → ${next} (mobile)`,
         actor_type: 'emt',
         payload: { source: 'mobile' },
-      });
-      await load();
-    }
+      },
+    });
+
+    // Optimistic local update so the UI advances even offline
+    setIncident({ ...incident, status: next });
+    if (online) await load();
     setBusy(false);
   }
 

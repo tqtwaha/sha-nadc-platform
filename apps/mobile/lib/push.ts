@@ -40,13 +40,17 @@ export async function registerForPushAndStore(unitId: string): Promise<string | 
     });
   }
 
-  const { status: existing } = await Notifications.getPermissionsAsync();
-  let final = existing;
-  if (existing !== 'granted') {
-    const { status } = await Notifications.requestPermissionsAsync();
-    final = status;
+  // Permission shape varies across expo-notifications versions; read
+  // status/granted defensively rather than depending on a fixed type.
+  const isGranted = (p: unknown): boolean => {
+    const r = p as { status?: string; granted?: boolean };
+    return r.granted === true || r.status === 'granted';
+  };
+  let granted = isGranted(await Notifications.getPermissionsAsync());
+  if (!granted) {
+    granted = isGranted(await Notifications.requestPermissionsAsync());
   }
-  if (final !== 'granted') {
+  if (!granted) {
     console.warn('[push] permission denied');
     return null;
   }

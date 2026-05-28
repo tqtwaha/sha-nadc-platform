@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-28T17:00:00Z",
+  "updatedAt": "2026-05-28T17:45:00Z",
   "summary": "Cross-screen data wiring complete. Platform fully functional end-to-end. Two env vars pending on your side to flip into production.",
   "lanes": [
     { "id": "blocked", "label": "Needs You", "hint": "5-min Vercel env changes — no code from me" },
@@ -18,7 +18,7 @@
     { "id": "onboard-wizard", "lane": "done", "tag": "PROVIDER", "title": "Provider onboarding wizard", "note": "/admin/providers/new intake form → provider_contract approval in the vetting queue. Pipeline view + tools bar on v1 admin." },
     { "id": "rls-policies", "lane": "backlog", "tag": "SECURITY", "title": "Per-role RLS bound to Clerk JWT", "note": "Replaces dev-permissive RLS. Blocked until CLERK_* is set." },
     { "id": "real-mpesa", "lane": "backlog", "tag": "INTEGRATION", "title": "Real M-Pesa / AfyaLink / KRA adapters", "note": "Stubs work now. One-file swap each when vendor creds land." },
-    { "id": "offline-queue", "lane": "backlog", "tag": "EMT", "title": "Mobile offline-first queue", "note": "Queue writes when offline, sync on reconnect." },
+    { "id": "offline-queue", "lane": "done", "tag": "EMT", "title": "Mobile offline-first queue", "note": "AsyncStorage write queue + NetInfo flush-on-reconnect; status updates queue offline w/ optimistic UI + 'N queued' badge. Needs device QA." },
     { "id": "bg-gps", "lane": "backlog", "tag": "EMT", "title": "Background GPS reporting", "note": "Expo TaskManager — unit position every 10s on a job." },
     { "id": "storybook", "lane": "backlog", "tag": "INFRA", "title": "Storybook for packages/ui", "note": "Visual component review surface." },
 
