@@ -677,21 +677,49 @@ function _renderVitals(incId){
 }
 
 // ── Actions ───────────────────────────────────────────────────────────
+function _hospSb(){ return (window.NACDState && NACDState.getSupabaseClient) ? NACDState.getSupabaseClient() : null; }
+function _selIncNumber(){
+  var inc = _selectedIncId && NACDState.findIncident ? NACDState.findIncident(_selectedIncId) : null;
+  return inc ? inc.number : null;
+}
+function _hospWriteEvent(type, note){
+  var sb = _hospSb(); if(!sb) return;
+  var num = _selIncNumber();
+  var uuid = (num && NACDState.getIncidentUuid) ? NACDState.getIncidentUuid(num) : null;
+  sb.from('dispatch_events').insert({
+    incident_id: uuid || null,
+    event_type:  type,
+    event_note:  note,
+    actor_type:  'supervisor',
+    payload:     { hospital_id: HOSP_ID, incident_local_id: _selectedIncId, incident_number: num }
+  }).then(function(r){ if(r&&r.error) console.warn('[Hospital] event failed:', r.error.message); })
+    .catch(function(e){ console.warn('[Hospital] event exception:', e&&e.message); });
+}
+
 function actAccept(){
   if(!_selectedIncId) return;
   showToast('Acknowledged — EMT notified');
-  // TODO: broadcast hospital:accepted via BroadcastChannel + Supabase write
+  _hospWriteEvent('hospital_accepted','Pre-alert accepted by '+(HOSP_ID||'hospital')+' — bed ready');
 }
 function actDivert(){
   if(!_selectedIncId) return;
   showToast('Divert request sent to dispatch','warn');
-  // TODO: broadcast hospital:divert
+  _hospWriteEvent('hospital_divert','Divert requested by '+(HOSP_ID||'hospital')+' — at capacity');
+  var sb = _hospSb();
+  if(sb){
+    sb.from('pending_approvals').insert({
+      kind:'hospital_bypass',
+      reference: HOSP_ID || 'hospital',
+      notes:'Hospital requesting divert for incoming patient',
+      payload:{ incident_local_id:_selectedIncId, incident_number:_selIncNumber(), hospital:HOSP_ID }
+    }).then(function(){});
+  }
 }
 
 // ── Init ──────────────────────────────────────────────────────────────
 fetch('/api/config').then(function(r){return r.json();}).catch(function(){return{};})
 .then(function(cfg){
-  NACDState.init({supabaseUrl:cfg.supabaseUrl||'',supabaseKey:cfg.supabaseAnonKey||'',seedIncidents:12,autoStart:true});
+  NACDState.init({supabaseUrl:cfg.supabaseUrl||'',supabaseKey:cfg.supabaseAnonKey||'',seedIncidents:0,autoStart:true});
 
   // If user hasn't picked a hospital yet, default to first national referral (KNH)
   NACDState.on('state:initialized',function(state){

@@ -1041,7 +1041,7 @@ fetch('/api/config')
   .then(function(r){ return r.json(); })
   .catch(function(){ return {}; })
   .then(function(cfg){
-    NACDState.init({supabaseUrl:cfg.supabaseUrl||'',supabaseKey:cfg.supabaseAnonKey||'',seedIncidents:12,autoStart:true});
+    NACDState.init({supabaseUrl:cfg.supabaseUrl||'',supabaseKey:cfg.supabaseAnonKey||'',seedIncidents:0,autoStart:true});
 
     window._onNACDAuthReady = function(auth) {
       var ov = document.getElementById('nacd-auth-overlay');

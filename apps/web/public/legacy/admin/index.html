@@ -976,7 +976,7 @@ fetch('/api/config').then(function(r){return r.json();}).catch(function(){return
   });
   NACDState.on('state:tick',function(state){onTick(state);});
 
-  NACDState.init({supabaseUrl:cfg.supabaseUrl||'',supabaseKey:cfg.supabaseAnonKey||'',seedIncidents:12,autoStart:true});
+  NACDState.init({supabaseUrl:cfg.supabaseUrl||'',supabaseKey:cfg.supabaseAnonKey||'',seedIncidents:0,autoStart:true});
 
   // Load protocols immediately after init (synchronous — no event needed)
   if(window.NACDProtocols&&window.NACDProtocols.length&&NACDState.psap&&NACDState.psap.loadProtocols){

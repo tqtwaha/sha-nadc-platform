@@ -1423,7 +1423,7 @@ fetch('/api/config').then(function(r){return r.json();}).catch(function(){return
   if(cfg.supabaseUrl&&cfg.supabaseAnonKey&&window.supabase){
     _sb=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseAnonKey);
   }
-  NACDState.init({supabaseUrl:cfg.supabaseUrl||'',supabaseKey:cfg.supabaseAnonKey||'',seedIncidents:12,autoStart:true});
+  NACDState.init({supabaseUrl:cfg.supabaseUrl||'',supabaseKey:cfg.supabaseAnonKey||'',seedIncidents:0,autoStart:true});
   _psapSid=NACDState.psap.startSession({source:'manual_entry'}).id;
 
   window._onNACDAuthReady=function(auth){

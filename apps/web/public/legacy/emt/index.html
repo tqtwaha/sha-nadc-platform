@@ -2002,7 +2002,7 @@ function prefillEPCR(inc){
 
 fetch('/api/config').then(function(r){return r.json();}).catch(function(){return{};})
 .then(function(cfg){
-  NACDState.init({supabaseUrl:cfg.supabaseUrl||'',supabaseKey:cfg.supabaseAnonKey||'',seedIncidents:12,autoStart:true});
+  NACDState.init({supabaseUrl:cfg.supabaseUrl||'',supabaseKey:cfg.supabaseAnonKey||'',seedIncidents:0,autoStart:true});
 
   // Belt-and-braces demo safety guard: if _onNACDAuthReady is not called within 4 s,
   // dismiss the overlay so the demo is never blocked by auth in offline / demo mode.
