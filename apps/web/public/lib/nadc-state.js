@@ -968,11 +968,12 @@
       var now = Date.now();
       var _leader = _isSimLeader();
 
-      // ── Generate new incidents (LOCAL/offline mode only) ────────────────
-      // When Supabase is wired, /api/cron/heartbeat is the single source
-      // for new incidents — otherwise N open tabs would race-spawn into
-      // the same DB and create a write storm.
-      if (!_sb) {
+      // ── Generate new incidents (LEADER ONLY when online) ────────────────
+      // Offline: every tab is its own world, so it spawns.
+      // Online: only the elected leader spawns — keeps the active pool
+      // topped up between daily heartbeat cron runs without N tabs
+      // race-spawning. Followers receive new incidents via Realtime.
+      if (!_sb || _leader) {
         var active = _state.incidents.filter(function (i) {
           return i.status !== STATUS.CLEARED && i.status !== STATUS.CANCELLED;
         }).length;
