@@ -35,6 +35,7 @@ export interface ProviderDetail {
   name: string;
   units: ProviderUnit[];
   recentClaims: ProviderClaim[];
+  crew: CrewMember[];
   metrics: {
     totalUnits: number;
     alsUnits: number;
@@ -49,7 +50,20 @@ export interface ProviderDetail {
     revenueLifetime: number;
     avgDistanceKm: number;
     runsLast7d: number;
+    crewTotal: number;
+    crewOnShift: number;
   };
+}
+
+export interface CrewMember {
+  id: string;
+  full_name: string;
+  role: string;
+  unit_id: string | null;
+  certification: string | null;
+  shift: string;
+  status: string;
+  phone: string | null;
 }
 
 export async function getProviderDetail(id: string): Promise<ProviderDetail | null> {
@@ -60,7 +74,7 @@ export async function getProviderDetail(id: string): Promise<ProviderDetail | nu
   const since7d = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
   const since30d = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
 
-  const [{ data: units }, { data: claims }, { data: recent7d }] = await Promise.all([
+  const [{ data: units }, { data: claims }, { data: recent7d }, { data: crewRows }] = await Promise.all([
     sb
       .from('fleet_units')
       .select(
@@ -81,11 +95,17 @@ export async function getProviderDetail(id: string): Promise<ProviderDetail | nu
       .select('total_kes, distance_km, status, created_at')
       .eq('provider_id', id)
       .gte('created_at', since7d),
+    sb
+      .from('crew_members')
+      .select('id, full_name, role, unit_id, certification, shift, status, phone')
+      .eq('provider_id', id)
+      .order('unit_id', { ascending: true }),
   ]);
 
   const uList = (units ?? []) as ProviderUnit[];
   const cList = (claims ?? []) as ProviderClaim[];
   const recent = recent7d ?? [];
+  const crew = (crewRows ?? []) as CrewMember[];
 
   const paid30 = (claims ?? [])
     .filter((c) => c.paid_at && c.paid_at >= since30d)
@@ -103,7 +123,10 @@ export async function getProviderDetail(id: string): Promise<ProviderDetail | nu
     name: meta.name,
     units: uList,
     recentClaims: cList,
+    crew,
     metrics: {
+      crewTotal: crew.length,
+      crewOnShift: crew.filter((m) => (m.shift === 'day' || m.shift === 'night') && m.status === 'active').length,
       totalUnits: uList.length,
       alsUnits: uList.filter((u) => u.type === 'ALS').length,
       blsUnits: uList.filter((u) => u.type === 'BLS').length,

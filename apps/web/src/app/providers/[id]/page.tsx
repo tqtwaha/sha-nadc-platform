@@ -253,6 +253,81 @@ export default async function ProviderDetailPage({
           </div>
         </div>
 
+        {/* Crew roster */}
+        <div className="border border-line rounded-lg overflow-hidden bg-bg1">
+          <div className="px-4 py-3 border-b border-line flex items-center justify-between">
+            <h3 className="font-cond uppercase tracking-wider text-[11px] text-t3">
+              Crew roster
+            </h3>
+            <div className="text-xs font-mono text-t3">
+              {m.crewTotal} crew · {m.crewOnShift} on shift
+            </div>
+          </div>
+          {p.crew.length === 0 ? (
+            <div className="px-4 py-10 text-center text-t3 font-mono text-xs">
+              No crew recorded for this provider.
+            </div>
+          ) : (
+            <table className="w-full text-sm">
+              <thead className="text-t3 font-cond uppercase tracking-wider text-[10px]">
+                <tr>
+                  <th className="text-left px-3 py-2 font-semibold">Name</th>
+                  <th className="text-left px-3 py-2 font-semibold">Role</th>
+                  <th className="text-left px-3 py-2 font-semibold">Cert</th>
+                  <th className="text-left px-3 py-2 font-semibold">Unit</th>
+                  <th className="text-left px-3 py-2 font-semibold">Shift</th>
+                  <th className="text-left px-3 py-2 font-semibold">Phone</th>
+                </tr>
+              </thead>
+              <tbody>
+                {p.crew.slice(0, 40).map((c) => (
+                  <tr key={c.id} className="border-t border-line hover:bg-bg2">
+                    <td className="px-3 py-2 text-t1 font-display">{c.full_name}</td>
+                    <td className="px-3 py-2">
+                      <Chip
+                        tone={
+                          c.role === 'paramedic' || c.role === 'doctor'
+                            ? 'crit'
+                            : c.role === 'nurse'
+                              ? 'warn'
+                              : c.role === 'emt'
+                                ? 'info'
+                                : 'muted'
+                        }
+                      >
+                        {c.role}
+                      </Chip>
+                    </td>
+                    <td className="px-3 py-2 font-mono text-[11px] text-t2">
+                      {c.certification ?? '—'}
+                    </td>
+                    <td className="px-3 py-2 font-mono text-[12px]">
+                      {c.unit_id ? (
+                        <Link href={`/emt/${c.unit_id}`} className="text-g hover:underline">
+                          {c.unit_id}
+                        </Link>
+                      ) : (
+                        <span className="text-t4">unassigned</span>
+                      )}
+                    </td>
+                    <td className="px-3 py-2">
+                      <Chip tone={c.shift === 'night' ? 'info' : c.shift === 'day' ? 'ok' : 'muted'}>
+                        {c.shift}
+                      </Chip>
+                    </td>
+                    <td className="px-3 py-2 font-mono text-[11px] text-t2">{c.phone ?? '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+          {p.crew.length > 40 && (
+            <div className="px-4 py-2 text-[11px] font-mono text-t3 border-t border-line">
+              Showing 40 of {p.crew.length} crew.
+            </div>
+          )}
+        </div>
+
         <p className="text-[11px] font-mono text-t3 text-center pt-6 border-t border-line">
           Provider snapshot at {fmtDateTime(new Date().toISOString())} ·
           {' '}provider id <span className="text-t1">{p.id}</span>
