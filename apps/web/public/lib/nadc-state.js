@@ -931,8 +931,42 @@
     var _simInterval = null;
     var _simRate     = 1.0; // target incidents per minute
 
+    // ── Multi-tab leader election ──────────────────────────────────────────
+    // When several screens are open at once (wall + dispatch + EMT...), only
+    // ONE tab should drive the lifecycle progression that mutates the DB —
+    // otherwise N tabs race-write the same transitions. Non-leader tabs still
+    // run _simTick for local map animation but skip the DB-mutating branches;
+    // they stay current via Supabase Realtime.
+    //
+    // Leadership is a localStorage lease: a tab writes {id, ts}; the lease is
+    // valid for LEASE_TTL_MS. The holder renews each tick; any tab whose lease
+    // has expired claims it. Offline mode (no _sb) always leads (single source).
+    var _tabId        = 'tab_' + Math.random().toString(36).slice(2, 10);
+    var _LEASE_KEY    = 'nacd_sim_leader';
+    var _LEASE_TTL_MS = 4000;
+
+    function _isSimLeader() {
+      if (!_sb) return true; // offline: this tab is the only driver
+      if (typeof localStorage === 'undefined') return true;
+      try {
+        var now = Date.now();
+        var raw = localStorage.getItem(_LEASE_KEY);
+        var lease = raw ? JSON.parse(raw) : null;
+        // Valid lease held by someone else → we're a follower
+        if (lease && lease.id !== _tabId && (now - lease.ts) < _LEASE_TTL_MS) {
+          return false;
+        }
+        // Either no lease, expired lease, or it's ours → claim/renew it
+        localStorage.setItem(_LEASE_KEY, JSON.stringify({ id: _tabId, ts: now }));
+        return true;
+      } catch (e) {
+        return true; // localStorage blocked (private mode) — degrade to leader
+      }
+    }
+
     function _simTick() {
       var now = Date.now();
+      var _leader = _isSimLeader();
 
       // ── Generate new incidents (LOCAL/offline mode only) ────────────────
       // When Supabase is wired, /api/cron/heartbeat is the single source
@@ -948,7 +982,12 @@
         }
       }
 
-      // ── Progress existing incidents ─────────────────────────────────────
+      // ── Progress existing incidents (LEADER ONLY) ───────────────────────
+      // Lifecycle transitions mutate the DB. Only the elected leader tab
+      // runs them; follower tabs receive the same transitions via Realtime
+      // (_onDbIncident). _moveUnits below still runs on every tab for local
+      // map animation.
+      if (_leader)
       for (var i = 0; i < _state.incidents.length; i++) {
         var inc = _state.incidents[i];
         if (inc.status === STATUS.CLEARED || inc.status === STATUS.CANCELLED) continue;
@@ -1014,8 +1053,8 @@
       // ── Move units ──────────────────────────────────────────────────────
       _moveUnits();
 
-      // ── Fluctuate hospital ED capacity ──────────────────────────────────
-      if (Math.random() < 0.05) {
+      // ── Fluctuate hospital ED capacity (LEADER ONLY) ────────────────────
+      if (_leader && Math.random() < 0.05) {
         var h = _state.hospitals[_randInt(0, _state.hospitals.length - 1)];
         h.edPct = Math.min(99, Math.max(20, h.edPct + _randInt(-3, 3)));
         if (h.edPct >= 95) h.div = 'bypass';
@@ -1023,8 +1062,8 @@
         else h.div = 'open';
       }
 
-      // ── Auto-generate claims from newly-cleared incidents ───────────────
-      _autoSyncClaims();
+      // ── Auto-generate claims from newly-cleared incidents (LEADER ONLY) ─
+      if (_leader) _autoSyncClaims();
 
       // ── Emit global tick ────────────────────────────────────────────────
       _emit('state:tick', _publicState());
@@ -2090,6 +2129,18 @@
     function init(config) {
       config = config || {};
       if (_state.initialized) { console.warn('[NACDState] Already initialized.'); return _pub; }
+
+      // Release the sim-leader lease on tab close so another open tab can
+      // take over within one tick instead of waiting for the lease to expire.
+      if (typeof window !== 'undefined') {
+        window.addEventListener('beforeunload', function () {
+          try {
+            var raw = localStorage.getItem(_LEASE_KEY);
+            var lease = raw ? JSON.parse(raw) : null;
+            if (lease && lease.id === _tabId) localStorage.removeItem(_LEASE_KEY);
+          } catch (e) { /* ignore */ }
+        });
+      }
 
       // Seed the RNG so all screens produce identical initial state
       _initRNG(config.seed !== undefined ? config.seed : 20260517);
@@ -3221,6 +3272,9 @@
       getState:     function () { return _publicState(); },
       getIncidents: function () { return _state.incidents.slice(); },
       getFleet:     function () { return _state.fleet.slice(); },
+
+      // Whether this tab currently drives the sim (multi-tab leader election).
+      isSimLeader:  function () { return _isSimLeader(); },
 
       // Provider-driven operational status changes (break, maintenance, back-on).
       // Restricted to non-incident states so a provider can't accidentally
