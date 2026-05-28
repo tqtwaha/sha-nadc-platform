@@ -544,6 +544,18 @@ button{font-family:inherit;cursor:pointer;}
 .epcr-submit:hover{background:var(--b2);}
 .epcr-spacer{height:24px;}
 
+/* ── Signature pad ───────────────────────────────── */
+.sig-wrap{margin-top:6px;}
+.sig-pad{width:100%;height:160px;background:rgba(255,255,255,.97);border-radius:var(--r-sm);
+  touch-action:none;cursor:crosshair;display:block;}
+.sig-line{height:1px;background:rgba(255,255,255,.18);margin:6px 12px 0;}
+.sig-row{display:flex;align-items:center;justify-content:space-between;margin-top:8px;}
+.sig-hint{font-family:var(--fm);font-size:11px;color:var(--t3);}
+.sig-hint.signed{color:var(--g);}
+.sig-clear{background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--t2);
+  font-family:var(--fh);font-size:12px;padding:5px 14px;border-radius:var(--r-pill);cursor:pointer;}
+.sig-clear:hover{background:rgba(255,255,255,.1);color:var(--t1);}
+
 @media (max-width: 1100px){
   .callouts{display:none;}
 }
@@ -1008,6 +1020,18 @@ button{font-family:inherit;cursor:pointer;}
           </div>
         </div>
 
+        <div class="epcr-sec">
+          <div class="epcr-sec-h">Crew signature</div>
+          <div class="sig-wrap">
+            <canvas id="sig-pad" class="sig-pad" width="600" height="180"></canvas>
+            <div class="sig-line"></div>
+            <div class="sig-row">
+              <span class="sig-hint" id="sig-hint">Sign above to authorise the ePCR</span>
+              <button type="button" class="sig-clear" id="sig-clear">Clear</button>
+            </div>
+          </div>
+        </div>
+
         <button class="epcr-submit" id="epcr-submit">
           <span class="mat">cloud_upload</span>Submit to AfyaLink
         </button>
@@ -1282,8 +1306,9 @@ function _persistVitals(incNumber, vitals) {
 // Persist ePCR submission: writes dispatch_event, broadcasts to same-tab
 // claims namespace, AND directly mints a claim row in the v2 claims
 // table so the /claims screen sees it without needing a tab open.
-function _persistEPCR(incNumber, claimRef, icdCode, distKm) {
+function _persistEPCR(incNumber, claimRef, icdCode, distKm, signatureDataUrl) {
   var uuid = NACDState.getIncidentUuid && NACDState.getIncidentUuid(incNumber);
+  var hasSig = !!signatureDataUrl;
 
   // 1. Same-browser BroadcastChannel — fast path for the local /claims tab
   if(typeof BroadcastChannel!=='undefined'){
@@ -1335,21 +1360,24 @@ function _persistEPCR(incNumber, claimRef, icdCode, distKm) {
           bp_diastolic:     isNaN(bpDia)   ? null : bpDia,
           spo2:             isNaN(spo2Val) ? null : spo2Val,
           respiratory_rate: isNaN(rrVal)   ? null : rrVal,
-          icd11:            icdCode || null
+          icd11:            icdCode || null,
+          payload:          hasSig ? { signature: signatureDataUrl } : {}
         }).then(function(){});
       }
     } catch(e){}
   }
 
-  // 3. dispatch_events row (audit trail)
+  // 3. dispatch_events row (audit trail). Store the signature in the
+  //    payload so the claim has a verifiable crew authorisation artefact.
   _emtSb.from('dispatch_events').insert({
     incident_id: uuid || null,
     unit_id:     EMT_UNIT,
     event_type:  'epcr_submitted',
-    event_note:  'ePCR submitted for '+(incNumber||'unknown')+' · '+(claimRef||''),
+    event_note:  'ePCR submitted for '+(incNumber||'unknown')+' · '+(claimRef||'')+(hasSig?' · signed':''),
     actor_type:  'emt',
     payload:     { claimRef: claimRef, icdCode: icdCode, distanceKm: distKm,
-                   unitId: EMT_UNIT, incidentNumber: incNumber, totalKes: totalKes }
+                   unitId: EMT_UNIT, incidentNumber: incNumber, totalKes: totalKes,
+                   signed: hasSig, signature: signatureDataUrl || null }
   }).then(function(r){
     if(r.error) console.warn('[EMT] ePCR dispatch_event failed:', r.error.message);
   }).catch(function(e){ console.warn('[EMT] ePCR persist exception:', e && e.message); });
@@ -1372,7 +1400,7 @@ function _persistEPCR(incNumber, claimRef, icdCode, distKm) {
       consumables_kes: 0,
       total_kes:       totalKes,
       status:          'draft',
-      notes:           'Submitted from EMT field app',
+      notes:           'Submitted from EMT field app' + (hasSig ? ' · crew signature captured' : ''),
       submitted_at:    new Date().toISOString()
     }, { onConflict: 'claim_number' }).then(function(r){
       if(r.error) console.warn('[EMT] claim mint failed:', r.error.message);
@@ -1389,6 +1417,66 @@ function _persistEPCR(incNumber, claimRef, icdCode, distKm) {
     // Free the unit
     _emtSb.from('fleet_units').update({ status: 'available' }).eq('id', EMT_UNIT).then(function(){});
   }
+}
+
+// ── Signature pad — pointer-drawn canvas, captured as PNG data URL ──────
+var _sigHasInk = false;
+var _sigCtx = null, _sigCanvas = null;
+function _initSignaturePad(){
+  _sigCanvas = document.getElementById('sig-pad');
+  if(!_sigCanvas || _sigCtx) return;
+  // Match the backing store to the displayed size for crisp lines
+  var rect = _sigCanvas.getBoundingClientRect();
+  var dpr = window.devicePixelRatio || 1;
+  _sigCanvas.width  = Math.max(300, Math.round(rect.width * dpr));
+  _sigCanvas.height = Math.round(160 * dpr);
+  _sigCtx = _sigCanvas.getContext('2d');
+  _sigCtx.scale(dpr, dpr);
+  _sigCtx.lineWidth = 2.2;
+  _sigCtx.lineCap = 'round';
+  _sigCtx.lineJoin = 'round';
+  _sigCtx.strokeStyle = '#0B0F14';
+
+  var drawing = false, lastX = 0, lastY = 0;
+  function pos(e){
+    var r = _sigCanvas.getBoundingClientRect();
+    var cx = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+    var cy = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
+    return { x: cx, y: cy };
+  }
+  function start(e){ e.preventDefault(); drawing=true; var p=pos(e); lastX=p.x; lastY=p.y; }
+  function move(e){
+    if(!drawing) return; e.preventDefault();
+    var p=pos(e);
+    _sigCtx.beginPath(); _sigCtx.moveTo(lastX,lastY); _sigCtx.lineTo(p.x,p.y); _sigCtx.stroke();
+    lastX=p.x; lastY=p.y;
+    if(!_sigHasInk){
+      _sigHasInk = true;
+      var h=document.getElementById('sig-hint');
+      if(h){ h.textContent='Signed ✓ — tap Clear to redo'; h.classList.add('signed'); }
+    }
+  }
+  function end(){ drawing=false; }
+  _sigCanvas.addEventListener('mousedown',start);
+  _sigCanvas.addEventListener('mousemove',move);
+  window.addEventListener('mouseup',end);
+  _sigCanvas.addEventListener('touchstart',start,{passive:false});
+  _sigCanvas.addEventListener('touchmove',move,{passive:false});
+  _sigCanvas.addEventListener('touchend',end);
+
+  var clr = document.getElementById('sig-clear');
+  if(clr) clr.onclick = _clearSignature;
+}
+function _clearSignature(){
+  if(!_sigCtx || !_sigCanvas) return;
+  _sigCtx.clearRect(0,0,_sigCanvas.width,_sigCanvas.height);
+  _sigHasInk = false;
+  var h=document.getElementById('sig-hint');
+  if(h){ h.textContent='Sign above to authorise the ePCR'; h.classList.remove('signed'); }
+}
+function _getSignatureDataUrl(){
+  if(!_sigHasInk || !_sigCanvas) return null;
+  try { return _sigCanvas.toDataURL('image/png'); } catch(e){ return null; }
 }
 
 function ft(s){var m=Math.floor(s/60),x=s%60;return String(m).padStart(2,'0')+':'+String(x).padStart(2,'0');}
@@ -1823,9 +1911,17 @@ document.addEventListener('DOMContentLoaded', function(){
   var distEl = document.getElementById('ep-dist');
   if(distEl) distEl.oninput = computeTariff;
 
+  // ── Signature pad (canvas, no deps) ─────────────────────────────────
+  _initSignaturePad();
+
   // Submit — FHIR bundle success screen
   var submitBtn = document.getElementById('epcr-submit');
   if(submitBtn) submitBtn.onclick = function(){
+    if(!_sigHasInk){
+      showToast('Crew signature required before submitting','warn');
+      var sp=document.getElementById('sig-pad'); if(sp){sp.style.outline='2px solid var(--p2)';setTimeout(function(){sp.style.outline='';},2000);}
+      return;
+    }
     var clmNum = 'CLM-2026-05-' + (Math.floor(Math.random() * 9000) + 1000);
     var icdVal = document.getElementById('ep-icd') ? document.getElementById('ep-icd').value : 'I46.9';
     var distKm = parseFloat(document.getElementById('ep-dist') ? document.getElementById('ep-dist').value : '0') || 0;
@@ -1836,7 +1932,7 @@ document.addEventListener('DOMContentLoaded', function(){
       var _curEp = NACDState.findIncident ? NACDState.findIncident(_incidentId) : null;
       if(_curEp) activeIncNum = _curEp.number;
     }
-    _persistEPCR(activeIncNum, clmNum, icdVal, distKm);
+    _persistEPCR(activeIncNum, clmNum, icdVal, distKm, _getSignatureDataUrl());
     submitBtn.innerHTML =
       '<div style="text-align:left;line-height:1.9;font-size:12px">' +
       '<div style="font-size:14px;font-weight:700;color:#50C020;margin-bottom:6px">ePCR submitted ✅</div>' +
@@ -1851,7 +1947,7 @@ document.addEventListener('DOMContentLoaded', function(){
     submitBtn.style.padding='12px';
     submitBtn.style.textAlign='left';
     addTimelineEvent('ePCR submitted — claim '+clmNum+' queued for SHA');
-    setTimeout(function(){ closeEPCR(); }, 3000);
+    setTimeout(function(){ closeEPCR(); _clearSignature(); }, 3000);
   };
 
   computeTariff();
