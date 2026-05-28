@@ -1,0 +1,14 @@
+/* Storybook preview styles — pull in Tailwind v4 + the SHA design tokens
+   so components render exactly as they do in the app. */
+@import 'tailwindcss';
+@import '../src/tokens.css';
+
+/* Tell Tailwind v4 where to scan for utility classes (the components +
+   the stories). Without this the JIT emits nothing. */
+@source '../src/**/*.{ts,tsx}';
+
+body {
+  background: var(--bg);
+  color: var(--t1);
+  font-family: var(--font-display);
+}
