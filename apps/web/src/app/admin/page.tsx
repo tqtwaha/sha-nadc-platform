@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Topbar, Chip } from '@sha-nadc/ui';
-import { Users, Hospital, ScrollText, Beaker, Activity, ToggleRight, ShieldAlert } from 'lucide-react';
+import { Users, Hospital, ScrollText, Beaker, Activity, ToggleRight, ShieldAlert, Building2 } from 'lucide-react';
 import { APPS } from '@/lib/apps';
 import { serviceClient } from '@/lib/supabase';
 
@@ -83,6 +83,12 @@ export default async function AdminIndexPage() {
             title="Pending approvals"
             caption={`${pendingCount ?? 0} awaiting supervisor decision`}
             tone={(pendingCount ?? 0) > 0 ? 'warn' : 'default'}
+          />
+          <AdminCard
+            href="/admin/providers"
+            Icon={Building2}
+            title="Providers + onboarding"
+            caption="10 contracted operators + new-provider intake wizard"
           />
         </div>
 

@@ -514,6 +514,25 @@ td.muted{color:var(--t3);}
       <span class="last-sync" id="last-sync">syncing&#8230;</span>
     </div>
 
+    <!-- Advanced tools — deep links to the v2 admin surfaces -->
+    <div style="display:flex;flex-wrap:wrap;gap:8px;padding:10px 18px;border-bottom:1px solid var(--line);align-items:center;">
+      <span style="font-family:var(--fm);font-size:9.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--t3);margin-right:4px;">Tools</span>
+      <a href="/admin/audit"     class="adm-tool"><span class="mat" style="font-size:14px;">receipt_long</span>Audit log</a>
+      <a href="/admin/flags"     class="adm-tool"><span class="mat" style="font-size:14px;">toggle_on</span>Feature flags</a>
+      <a href="/admin/pending"   class="adm-tool"><span class="mat" style="font-size:14px;">pending_actions</span>Approvals</a>
+      <a href="/admin/providers" class="adm-tool"><span class="mat" style="font-size:14px;">business</span>Providers</a>
+      <a href="/admin/sim"       class="adm-tool"><span class="mat" style="font-size:14px;">science</span>Sim control</a>
+      <a href="/admin/users"     class="adm-tool"><span class="mat" style="font-size:14px;">group</span>Users</a>
+      <a href="/status"          class="adm-tool"><span class="mat" style="font-size:14px;">monitor_heart</span>Status</a>
+      <a href="/tracker"         class="adm-tool"><span class="mat" style="font-size:14px;">view_kanban</span>Tracker</a>
+    </div>
+    <style>
+      .adm-tool{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:var(--r-pill);
+        background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--t2);text-decoration:none;
+        font-family:var(--fh);font-size:12px;transition:background .15s,color .15s,border-color .15s;}
+      .adm-tool:hover{background:rgba(80,192,32,.12);color:var(--g);border-color:rgba(80,192,32,.3);}
+    </style>
+
     <div class="content">
 
       <!-- ── AGENTS ─────────────────────────────────────────── -->
