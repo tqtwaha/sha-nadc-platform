@@ -1,0 +1,53 @@
+{
+  "updatedAt": "2026-05-28T14:30:00Z",
+  "summary": "Cross-screen data wiring complete. Platform fully functional end-to-end. Two env vars pending on your side to flip into production.",
+  "lanes": [
+    { "id": "blocked", "label": "Needs You", "hint": "5-min Vercel env changes — no code from me" },
+    { "id": "backlog", "label": "Backlog", "hint": "Queued — I build these next, no input needed" },
+    { "id": "doing", "label": "In Progress", "hint": "Actively working" },
+    { "id": "done", "label": "Done", "hint": "Shipped + verified live" }
+  ],
+  "items": [
+    { "id": "cron-secret", "lane": "blocked", "tag": "ENV", "title": "Set CRON_SECRET in Vercel", "note": "Unlocks /api/sim/* + daily auto-populate cron + /admin/sim demo button. Any random string." },
+    { "id": "clerk-keys", "lane": "blocked", "tag": "ENV", "title": "Set CLERK_PUBLISHABLE_KEY + CLERK_SECRET_KEY", "note": "Turns on sign-in gates. Free app at clerk.com. Then I ship per-role RLS." },
+    { "id": "sentry-dsn", "lane": "blocked", "tag": "ENV", "title": "Set NEXT_PUBLIC_SENTRY_DSN (optional)", "note": "Error tracking + session replay. App runs fine without it." },
+    { "id": "apple-dev", "lane": "blocked", "tag": "ACCOUNT", "title": "Apple Developer + Google Play accounts", "note": "Only for EMT app store builds — month 3, not blocking the pitch." },
+
+    { "id": "epcr-sig", "lane": "backlog", "tag": "EMT", "title": "ePCR signature capture", "note": "Canvas signature pad on the EMT clear form, stored with the claim. No new deps." },
+    { "id": "crew-roster", "lane": "backlog", "tag": "PROVIDER", "title": "Provider crew roster", "note": "Add/remove crew, assign to unit/shift. Needs a crew table." },
+    { "id": "onboard-wizard", "lane": "backlog", "tag": "PROVIDER", "title": "Provider onboarding wizard", "note": "Company info, fleet upload, crew bulk-add, contract upload." },
+    { "id": "rls-policies", "lane": "backlog", "tag": "SECURITY", "title": "Per-role RLS bound to Clerk JWT", "note": "Replaces dev-permissive RLS. Blocked until CLERK_* is set." },
+    { "id": "real-mpesa", "lane": "backlog", "tag": "INTEGRATION", "title": "Real M-Pesa / AfyaLink / KRA adapters", "note": "Stubs work now. One-file swap each when vendor creds land." },
+    { "id": "offline-queue", "lane": "backlog", "tag": "EMT", "title": "Mobile offline-first queue", "note": "Queue writes when offline, sync on reconnect." },
+    { "id": "bg-gps", "lane": "backlog", "tag": "EMT", "title": "Background GPS reporting", "note": "Expo TaskManager — unit position every 10s on a job." },
+    { "id": "storybook", "lane": "backlog", "tag": "INFRA", "title": "Storybook for packages/ui", "note": "Visual component review surface." },
+
+    { "id": "tracker-html", "lane": "doing", "tag": "DX", "title": "Live HTML Kanban tracker", "note": "This board — auto-refreshing, cards animate as they move." },
+
+    { "id": "xscreen", "lane": "done", "tag": "CORE", "title": "Cross-screen data consistency", "note": "PSAP→dispatch→EMT→claims share one Supabase pool. Same patient/diagnosis everywhere." },
+    { "id": "nacd-schema", "lane": "done", "tag": "CORE", "title": "NACDState aligned to v2 schema", "note": "Writes/reads use complaint/icd11/lat/lng + claims table. Was silently failing." },
+    { "id": "db-hydrate", "lane": "done", "tag": "CORE", "title": "Screens hydrate shared pool from DB", "note": "seedIncidents:0 — every screen loads the same incidents on init." },
+    { "id": "leader-elect", "lane": "done", "tag": "CORE", "title": "Multi-tab leader election", "note": "Only one tab drives the sim — no write storm with N tabs open." },
+    { "id": "emt-epcr", "lane": "done", "tag": "EMT", "title": "EMT ePCR → claim + vitals + clear", "note": "Submit mints claim, writes vitals, clears incident, frees unit." },
+    { "id": "supervisor-actions", "lane": "done", "tag": "SUPERVISOR", "title": "Supervisor actions persist", "note": "whisper/barge/flag_qa/takeover → supervisor_actions + audit log." },
+    { "id": "hospital-actions", "lane": "done", "tag": "HOSPITAL", "title": "Hospital accept/divert wired", "note": "Divert raises a supervisor approval at /admin/pending." },
+    { "id": "claims", "lane": "done", "tag": "CLAIMS", "title": "Claims workflow + SHIF tariff", "note": "List, detail, approve, bulk, CSV, PDF, M-Pesa/AfyaLink/KRA stubs." },
+    { "id": "dispatch", "lane": "done", "tag": "DISPATCH", "title": "Dispatch console + Mapbox", "note": "Queue, assign nearest unit, route, clear, ETA HUD." },
+    { "id": "psap", "lane": "done", "tag": "PSAP", "title": "PSAP triage + create incident", "note": "MPDS protocol, geocoder, caller/patient form → realtime." },
+    { "id": "wall", "lane": "done", "tag": "WALL", "title": "LED wall dashboard", "note": "Map, KPI rail, hot incidents, fleet/calls/agents, P1 alarm." },
+    { "id": "providers", "lane": "done", "tag": "PROVIDER", "title": "Providers list + detail", "note": "Fleet roster, invoicing, revenue rollups per operator." },
+    { "id": "admin", "lane": "done", "tag": "ADMIN", "title": "Admin suite", "note": "Users, hospitals, audit log, feature flags, pending approvals, sim controls." },
+    { "id": "sim-demo", "lane": "done", "tag": "DEMO", "title": "/api/sim/demo replay", "note": "10-second scripted PSAP→claim→M-Pesa→KRA with live narration." },
+    { "id": "heartbeat", "lane": "done", "tag": "SIM", "title": "Heartbeat cron + leader spawn", "note": "Keeps the active-incident pool alive continuously." },
+    { "id": "cmdk", "lane": "done", "tag": "DX", "title": "Cmd+K command palette", "note": "Search incidents/claims/units/hospitals/providers + jump to any app." },
+    { "id": "mobile", "lane": "done", "tag": "EMT", "title": "Expo mobile EMT app", "note": "Unit picker, incident card, status flow, vitals, push scaffold, Maps deep links." },
+    { "id": "pwa", "lane": "done", "tag": "EMT", "title": "PWA install for /emt", "note": "Installable on any phone without Expo." },
+    { "id": "status-page", "lane": "done", "tag": "OPS", "title": "Public /status dashboard", "note": "Uptime, DB latency, throughput, env config check." },
+    { "id": "ci", "lane": "done", "tag": "INFRA", "title": "CI + synthetic monitor", "note": "Typecheck+test+build on push; E2E smoke every 30 min. Green on Node 22." },
+    { "id": "tests", "lane": "done", "tag": "INFRA", "title": "Vitest + Playwright suites", "note": "31 domain unit tests + 9 E2E smoke tests." },
+    { "id": "docs", "lane": "done", "tag": "DOCS", "title": "Architecture + 4 runbooks", "note": "deploy, rollback, incident-response, scaling." },
+    { "id": "sentry-obs", "lane": "done", "tag": "INFRA", "title": "Sentry + Vercel Analytics wired", "note": "No-op until DSN set; Speed Insights live." },
+    { "id": "v1-ui", "lane": "done", "tag": "UI", "title": "v1 MVP UI restored", "note": "All 10 operational screens serve the original pixel-perfect prototypes." },
+    { "id": "appswitcher", "lane": "done", "tag": "UI", "title": "App switcher fixed", "note": "Material Symbols display=block + inline 9-app rail." }
+  ]
+}

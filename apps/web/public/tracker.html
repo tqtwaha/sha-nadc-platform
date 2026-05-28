@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SHA NADC · Build Tracker</title>
+<meta name="theme-color" content="#00519B">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0F14; --bg1:#11161D; --bg2:#161C25; --bg3:#1d2530;
+    --t1:rgba(255,255,255,.95); --t2:rgba(255,255,255,.62); --t3:rgba(255,255,255,.40); --t4:rgba(255,255,255,.25);
+    --line:rgba(255,255,255,.07); --line2:rgba(255,255,255,.12);
+    --b:#00519B; --b2:#27AAE1; --g:#50C020; --p1:#FF3B30; --p2:#FF8C00; --p3:#F5B100;
+    --fh:'Exo 2',system-ui,sans-serif; --fm:'JetBrains Mono',ui-monospace,monospace; --fc:'Barlow Condensed',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{background:var(--bg);color:var(--t1);font-family:var(--fh);-webkit-font-smoothing:antialiased;min-height:100vh;}
+  body{padding:18px 22px 40px;}
+
+  /* Header */
+  header{display:flex;align-items:center;gap:16px;margin-bottom:18px;flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-mark{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,#00519B,#27AAE1);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;letter-spacing:.5px;color:#fff;}
+  .brand-t b{font-size:16px;font-weight:700;display:block;line-height:1.1;}
+  .brand-t span{font-family:var(--fm);font-size:9.5px;letter-spacing:1.4px;color:var(--t3);text-transform:uppercase;}
+  .live{display:flex;align-items:center;gap:7px;font-family:var(--fm);font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--t2);}
+  .live-dot{width:8px;height:8px;border-radius:50%;background:var(--g);box-shadow:0 0 0 0 rgba(80,192,32,.5);animation:pulse 2s infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(80,192,32,.5);}70%{box-shadow:0 0 0 8px rgba(80,192,32,0);}100%{box-shadow:0 0 0 0 rgba(80,192,32,0);}}
+  .spacer{flex:1;}
+  .meta{text-align:right;font-family:var(--fm);font-size:10.5px;color:var(--t3);line-height:1.7;}
+  .meta b{color:var(--t1);font-weight:600;}
+  .summary{font-size:13px;color:var(--t2);max-width:760px;margin:-6px 0 16px;line-height:1.5;}
+
+  /* Board */
+  .board{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;align-items:start;}
+  @media(max-width:1100px){.board{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:680px){.board{grid-template-columns:1fr;}}
+  .col{background:var(--bg1);border:1px solid var(--line);border-radius:14px;padding:12px;min-height:120px;}
+  .col-h{display:flex;align-items:center;justify-content:space-between;padding:4px 6px 10px;border-bottom:1px solid var(--line);margin-bottom:10px;}
+  .col-title{font-family:var(--fc);font-weight:700;font-size:14px;letter-spacing:.6px;text-transform:uppercase;display:flex;align-items:center;gap:8px;}
+  .col-dot{width:9px;height:9px;border-radius:3px;}
+  .col-count{font-family:var(--fm);font-size:11px;color:var(--t2);background:var(--bg2);padding:2px 8px;border-radius:999px;}
+  .col-hint{font-size:10.5px;color:var(--t4);padding:0 6px 10px;line-height:1.4;}
+  .cards{display:flex;flex-direction:column;gap:9px;}
+
+  /* Card */
+  .card{background:var(--bg2);border:1px solid var(--line);border-left-width:3px;border-radius:10px;padding:11px 12px;transition:transform .25s cubic-bezier(.23,1,.32,1),box-shadow .25s,border-color .2s;}
+  .card:hover{border-color:var(--line2);transform:translateY(-1px);}
+  .card-top{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+  .tag{font-family:var(--fm);font-size:8.5px;font-weight:600;letter-spacing:.8px;padding:2px 6px;border-radius:5px;text-transform:uppercase;}
+  .card-title{font-size:13.5px;font-weight:600;line-height:1.3;color:var(--t1);}
+  .card-note{font-size:11.5px;color:var(--t2);margin-top:5px;line-height:1.45;}
+  .card.moved{animation:flash 2.4s ease-out;}
+  @keyframes flash{0%{box-shadow:0 0 0 2px var(--g),0 0 22px rgba(80,192,32,.5);transform:scale(1.025);}100%{box-shadow:none;transform:scale(1);}}
+
+  /* Lane accent colours */
+  .lane-blocked .col-dot{background:var(--p1);} .lane-blocked .card{border-left-color:var(--p1);}
+  .lane-backlog .col-dot{background:var(--t4);} .lane-backlog .card{border-left-color:var(--t4);}
+  .lane-doing   .col-dot{background:var(--p2);} .lane-doing .card{border-left-color:var(--p2);}
+  .lane-done    .col-dot{background:var(--g);}  .lane-done .card{border-left-color:var(--g);}
+
+  /* Tag palette by category */
+  .tag{background:var(--bg3);color:var(--t2);}
+  .t-ENV,.t-ACCOUNT{background:rgba(255,59,48,.16);color:#ff8077;}
+  .t-CORE{background:rgba(80,192,32,.16);color:#7fd957;}
+  .t-EMT,.t-DISPATCH,.t-PSAP,.t-WALL{background:rgba(39,170,225,.16);color:#5cc4ec;}
+  .t-CLAIMS,.t-PROVIDER,.t-HOSPITAL{background:rgba(255,140,0,.16);color:#ffae4d;}
+  .t-INFRA,.t-DX,.t-DOCS,.t-OPS,.t-DEMO,.t-SIM,.t-UI,.t-SECURITY,.t-ADMIN,.t-SUPERVISOR,.t-INTEGRATION{background:rgba(245,177,0,.14);color:#f5c542;}
+
+  .countdown{font-family:var(--fm);font-size:10px;color:var(--t4);}
+  .err{color:var(--p1);font-family:var(--fm);font-size:12px;padding:20px;}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="brand-mark">SHA</div>
+    <div class="brand-t"><b>Build Tracker</b><span>NADC · v2 Platform</span></div>
+  </div>
+  <div class="live"><span class="live-dot"></span><span>Live</span></div>
+  <div class="spacer"></div>
+  <div class="meta">
+    <div>Updated <b id="updated">—</b></div>
+    <div>Refresh in <span class="countdown" id="cd">10</span>s · <span id="counts">—</span></div>
+  </div>
+</header>
+<div class="summary" id="summary"></div>
+<div class="board" id="board"><div class="err" id="boot">Loading tracker…</div></div>
+
+<script>
+'use strict';
+var REFRESH_MS = 10000;
+var _prevLaneById = {};   // id → lane, to detect moves between refreshes
+var _firstLoad = true;
+
+function timeAgo(iso){
+  try{
+    var d = new Date(iso), s = Math.floor((Date.now()-d.getTime())/1000);
+    if(s<60) return s+'s ago';
+    if(s<3600) return Math.floor(s/60)+'m ago';
+    if(s<86400) return Math.floor(s/3600)+'h ago';
+    return Math.floor(s/86400)+'d ago';
+  }catch(e){ return iso; }
+}
+
+function render(data){
+  var board = document.getElementById('board');
+  document.getElementById('updated').textContent = timeAgo(data.updatedAt);
+  document.getElementById('summary').textContent = data.summary || '';
+
+  var byLane = {};
+  data.lanes.forEach(function(l){ byLane[l.id] = []; });
+  data.items.forEach(function(it){ if(byLane[it.lane]) byLane[it.lane].push(it); });
+
+  // Counts line
+  var counts = data.lanes.map(function(l){ return byLane[l.id].length+' '+l.label.toLowerCase(); }).join(' · ');
+  document.getElementById('counts').textContent = counts;
+
+  board.innerHTML = '';
+  data.lanes.forEach(function(lane){
+    var col = document.createElement('div');
+    col.className = 'col lane-'+lane.id;
+    var items = byLane[lane.id] || [];
+    var cardsHtml = items.map(function(it){
+      var moved = (!_firstLoad && _prevLaneById[it.id] && _prevLaneById[it.id] !== it.lane);
+      return '<div class="card'+(moved?' moved':'')+'">'+
+        '<div class="card-top"><span class="tag t-'+(it.tag||'')+'">'+(it.tag||'')+'</span></div>'+
+        '<div class="card-title">'+escapeHtml(it.title)+'</div>'+
+        (it.note?'<div class="card-note">'+escapeHtml(it.note)+'</div>':'')+
+      '</div>';
+    }).join('');
+    col.innerHTML =
+      '<div class="col-h"><div class="col-title"><span class="col-dot"></span>'+lane.label+'</div>'+
+      '<div class="col-count">'+items.length+'</div></div>'+
+      (lane.hint?'<div class="col-hint">'+escapeHtml(lane.hint)+'</div>':'')+
+      '<div class="cards">'+cardsHtml+'</div>';
+    board.appendChild(col);
+  });
+
+  // Record positions for next-refresh move detection
+  _prevLaneById = {};
+  data.items.forEach(function(it){ _prevLaneById[it.id] = it.lane; });
+  _firstLoad = false;
+}
+
+function escapeHtml(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+
+function load(){
+  fetch('/tracker-data.json?t='+Date.now(),{cache:'no-store'})
+    .then(function(r){ return r.json(); })
+    .then(render)
+    .catch(function(e){
+      var b=document.getElementById('board');
+      b.innerHTML='<div class="err">Could not load tracker-data.json — '+e.message+'</div>';
+    });
+}
+
+var _cd = REFRESH_MS/1000;
+function tickCountdown(){
+  _cd--;
+  if(_cd<=0){ _cd = REFRESH_MS/1000; load(); }
+  var el=document.getElementById('cd'); if(el) el.textContent=_cd;
+}
+
+load();
+setInterval(tickCountdown, 1000);
+</script>
+</body>
+</html>

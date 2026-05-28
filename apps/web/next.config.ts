@@ -23,6 +23,7 @@ const config: NextConfig = {
         { source: '/claims', destination: '/legacy/claims/index.html' },
         { source: '/providers', destination: '/legacy/providers/index.html' },
         { source: '/admin', destination: '/legacy/admin/index.html' },
+        { source: '/tracker', destination: '/tracker.html' },
       ],
     };
   },
